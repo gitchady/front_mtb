@@ -1,0 +1,98 @@
+import type { PlanetCode, PlanetProgress } from "@mtb/contracts";
+import { PLANET_META } from "@mtb/contracts";
+import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
+
+export function PlanetInspector({
+  planet,
+  selectedPlanet,
+  stardust,
+  builtStructures,
+  isPending,
+  onRunAction,
+  onBuild,
+}: {
+  planet?: PlanetProgress;
+  selectedPlanet: PlanetCode;
+  stardust: number;
+  builtStructures: string[];
+  isPending: boolean;
+  onRunAction: (planetCode: PlanetCode, actionId: string) => void;
+  onBuild: (planetCode: PlanetCode, structureId: string) => void;
+}) {
+  const meta = PLANET_META[selectedPlanet];
+  const actions = PLANET_ACTIONS[selectedPlanet];
+  const structures = PLANET_STRUCTURES[selectedPlanet];
+
+  return (
+    <article className="surface-panel h-full">
+      <div className="mb-6 space-y-2">
+        <p className="eyebrow">Выбранная планета</p>
+        <h3 className="text-3xl font-semibold">{meta.title}</h3>
+        <p className="max-w-lg text-sm text-white/65">{meta.summary}</p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="metric-chip">
+          <span>Уровень планеты</span>
+          <strong>{planet?.level ?? 1}</strong>
+        </div>
+        <div className="metric-chip">
+          <span>Опыт планеты</span>
+          <strong>{planet?.xp ?? 0}</strong>
+        </div>
+        <div className="metric-chip">
+          <span>Звездная пыль</span>
+          <strong>{stardust}</strong>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-4 2xl:grid-cols-[1fr_1fr]">
+        <div className="space-y-3">
+          <p className="eyebrow">Действия миссии</p>
+          {actions.map((action) => (
+            <button
+              key={action.id}
+              className="action-card"
+              onClick={() => onRunAction(selectedPlanet, action.id)}
+              disabled={isPending}
+            >
+              <div>
+                <p className="text-lg font-medium">{action.title}</p>
+                <p className="mt-2 text-sm text-white/58">{action.detail}</p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs uppercase tracking-[0.2em] text-white/42">Награда</span>
+                <strong className="block text-xl text-[var(--accent-cyan)]">+{action.stardustReward}</strong>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <p className="eyebrow">Линия строительства</p>
+          {structures.map((structure) => {
+            const built = builtStructures.includes(structure.id);
+            const blocked = stardust < structure.cost;
+            return (
+              <button
+                key={structure.id}
+                className={`action-card ${built ? "action-card-built" : ""}`}
+                onClick={() => onBuild(selectedPlanet, structure.id)}
+                disabled={built || blocked}
+              >
+                <div>
+                  <p className="text-lg font-medium">{structure.title}</p>
+                  <p className="mt-2 text-sm text-white/58">{structure.detail}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">{built ? "Построено" : "Цена"}</span>
+                  <strong className="block text-xl">{built ? "Готово" : `${structure.cost}`}</strong>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </article>
+  );
+}

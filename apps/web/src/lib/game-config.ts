@@ -1,0 +1,166 @@
+import type { PlanetCode } from "@mtb/contracts";
+
+export type GameActionKind = "partner" | "nonPartner" | "credit" | "referral" | "education" | "risky";
+
+export interface PlanetAction {
+  id: string;
+  title: string;
+  detail: string;
+  eventKind: GameActionKind;
+  stardustReward: number;
+}
+
+export interface PlanetStructure {
+  id: string;
+  title: string;
+  detail: string;
+  cost: number;
+}
+
+export interface StagePlanetConfig {
+  top: string;
+  left: string;
+  size: number;
+  hue: string;
+}
+
+export const PLANET_BACKGROUNDS: Record<PlanetCode, string> = {
+  ORBIT_COMMERCE: "linear-gradient(135deg, #f44d89 0%, #6c52ff 100%)",
+  CREDIT_SHIELD: "linear-gradient(135deg, #50d0ff 0%, #2e5bff 100%)",
+  SOCIAL_RING: "linear-gradient(135deg, #9dfc5b 0%, #14b86a 100%)",
+};
+
+export const PLANET_STAGE: Record<PlanetCode, StagePlanetConfig> = {
+  ORBIT_COMMERCE: {
+    top: "14%",
+    left: "10%",
+    size: 172,
+    hue: PLANET_BACKGROUNDS.ORBIT_COMMERCE,
+  },
+  CREDIT_SHIELD: {
+    top: "52%",
+    left: "58%",
+    size: 156,
+    hue: PLANET_BACKGROUNDS.CREDIT_SHIELD,
+  },
+  SOCIAL_RING: {
+    top: "18%",
+    left: "68%",
+    size: 132,
+    hue: PLANET_BACKGROUNDS.SOCIAL_RING,
+  },
+};
+
+export const PLANET_ACTIONS: Record<PlanetCode, PlanetAction[]> = {
+  ORBIT_COMMERCE: [
+    {
+      id: "orbit_partner",
+      title: "Провести партнерскую покупку",
+      detail: "Отправляет партнерскую операцию в живое ядро наград и открывает окно бустера.",
+      eventKind: "partner",
+      stardustReward: 6,
+    },
+    {
+      id: "orbit_open",
+      title: "Провести обычную покупку",
+      detail: "Поддерживает активность карты без сильного разгона партнерского оборота.",
+      eventKind: "nonPartner",
+      stardustReward: 3,
+    },
+  ],
+  CREDIT_SHIELD: [
+    {
+      id: "shield_payment",
+      title: "Оплатить рассрочку вовремя",
+      detail: "Укрепляет щит, двигает лимит вверх и закрепляет безопасное кредитное поведение.",
+      eventKind: "credit",
+      stardustReward: 7,
+    },
+    {
+      id: "shield_learning",
+      title: "Пройти финансовый урок",
+      detail: "Активирует образовательный сценарий и открывает более безопасную траекторию прогресса.",
+      eventKind: "education",
+      stardustReward: 4,
+    },
+  ],
+  SOCIAL_RING: [
+    {
+      id: "social_referral",
+      title: "Запустить реферальный цикл",
+      detail: "Приглашает нового союзника и расширяет социальное кольцо через живое событие активации.",
+      eventKind: "referral",
+      stardustReward: 8,
+    },
+    {
+      id: "social_stress",
+      title: "Проверить антифрод",
+      detail: "Запускает рискованное событие, чтобы увидеть награды на проверке и флаги риска в реальном времени.",
+      eventKind: "risky",
+      stardustReward: 2,
+    },
+  ],
+};
+
+export const PLANET_STRUCTURES: Record<PlanetCode, PlanetStructure[]> = {
+  ORBIT_COMMERCE: [
+    {
+      id: "merchant-relay",
+      title: "Партнерский ретранслятор",
+      detail: "Укрепляет партнерскую гравитацию и усиливает визуальную линию Орбиты покупок.",
+      cost: 12,
+    },
+    {
+      id: "cashback-port",
+      title: "Кэшбэк-порт",
+      detail: "Превращает короткие всплески активности в более сильные окна наград.",
+      cost: 18,
+    },
+    {
+      id: "mission-hub",
+      title: "Штаб миссий",
+      detail: "Расширяет квестовый цикл ежедневными партнерскими спринтами и импульсами категорий.",
+      cost: 22,
+    },
+  ],
+  CREDIT_SHIELD: [
+    {
+      id: "discipline-array",
+      title: "Массив дисциплины",
+      detail: "Стабилизирует ритм платежей и показывает рост доверия.",
+      cost: 14,
+    },
+    {
+      id: "trust-vault",
+      title: "Хранилище доверия",
+      detail: "Подсвечивает чистое поведение и открывает рост лимита в игровой логике.",
+      cost: 19,
+    },
+    {
+      id: "learning-node",
+      title: "Учебный узел",
+      detail: "Связывает финансовые уроки и безопасный лимит в одну линию улучшений.",
+      cost: 16,
+    },
+  ],
+  SOCIAL_RING: [
+    {
+      id: "squad-dock",
+      title: "Док команды",
+      detail: "Добавляет видимую емкость команды и делает рефералы общим достижением.",
+      cost: 10,
+    },
+    {
+      id: "ally-lens",
+      title: "Линза союзников",
+      detail: "Улучшает видимость рефералов и добавляет турнирный социальный слой.",
+      cost: 17,
+    },
+    {
+      id: "guild-gate",
+      title: "Врата гильдии",
+      detail: "Превращает кольцо в статусный объект для лучших пилотов.",
+      cost: 24,
+    },
+  ],
+};

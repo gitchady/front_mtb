@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.vite/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+*.tsbuildinfo
+openapi.json
+apps/api/dev.db
+apps/api/.env
+apps/web/.env

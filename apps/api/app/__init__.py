@@ -1,0 +1,2 @@
+"""MTB Galaxy API package."""
+
