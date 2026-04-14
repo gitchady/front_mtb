@@ -11,6 +11,12 @@ const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-planet-layout-v1";
 const PLANET_STAGE_PAD = 48;
 const DRAG_CLICK_THRESHOLD = 4;
 const DRAG_BOUNDARY_GUTTER = 16;
+const ORBIT_TICK_MS = 80;
+const ORBIT_MOTION: Record<PlanetCode, { radiusX: number; radiusY: number; duration: number; phase: number }> = {
+  ORBIT_COMMERCE: { radiusX: 2.1, radiusY: 1.25, duration: 76000, phase: 0.2 },
+  CREDIT_SHIELD: { radiusX: 1.65, radiusY: 1.8, duration: 88000, phase: 2.4 },
+  SOCIAL_RING: { radiusX: 1.95, radiusY: 1.35, duration: 94000, phase: 4.1 },
+};
 
 const DEFAULT_PLANET_LAYOUT = Object.entries(PLANET_STAGE).reduce((acc, [planetCode, stage]) => {
   acc[planetCode as PlanetCode] = {
@@ -65,6 +71,27 @@ function readSavedLayout(): PlanetLayout {
   }
 }
 
+function getOrbitOffset(planetCode: PlanetCode, orbitTime: number | null) {
+  if (orbitTime === null) {
+    return { left: 0, top: 0 };
+  }
+
+  const motion = ORBIT_MOTION[planetCode];
+  const angle = (orbitTime / motion.duration) * Math.PI * 2 + motion.phase;
+  return {
+    left: Math.cos(angle) * motion.radiusX,
+    top: Math.sin(angle) * motion.radiusY,
+  };
+}
+
+function getOrbitingPosition(planetCode: PlanetCode, position: { left: number; top: number }, orbitTime: number | null) {
+  const offset = getOrbitOffset(planetCode, orbitTime);
+  return {
+    left: clamp(position.left + offset.left, 2, 98),
+    top: clamp(position.top + offset.top, 2, 98),
+  };
+}
+
 export function GalaxyStage({
   planets,
   selectedPlanet,
@@ -91,7 +118,29 @@ export function GalaxyStage({
   const skipClickRef = useRef(false);
   const [layout, setLayout] = useState<PlanetLayout>(() => readSavedLayout());
   const [draggingPlanet, setDraggingPlanet] = useState<PlanetCode | null>(null);
+  const [orbitTime, setOrbitTime] = useState<number | null>(null);
   const orderedPlanets = useMemo(() => planets, [planets]);
+
+  useEffect(() => {
+    const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotionQuery.matches) {
+      return;
+    }
+
+    let animationFrame = 0;
+    let lastTick = 0;
+
+    const animate = (time: number) => {
+      if (time - lastTick >= ORBIT_TICK_MS) {
+        setOrbitTime(time);
+        lastTick = time;
+      }
+      animationFrame = window.requestAnimationFrame(animate);
+    };
+
+    animationFrame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
 
   useEffect(() => {
     try {
@@ -114,8 +163,14 @@ export function GalaxyStage({
     const stageRect = stageElement.getBoundingClientRect();
     const planetRect = event.currentTarget.getBoundingClientRect();
     const currentLayout = layout[planetCode];
-    const anchorX = stageRect.left + (currentLayout.left / 100) * stageRect.width;
-    const anchorY = stageRect.top + (currentLayout.top / 100) * stageRect.height;
+    const currentPosition = getOrbitingPosition(planetCode, currentLayout, orbitTime);
+    const anchorX = stageRect.left + (currentPosition.left / 100) * stageRect.width;
+    const anchorY = stageRect.top + (currentPosition.top / 100) * stageRect.height;
+
+    setLayout((current) => ({
+      ...current,
+      [planetCode]: currentPosition,
+    }));
 
     dragRef.current = {
       planetCode,
@@ -171,6 +226,17 @@ export function GalaxyStage({
       }, 0);
     }
 
+    const offset = getOrbitOffset(drag.planetCode, orbitTime);
+    setLayout((current) => {
+      const finalPosition = current[drag.planetCode];
+      return {
+        ...current,
+        [drag.planetCode]: {
+          left: clamp(finalPosition.left - offset.left, drag.minLeft, drag.maxLeft),
+          top: clamp(finalPosition.top - offset.top, drag.minTop, drag.maxTop),
+        },
+      };
+    });
     dragRef.current = null;
     setDraggingPlanet(null);
   }
@@ -192,8 +258,10 @@ export function GalaxyStage({
       {orderedPlanets.map((planet) => {
         const stage = PLANET_STAGE[planet.planet_code];
         const active = selectedPlanet === planet.planet_code;
-        const planetPosition = layout[planet.planet_code];
         const dragging = draggingPlanet === planet.planet_code;
+        const planetPosition = dragging
+          ? layout[planet.planet_code]
+          : getOrbitingPosition(planet.planet_code, layout[planet.planet_code], orbitTime);
         return (
           <motion.button
             key={planet.planet_code}
