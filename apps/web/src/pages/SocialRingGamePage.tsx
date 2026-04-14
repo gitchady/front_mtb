@@ -66,6 +66,7 @@ export function SocialRingGamePage() {
     [baseReward, bonusStreak, planetMastery, score, selectedPlanet, structures, vaultCharge],
   );
   const progressDots = useMemo(() => Array.from({ length: TOTAL_ROUNDS }, (_, index) => index < round), [round]);
+  const canResetRun = phase !== "idle" || sequence.length > 0 || round > 0 || score > 0;
 
   const claimMutation = useMutation({
     mutationFn: async () => {
@@ -290,9 +291,11 @@ export function SocialRingGamePage() {
               <button className="primary-button" onClick={launchRun} disabled={phase === "showing" || phase === "input"}>
                 {phase === "complete" ? "Запустить снова" : "Старт ринга"}
               </button>
-              <button className="secondary-button" onClick={resetRun}>
-                Сбросить
-              </button>
+              {canResetRun ? (
+                <button className="secondary-button" onClick={resetRun}>
+                  Сбросить
+                </button>
+              ) : null}
             </div>
 
             <div className="signal-progress">

@@ -1,11 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { calculateBonusOutcome } from "@/lib/bonus-engine";
 import { useGameStore } from "@/lib/game-store";
 import { useSessionStore } from "@/lib/session-store";
 
 const ROUNDS = 12;
+const PULSE_START_POSITION = 12;
+const PULSE_BASE_SPEED = 28;
+const PULSE_ROUND_SPEED = 2.8;
 
 function rewardFromShieldScore(score: number) {
   return Math.max(5, score * 2);
@@ -15,13 +18,13 @@ export function CreditShieldGamePage() {
   const { userId } = useSessionStore();
   const queryClient = useQueryClient();
   const [round, setRound] = useState(1);
-  const [position, setPosition] = useState(12);
-  const [direction, setDirection] = useState(1);
+  const [position, setPosition] = useState(PULSE_START_POSITION);
   const [score, setScore] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [status, setStatus] = useState("Запустите стабилизатор и нажмите, когда импульс попадет в центральную зону.");
+  const directionRef = useRef(1);
   const recordShieldRun = useGameStore((state) => state.recordShieldRun);
   const bestShieldScore = useGameStore((state) => state.bestShieldScore);
   const stardust = useGameStore((state) => state.stardust);
@@ -51,6 +54,7 @@ export function CreditShieldGamePage() {
       ),
     [baseReward, bonusStreak, planetMastery, score, selectedPlanet, structures, vaultCharge],
   );
+  const canResetGame = isRunning || isComplete || score > 0 || round > 1;
   const claimMutation = useMutation({
     mutationFn: async () => {
       const event = await api.ingest(api.buildEvent(userId, score >= 18 ? "credit" : "education"));
@@ -96,8 +100,8 @@ export function CreditShieldGamePage() {
 
   function resetGameState() {
     setRound(1);
-    setPosition(12);
-    setDirection(1);
+    setPosition(PULSE_START_POSITION);
+    directionRef.current = 1;
     setScore(0);
     setIsComplete(false);
     setRewardClaimed(false);
@@ -108,22 +112,45 @@ export function CreditShieldGamePage() {
       return;
     }
 
-    const timer = window.setInterval(() => {
-      setPosition((current) => {
-        if (current >= 100) {
-          setDirection(-1);
-          return 100;
-        }
-        if (current <= 0) {
-          setDirection(1);
-          return 0;
-        }
-        return current + direction * (6 + Math.min(round, 6));
-      });
-    }, 85);
+    let animationFrame = 0;
+    let isCancelled = false;
+    let previousTime: number | null = null;
+    const speed = PULSE_BASE_SPEED + Math.min(round, 6) * PULSE_ROUND_SPEED;
 
-    return () => window.clearInterval(timer);
-  }, [direction, isComplete, isRunning, round]);
+    const animate = (time: number) => {
+      if (isCancelled) {
+        return;
+      }
+      if (previousTime === null) {
+        previousTime = time;
+      }
+      const deltaSeconds = Math.min((time - previousTime) / 1000, 0.08);
+      previousTime = time;
+
+      setPosition((current) => {
+        let next = current + directionRef.current * speed * deltaSeconds;
+        if (next >= 100) {
+          next = 100 - (next - 100);
+          directionRef.current = -1;
+        }
+        if (next <= 0) {
+          next = -next;
+          directionRef.current = 1;
+        }
+        return Math.max(0, Math.min(100, next));
+      });
+
+      if (!isCancelled) {
+        animationFrame = window.requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = window.requestAnimationFrame(animate);
+    return () => {
+      isCancelled = true;
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [isComplete, isRunning, round]);
 
   const accuracyBand = useMemo(() => {
     if (position >= 44 && position <= 56) return "perfect";
@@ -160,9 +187,6 @@ export function CreditShieldGamePage() {
           ? "Идеальная фиксация. Прочность щита выросла."
           : "Хорошая фиксация. Щит стал крепче."
     );
-    setPosition(12);
-    setDirection(1);
-
     if (nextRound > ROUNDS) {
       setIsRunning(false);
       setIsComplete(true);
@@ -221,17 +245,19 @@ export function CreditShieldGamePage() {
             <h3 className="text-4xl font-semibold">
               {!isRunning && !isComplete ? "Готов к стабилизации" : isComplete ? "Забег завершен" : "Щит активен"}
             </h3>
-            <p className="text-white/62">{status}</p>
-            <div className="flex flex-wrap gap-3">
+            <p className="min-h-[4.75rem] text-white/62 md:min-h-[3.25rem]">{status}</p>
+            <div className="flex min-h-[3.25rem] flex-wrap gap-3">
               <button className="primary-button" onClick={launchGame} disabled={isRunning}>
                 {isComplete ? "Запустить снова" : "Старт реактора"}
               </button>
               <button className="secondary-button" onClick={lockPulse} disabled={!isRunning || isComplete}>
                 Зафиксировать импульс
               </button>
-              <button className="secondary-button" onClick={resetGame}>
-                Сбросить
-              </button>
+              {canResetGame ? (
+                <button className="secondary-button" onClick={resetGame}>
+                  Сбросить
+                </button>
+              ) : null}
             </div>
             <div className="list-row">
               <div>

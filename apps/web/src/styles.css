@@ -121,6 +121,27 @@ body {
   padding: 1rem 1.1rem;
 }
 
+.risk-signal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.7rem 0.85rem;
+}
+
+.risk-signal-count {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 211, 77, 0.22);
+  background: rgba(255, 211, 77, 0.08);
+  padding: 0.16rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 211, 77, 0.9);
+}
+
 .nav-link {
   display: block;
   border-radius: 18px;
@@ -218,6 +239,20 @@ input:focus-visible {
     rgba(255, 255, 255, 0.015);
 }
 
+.action-card-selected {
+  border-color: rgba(109, 242, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(109,242,255,0.09), rgba(255,255,255,0.02)),
+    rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 0 0 1px rgba(109, 242, 255, 0.1);
+}
+
+.mission-confirm {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -247,6 +282,7 @@ input:focus-visible {
   min-height: 640px;
   overflow: hidden;
   border-radius: 28px;
+  user-select: none;
   background:
     radial-gradient(circle at 20% 18%, rgba(255, 77, 150, 0.2), transparent 24%),
     radial-gradient(circle at 82% 18%, rgba(82, 107, 255, 0.22), transparent 25%),
@@ -299,12 +335,18 @@ input:focus-visible {
   place-items: center;
   border: 0;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
   padding: 0;
+  touch-action: none;
 }
 
 .galaxy-stage__planet--active {
   filter: saturate(1.15);
+}
+
+.galaxy-stage__planet--dragging {
+  cursor: grabbing;
+  z-index: 5;
 }
 
 .galaxy-stage__label {
@@ -469,6 +511,10 @@ input:focus-visible {
   border-radius: 999px;
   background: linear-gradient(180deg, #ffffff, #6df2ff);
   box-shadow: 0 0 26px rgba(109, 242, 255, 0.35);
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease;
+  will-change: left;
 }
 
 .shield-reactor__pulse--perfect {
@@ -676,26 +722,6 @@ input:focus-visible {
 
   .galaxy-stage {
     min-height: 560px;
-  }
-
-  .galaxy-stage__planet {
-    transform: scale(0.76);
-    transform-origin: top left;
-  }
-
-  .galaxy-stage__planet--orbit-commerce {
-    left: calc(9% - 42px) !important;
-    top: calc(17% - 42px) !important;
-  }
-
-  .galaxy-stage__planet--credit-shield {
-    left: calc(48% - 42px) !important;
-    top: calc(56% - 42px) !important;
-  }
-
-  .galaxy-stage__planet--social-ring {
-    left: calc(55% - 42px) !important;
-    top: calc(22% - 42px) !important;
   }
 
   .galaxy-stage__core {

@@ -9,7 +9,7 @@ import { PlanetInspector } from "@/components/PlanetInspector";
 import { api } from "@/lib/api";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
 import { useGameStore } from "@/lib/game-store";
-import { formatCategory, formatRewardKind, formatRewardType, formatStatus, SEGMENT_LABELS } from "@/lib/labels";
+import { formatCategory, formatRewardType, formatStatus, SEGMENT_LABELS } from "@/lib/labels";
 import { useSessionStore } from "@/lib/session-store";
 
 const EMPTY_PLANETS: PlanetProgress[] = [
@@ -48,7 +48,6 @@ export function GalaxyPage() {
   const selectPlanet = useGameStore((state) => state.selectPlanet);
   const buildStructure = useGameStore((state) => state.buildStructure);
   const claimPlanetAction = useGameStore((state) => state.claimPlanetAction);
-  const claimQuestReward = useGameStore((state) => state.claimQuestReward);
 
   const profileQuery = useQuery({
     queryKey: ["profile", userId],
@@ -58,17 +57,10 @@ export function GalaxyPage() {
     queryKey: ["ledger", userId],
     queryFn: () => api.getRewardLedger(userId),
   });
-  const leaderboardQuery = useQuery({
-    queryKey: ["leaderboard"],
-    queryFn: api.getLeaderboard,
-  });
-
   const deferredProfile = useDeferredValue(profileQuery.data);
   const planets = deferredProfile?.planets ?? EMPTY_PLANETS;
-  const liveQuests = deferredProfile?.quests ?? [];
   const liveBoosters = deferredProfile?.active_boosters ?? [];
   const liveLedger = ledgerQuery.data ?? [];
-  const liveLeaderboard = leaderboardQuery.data ?? [];
   const selectedPlanetState = useMemo(
     () => planets.find((planet) => planet.planet_code === selectedPlanet) ?? planets[0],
     [planets, selectedPlanet],
@@ -108,25 +100,6 @@ export function GalaxyPage() {
     },
   });
 
-  const claimQuestMutation = useMutation({
-    mutationFn: (questId: string) => api.claimQuest(questId, userId),
-    onSuccess: (_, questId) => {
-      const quest = deferredProfile?.quests.find((item) => item.quest_id === questId);
-      const outcome = claimQuestReward({
-        title: `Получена награда: ${quest?.title ?? "квест"}`,
-        detail: "Награда квеста отправлена в живой банковский журнал и отражена в локальном импульсе звездной пыли.",
-        baseReward: Math.max(5, Math.round(quest?.reward_value ?? 5)),
-        planetCode: (quest?.planet_code as PlanetCode | undefined) ?? selectedPlanet,
-      });
-      setFeedback(`Квест ${questId} получен. +${outcome.totalReward} звездной пыли отправлено в бонусный цикл.`);
-      startTransition(() => {
-        queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-        queryClient.invalidateQueries({ queryKey: ["quests", userId] });
-        queryClient.invalidateQueries({ queryKey: ["ledger", userId] });
-      });
-    },
-  });
-
   const builtStructures = structures[selectedPlanet];
 
   return (
@@ -156,9 +129,6 @@ export function GalaxyPage() {
               <Link className="secondary-button" to="/app/game/credit-shield-reactor">
                 Играть в Реактор щита
               </Link>
-              <button className="secondary-button" onClick={() => selectPlanet("ORBIT_COMMERCE")}>
-                Выбрать Орбиту покупок
-              </button>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -202,17 +172,31 @@ export function GalaxyPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
         <article className="surface-panel overflow-hidden p-0">
           <div className="border-b border-white/8 px-6 py-5">
             <p className="eyebrow">Карта Галактики</p>
             <h3 className="mt-2 text-3xl font-semibold">Интерактивная орбитальная сцена</h3>
             <p className="mt-2 max-w-2xl text-sm text-white/62">
-              Выбирайте планету прямо на сцене. Каждый клик обновляет инспектор, миссии и линию строительства.
+              Перетаскивайте планеты внутри сцены и выбирайте их кликом. Фокус обновляет инспектор, миссии и линию строительства.
             </p>
           </div>
           <div className="p-4 md:p-6">
             <GalaxyStage planets={planets} selectedPlanet={selectedPlanet} onSelect={selectPlanet} />
+            <div className="mt-4 border-t border-white/8 pt-5">
+              <p className="eyebrow">Мастерство планет</p>
+              <div className="mt-3 space-y-3">
+                {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
+                  <div key={planetCode} className="list-row">
+                    <div>
+                      <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
+                      <p className="text-sm text-white/55">{planetMastery[planetCode]}/12 мастерства</p>
+                    </div>
+                    <strong className="text-2xl">построено: {structures[planetCode].length}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </article>
 
@@ -269,37 +253,43 @@ export function GalaxyPage() {
               <p className="text-sm text-white/60">Запустите первое действие на сцене, чтобы заполнить ленту миссий.</p>
             )}
           </div>
-          <div className="mt-6 grid gap-3 2xl:grid-cols-3">
-            <Link className="action-card" to="/app/game/halva-snake">
-              <div>
-                <p className="text-lg font-medium">Змейка Халва</p>
-                <p className="mt-2 text-sm text-white/58">Забег Орбиты покупок с ростом скорости и синхронизацией наград.</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                <strong className="block text-xl text-[var(--accent-cyan)]">{bestSnakeScore}</strong>
-              </div>
-            </Link>
-            <Link className="action-card" to="/app/game/credit-shield-reactor">
-              <div>
-                <p className="text-lg font-medium">Реактор щита</p>
-                <p className="mt-2 text-sm text-white/58">Тайминг-цикл Кредитного щита с прогрессией на 12 раундов.</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                <strong className="block text-xl text-[var(--accent-cyan)]">{bestShieldScore}</strong>
-              </div>
-            </Link>
-            <Link className="action-card" to="/app/game/social-ring-signal">
-              <div>
-                <p className="text-lg font-medium">Сигнальный ринг</p>
-                <p className="mt-2 text-sm text-white/58">Игра на память, которая питает Социальное кольцо живым реферальным импульсом.</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                <strong className="block text-xl text-[var(--accent-cyan)]">{bestSocialScore}</strong>
-              </div>
-            </Link>
+          <div className="mt-8 border-t border-white/10 pt-6">
+            <div className="mb-4">
+              <p className="eyebrow">Мини-игры</p>
+              <h4 className="mt-2 text-xl font-semibold">Быстрые забеги</h4>
+            </div>
+            <div className="grid gap-3 2xl:grid-cols-3">
+              <Link className="action-card" to="/app/game/halva-snake">
+                <div>
+                  <p className="text-lg font-medium">Змейка Халва</p>
+                  <p className="mt-2 text-sm text-white/58">Забег Орбиты покупок с ростом скорости и синхронизацией наград.</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
+                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestSnakeScore}</strong>
+                </div>
+              </Link>
+              <Link className="action-card" to="/app/game/credit-shield-reactor">
+                <div>
+                  <p className="text-lg font-medium">Реактор щита</p>
+                  <p className="mt-2 text-sm text-white/58">Тайминг-цикл Кредитного щита с прогрессией на 12 раундов.</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
+                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestShieldScore}</strong>
+                </div>
+              </Link>
+              <Link className="action-card" to="/app/game/social-ring-signal">
+                <div>
+                  <p className="text-lg font-medium">Сигнальный ринг</p>
+                  <p className="mt-2 text-sm text-white/58">Игра на память, которая питает Социальное кольцо живым реферальным импульсом.</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
+                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestSocialScore}</strong>
+                </div>
+              </Link>
+            </div>
           </div>
         </article>
 
@@ -307,37 +297,11 @@ export function GalaxyPage() {
           <div className="mb-5 flex items-center justify-between">
             <div>
               <p className="eyebrow">Живые связи</p>
-              <h3 className="text-2xl font-semibold">Квесты, бустеры, журнал и рейтинг орбиты</h3>
+              <h3 className="text-2xl font-semibold">Бустеры и журнал наград</h3>
             </div>
-            <span className="text-sm text-white/55">{liveLeaderboard.length} пилотов</span>
           </div>
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <p className="eyebrow">Радар квестов</p>
-                {liveQuests.slice(0, 4).map((quest) => (
-                  <div key={quest.quest_id} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{quest.title}</p>
-                      <p className="text-sm text-white/55">
-                        {quest.current_value}/{quest.threshold} - {formatRewardKind(quest.reward_kind)}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <strong className="text-lg uppercase tracking-[0.15em] text-white/70">{formatStatus(quest.status)}</strong>
-                      <button
-                        className="secondary-button px-4 py-2 text-sm"
-                        disabled={quest.status !== "completed" || claimQuestMutation.isPending}
-                        onClick={() => claimQuestMutation.mutate(quest.quest_id)}
-                      >
-                        Забрать
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {!liveQuests.length ? <p className="text-sm text-white/60">Радар квестов заполнится после первого синхронизированного события.</p> : null}
-              </div>
-
+            <div>
               <div className="space-y-3">
                 <p className="eyebrow">Активные окна бустеров</p>
                 {liveBoosters.slice(0, 3).map((booster) => (
@@ -353,22 +317,9 @@ export function GalaxyPage() {
                   <p className="text-sm text-white/60">Проведите партнерскую операцию, чтобы открыть первое окно бустера.</p>
                 ) : null}
               </div>
-
-              <div className="space-y-3">
-                <p className="eyebrow">Мастерство планет</p>
-                {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
-                  <div key={planetCode} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
-                      <p className="text-sm text-white/55">{planetMastery[planetCode]}/12 мастерства</p>
-                    </div>
-                    <strong className="text-2xl">построено: {structures[planetCode].length}</strong>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            <div className="space-y-6">
+            <div>
               <div className="space-y-3">
                 <p className="eyebrow">Последние награды</p>
                 {liveLedger.slice(0, 4).map((entry) => (
@@ -386,19 +337,6 @@ export function GalaxyPage() {
                   </div>
                 ))}
                 {!liveLedger.length ? <p className="text-sm text-white/60">Журнал обновится после первого события с наградой.</p> : null}
-              </div>
-
-              <div className="space-y-3">
-                <p className="eyebrow">Рейтинг орбиты</p>
-                {liveLeaderboard.slice(0, 4).map((entry, index) => (
-                  <div key={entry.user_id} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{index + 1}. {entry.display_name}</p>
-                      <p className="text-sm text-white/55">Уровень орбиты {entry.orbit_level}</p>
-                    </div>
-                    <strong className="text-2xl">{entry.total_xp} XP</strong>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

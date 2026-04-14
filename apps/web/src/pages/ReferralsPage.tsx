@@ -58,8 +58,12 @@ export function ReferralsPage() {
               <span>Звездная пыль</span>
               <strong>{stardust}</strong>
             </div>
-            <Link className="secondary-button inline-flex" to="/app/game/social-ring-signal">
-              Запустить Сигнальный ринг
+          </div>
+          <div className="mt-6 border-t border-white/8 pt-5">
+            <p className="eyebrow">Мини-игра кольца</p>
+            <p className="mt-2 text-sm text-white/60">Проверьте память и реакцию, чтобы усилить социальный прогресс.</p>
+            <Link className="secondary-button mt-4 inline-flex" to="/app/game/social-ring-signal">
+              Перейти в Сигнальный ринг
             </Link>
           </div>
         </article>

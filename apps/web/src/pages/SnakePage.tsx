@@ -13,6 +13,26 @@ const OPPOSITE_DIRECTION = {
   left: "right",
   right: "left",
 } as const;
+const KEY_DIRECTION_BY_CODE: Partial<Record<string, Direction>> = {
+  ArrowUp: "up",
+  KeyW: "up",
+  ArrowDown: "down",
+  KeyS: "down",
+  ArrowLeft: "left",
+  KeyA: "left",
+  ArrowRight: "right",
+  KeyD: "right",
+};
+const KEY_DIRECTION_BY_KEY: Partial<Record<string, Direction>> = {
+  arrowup: "up",
+  w: "up",
+  arrowdown: "down",
+  s: "down",
+  arrowleft: "left",
+  a: "left",
+  arrowright: "right",
+  d: "right",
+};
 
 type Point = { x: number; y: number };
 type Direction = "up" | "down" | "left" | "right";
@@ -35,6 +55,10 @@ function randomFood(snake: Point[]): Point {
 
 function rewardFromScore(score: number) {
   return Math.max(4, score * 3);
+}
+
+function directionFromKeyboardEvent(event: KeyboardEvent): Direction | undefined {
+  return KEY_DIRECTION_BY_CODE[event.code] ?? KEY_DIRECTION_BY_KEY[event.key.toLowerCase()];
 }
 
 export function SnakePage() {
@@ -80,6 +104,8 @@ export function SnakePage() {
       ),
     [baseReward, bonusStreak, planetMastery, score, selectedPlanet, structures, vaultCharge],
   );
+  const canPauseRun = isStarted && !isPaused && !isOver;
+  const canResetRun = !isPaused && (isStarted || isOver || score > 0);
   const claimMutation = useMutation({
     mutationFn: async () => {
       const event = await api.ingest(api.buildEvent(userId, score >= 4 ? "partner" : "nonPartner"));
@@ -169,11 +195,13 @@ export function SnakePage() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") queueDirection("up");
-      if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") queueDirection("down");
-      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") queueDirection("left");
-      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") queueDirection("right");
+      const nextDirection = directionFromKeyboardEvent(event);
+      if (nextDirection) {
+        event.preventDefault();
+        queueDirection(nextDirection);
+      }
       if (event.key === " ") {
+        event.preventDefault();
         if (!isStarted || isOver) {
           launchRun();
         } else {
@@ -182,7 +210,7 @@ export function SnakePage() {
       }
     };
 
-    window.addEventListener("keydown", onKeyDown, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOver, isStarted]);
 
@@ -285,12 +313,16 @@ export function SnakePage() {
               <button className="primary-button" onClick={launchRun} disabled={isStarted && !isPaused && !isOver}>
                 {!isStarted || isOver ? "Начать забег" : isPaused ? "Продолжить" : "Забег идет"}
               </button>
-              <button className="secondary-button" onClick={togglePause} disabled={!isStarted || isOver}>
-                {isPaused ? "Снять паузу" : "Пауза"}
-              </button>
-              <button className="secondary-button" onClick={resetRun}>
-                Начать заново
-              </button>
+              {canPauseRun ? (
+                <button className="secondary-button" onClick={togglePause}>
+                  Пауза
+                </button>
+              ) : null}
+              {canResetRun ? (
+                <button className="secondary-button" onClick={resetRun}>
+                  Сбросить забег
+                </button>
+              ) : null}
             </div>
 
             <div className="mt-5 rounded-[28px] border border-white/8 bg-black/20 p-4">

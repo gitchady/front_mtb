@@ -1,6 +1,16 @@
 import type { PlanetCode, PlanetProgress } from "@mtb/contracts";
 import { PLANET_META } from "@mtb/contracts";
+import { useEffect, useMemo, useState } from "react";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
+
+const EVENT_KIND_LABELS: Record<string, string> = {
+  partner: "партнерская покупка",
+  nonPartner: "обычная покупка",
+  credit: "платеж рассрочки",
+  referral: "активация реферала",
+  education: "финансовый урок",
+  risky: "антифрод-проверка",
+};
 
 export function PlanetInspector({
   planet,
@@ -22,6 +32,15 @@ export function PlanetInspector({
   const meta = PLANET_META[selectedPlanet];
   const actions = PLANET_ACTIONS[selectedPlanet];
   const structures = PLANET_STRUCTURES[selectedPlanet];
+  const [selectedActionId, setSelectedActionId] = useState(actions[0]?.id);
+  const selectedAction = useMemo(
+    () => actions.find((action) => action.id === selectedActionId) ?? actions[0],
+    [actions, selectedActionId],
+  );
+
+  useEffect(() => {
+    setSelectedActionId(actions[0]?.id);
+  }, [actions]);
 
   return (
     <article className="surface-panel h-full">
@@ -52,9 +71,9 @@ export function PlanetInspector({
           {actions.map((action) => (
             <button
               key={action.id}
-              className="action-card"
-              onClick={() => onRunAction(selectedPlanet, action.id)}
-              disabled={isPending}
+              className={`action-card ${selectedAction?.id === action.id ? "action-card-selected" : ""}`}
+              onClick={() => setSelectedActionId(action.id)}
+              type="button"
             >
               <div>
                 <p className="text-lg font-medium">{action.title}</p>
@@ -66,6 +85,22 @@ export function PlanetInspector({
               </div>
             </button>
           ))}
+          <div className="mission-confirm">
+            <p className="eyebrow">Подготовка события</p>
+            <h4 className="mt-2 text-xl font-semibold">{selectedAction?.title}</h4>
+            <p className="mt-2 text-sm text-white/58">
+              Будет отправлено банковское событие: {selectedAction ? EVENT_KIND_LABELS[selectedAction.eventKind] : "не выбрано"}.
+              Награда появится только после синхронизации события с ядром.
+            </p>
+            <button
+              className="primary-button mt-4"
+              disabled={!selectedAction || isPending}
+              onClick={() => selectedAction && onRunAction(selectedPlanet, selectedAction.id)}
+              type="button"
+            >
+              {isPending ? "Синхронизация…" : "Подтвердить событие"}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">

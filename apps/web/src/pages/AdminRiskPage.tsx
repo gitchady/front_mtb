@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { api } from "@/lib/api";
 import { formatRewardType, formatRiskFlag } from "@/lib/labels";
 import { useAdminStream } from "@/lib/use-admin-stream";
@@ -10,6 +11,45 @@ export function AdminRiskPage() {
     queryFn: api.getAdminRisk,
     refetchInterval: 5000,
   });
+  const activeFlags = riskQuery.data?.active_flags ?? [];
+  const riskSignalGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        flagType: string;
+        count: number;
+        maxSeverity: number;
+        latestDetail: string;
+        latestAt: string;
+      }
+    >();
+
+    for (const flag of activeFlags) {
+      const existing = groups.get(flag.flag_type);
+      if (!existing) {
+        groups.set(flag.flag_type, {
+          flagType: flag.flag_type,
+          count: 1,
+          maxSeverity: flag.severity,
+          latestDetail: flag.detail,
+          latestAt: flag.created_at,
+        });
+        continue;
+      }
+
+      existing.count += 1;
+      existing.maxSeverity = Math.max(existing.maxSeverity, flag.severity);
+      if (new Date(flag.created_at).getTime() > new Date(existing.latestAt).getTime()) {
+        existing.latestDetail = flag.detail;
+        existing.latestAt = flag.created_at;
+      }
+    }
+
+    return [...groups.values()].sort(
+      (left, right) =>
+        right.maxSeverity - left.maxSeverity || new Date(right.latestAt).getTime() - new Date(left.latestAt).getTime(),
+    );
+  }, [activeFlags]);
 
   return (
     <div className="space-y-6">
@@ -23,20 +63,25 @@ export function AdminRiskPage() {
       <section className="grid gap-4 xl:grid-cols-2">
         <article className="surface-panel">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-2xl font-semibold">Активные флаги</h3>
-            <span className="text-sm text-white/55">{riskQuery.data?.active_flags.length ?? 0}</span>
+            <h3 className="text-2xl font-semibold">Риск-сигналы</h3>
+            <span className="text-sm text-white/55">
+              {riskSignalGroups.length} групп / {activeFlags.length} сигналов
+            </span>
           </div>
           <div className="space-y-3">
-            {riskQuery.data?.active_flags.map((flag) => (
-              <div key={flag.risk_flag_id} className="list-row">
+            {riskSignalGroups.map((group) => (
+              <div key={group.flagType} className="risk-signal-row">
                 <div>
-                  <p className="text-lg font-medium">{formatRiskFlag(flag.flag_type)}</p>
-                  <p className="text-sm text-white/55">{flag.detail}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-base font-semibold">{formatRiskFlag(group.flagType)}</p>
+                    {group.count > 1 ? <span className="risk-signal-count">{group.count} похожих</span> : null}
+                  </div>
+                  <p className="mt-1 text-sm text-white/55">{group.latestDetail}</p>
                 </div>
-                <strong className="text-2xl text-amber-300">Ур. {flag.severity}</strong>
+                <strong className="text-xl text-amber-300">Риск {group.maxSeverity}</strong>
               </div>
             ))}
-            {!riskQuery.data?.active_flags.length ? <p className="text-sm text-white/60">Активных риск-флагов сейчас нет.</p> : null}
+            {!activeFlags.length ? <p className="text-sm text-white/60">Активных риск-сигналов сейчас нет.</p> : null}
           </div>
         </article>
         <article className="surface-panel">
