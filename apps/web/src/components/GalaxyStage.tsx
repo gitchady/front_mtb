@@ -58,6 +58,8 @@ const PLANET_ACTION_KIND: Record<PlanetCode, string> = {
 const PLANET_DRAG_CLICK_THRESHOLD = 5;
 const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-node-layout-v2";
 const LOCAL_OFFSET_LIMIT = 32;
+const HUB_MIN_LOCAL_DISTANCE = 15;
+const DETAIL_MIN_LOCAL_DISTANCE = 11;
 
 function planetNodeId(planetCode: PlanetCode): GalaxyNodeId {
   return `planet:${planetCode}`;
@@ -111,6 +113,40 @@ function clampLocalOffset(position: Position): Position {
   };
 }
 
+function getMinLocalDistance(nodeId: GalaxyNodeId) {
+  if (nodeId.startsWith("hub:")) {
+    return HUB_MIN_LOCAL_DISTANCE;
+  }
+
+  if (nodeId.startsWith("quest:") || nodeId.startsWith("game:")) {
+    return DETAIL_MIN_LOCAL_DISTANCE;
+  }
+
+  return 0;
+}
+
+function constrainLocalOffset(nodeId: GalaxyNodeId, position: Position): Position {
+  const limitedOffset = clampLocalOffset(position);
+  const minDistance = getMinLocalDistance(nodeId);
+  if (minDistance <= 0) {
+    return limitedOffset;
+  }
+
+  const radius = Math.hypot(limitedOffset.left, limitedOffset.top);
+  if (radius >= minDistance || radius === 0) {
+    if (radius === 0) {
+      return { left: minDistance, top: 0 };
+    }
+    return limitedOffset;
+  }
+
+  const scale = minDistance / radius;
+  return clampLocalOffset({
+    left: limitedOffset.left * scale,
+    top: limitedOffset.top * scale,
+  });
+}
+
 function canDragPlanetLayout(pointerType: string) {
   return pointerType === "mouse" || pointerType === "pen" || pointerType === "touch";
 }
@@ -122,8 +158,8 @@ function addOffset(position: Position, offset: Position): Position {
   });
 }
 
-function subtractOffset(position: Position, anchor: Position): Position {
-  return clampLocalOffset({
+function subtractOffset(nodeId: GalaxyNodeId, position: Position, anchor: Position): Position {
+  return constrainLocalOffset(nodeId, {
     left: position.left - anchor.left,
     top: position.top - anchor.top,
   });
@@ -178,7 +214,7 @@ function readSavedLayout(): GalaxyLayout {
       if (isGalaxyNodeId(nodeId) && isSavedPlanetPosition(savedPosition)) {
         acc[nodeId] = nodeId.startsWith("planet:")
           ? clampStagePosition(savedPosition)
-          : clampLocalOffset(savedPosition);
+          : constrainLocalOffset(nodeId, savedPosition);
       }
       return acc;
     }, { ...defaultLayout });
@@ -528,7 +564,9 @@ export function GalaxyStage({
   ) {
     const nextLayout: GalaxyLayout = {
       ...nodeLayoutRef.current,
-      [drag.nodeId]: drag.anchorPosition ? subtractOffset(basePosition, drag.anchorPosition) : clampStagePosition(basePosition),
+      [drag.nodeId]: drag.anchorPosition
+        ? subtractOffset(drag.nodeId, basePosition, drag.anchorPosition)
+        : clampStagePosition(basePosition),
     };
     nodeLayoutRef.current = nextLayout;
     setNodeLayout(nextLayout);
