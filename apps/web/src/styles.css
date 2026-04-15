@@ -607,13 +607,9 @@ input:focus-visible {
 }
 
 .galaxy-stage__satellite-orbit--planet {
-  width: 240px;
-  height: 240px;
 }
 
 .galaxy-stage__satellite-orbit--detail {
-  width: 164px;
-  height: 164px;
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -687,12 +683,12 @@ input:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   color: white;
-  cursor: grab;
+  cursor: pointer;
   isolation: isolate;
   overflow: visible;
   padding: 0;
   text-align: center;
-  touch-action: none;
+  touch-action: manipulation;
   translate: -50% -50%;
   transform: translateZ(0);
   backface-visibility: hidden;
