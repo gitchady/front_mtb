@@ -210,7 +210,7 @@ export function GalaxyPage() {
         </div>
       </section>
 
-      <section className="galaxy-wide-section galaxy-map-panel">
+      <section className="galaxy-map-panel">
         <GalaxyStage
           planets={planets}
           selectedPlanet={selectedPlanet}

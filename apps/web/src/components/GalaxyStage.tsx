@@ -32,21 +32,21 @@ const HUB_META: Record<HubKind, { title: string; detail: string; short: string }
 };
 
 const HUB_OFFSETS: Record<HubKind, Position> = {
-  spend: { left: -12, top: 18 },
-  quests: { left: 16, top: -14 },
-  games: { left: 22, top: 17 },
+  spend: { left: -22, top: 14 },
+  quests: { left: 0, top: -23 },
+  games: { left: 22, top: 14 },
 };
 
 const QUEST_OFFSETS: Position[] = [
-  { left: -12, top: -12 },
-  { left: 12, top: -13 },
-  { left: 1, top: 13 },
+  { left: -15, top: -13 },
+  { left: 16, top: -8 },
+  { left: -1, top: 18 },
 ];
 
 const GAME_OFFSETS: Position[] = [
-  { left: -13, top: -11 },
-  { left: 12, top: -12 },
-  { left: -2, top: 14 },
+  { left: -14, top: -12 },
+  { left: 15, top: -9 },
+  { left: 0, top: 18 },
 ];
 
 const PLANET_CODES: PlanetCode[] = ["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"];
@@ -56,7 +56,8 @@ const PLANET_ACTION_KIND: Record<PlanetCode, string> = {
   SOCIAL_RING: "социальной активности",
 };
 const PLANET_DRAG_CLICK_THRESHOLD = 5;
-const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-node-layout-v1";
+const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-node-layout-v2";
+const LOCAL_OFFSET_LIMIT = 32;
 
 function planetNodeId(planetCode: PlanetCode): GalaxyNodeId {
   return `planet:${planetCode}`;
@@ -96,15 +97,36 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+function clampStagePosition(position: Position): Position {
+  return {
+    left: clamp(position.left, 8, 92),
+    top: clamp(position.top, 8, 90),
+  };
+}
+
+function clampLocalOffset(position: Position): Position {
+  return {
+    left: clamp(position.left, -LOCAL_OFFSET_LIMIT, LOCAL_OFFSET_LIMIT),
+    top: clamp(position.top, -LOCAL_OFFSET_LIMIT, LOCAL_OFFSET_LIMIT),
+  };
+}
+
 function canDragPlanetLayout(pointerType: string) {
   return pointerType === "mouse" || pointerType === "pen" || pointerType === "touch";
 }
 
 function addOffset(position: Position, offset: Position): Position {
-  return {
-    left: clamp(position.left + offset.left, 7, 93),
-    top: clamp(position.top + offset.top, 8, 90),
-  };
+  return clampStagePosition({
+    left: position.left + offset.left,
+    top: position.top + offset.top,
+  });
+}
+
+function subtractOffset(position: Position, anchor: Position): Position {
+  return clampLocalOffset({
+    left: position.left - anchor.left,
+    top: position.top - anchor.top,
+  });
 }
 
 function getPlanetPosition(planetCode: PlanetCode): Position {
@@ -154,10 +176,9 @@ function readSavedLayout(): GalaxyLayout {
     const parsed = JSON.parse(rawLayout) as Record<string, unknown>;
     return Object.entries(parsed).reduce((acc, [nodeId, savedPosition]) => {
       if (isGalaxyNodeId(nodeId) && isSavedPlanetPosition(savedPosition)) {
-        acc[nodeId] = {
-          left: clamp(savedPosition.left, 8, 92),
-          top: clamp(savedPosition.top, 8, 90),
-        };
+        acc[nodeId] = nodeId.startsWith("planet:")
+          ? clampStagePosition(savedPosition)
+          : clampLocalOffset(savedPosition);
       }
       return acc;
     }, { ...defaultLayout });
@@ -298,8 +319,7 @@ export function GalaxyStage({
     pointerId: number;
     startX: number;
     startY: number;
-    lastPosition: Position;
-    childPositions: { nodeId: GalaxyNodeId; position: Position }[];
+    anchorPosition: Position | null;
     pendingPosition: Position | null;
     animationFrame: number | null;
     stageRect: DOMRect;
@@ -341,26 +361,32 @@ export function GalaxyStage({
   const selectedPlanetPosition = getOrbitPosition(selectedPlanetBasePosition, orbitAngle);
   const isPlanetExpanded = expandedPlanet === selectedPlanet;
   const selectedHub = isPlanetExpanded ? parseSelectedHub(selectedNode, selectedPlanet) : null;
+  const hubOffsets = useMemo(
+    () =>
+      ({
+        spend: getLayoutPosition(nodeLayout, hubNodeId(selectedPlanet, "spend"), HUB_OFFSETS.spend),
+        quests: getLayoutPosition(nodeLayout, hubNodeId(selectedPlanet, "quests"), HUB_OFFSETS.quests),
+        games: getLayoutPosition(nodeLayout, hubNodeId(selectedPlanet, "games"), HUB_OFFSETS.games),
+      }) satisfies Record<HubKind, Position>,
+    [nodeLayout, selectedPlanet],
+  );
+  const hubBasePositions = useMemo(
+    () =>
+      ({
+        spend: addOffset(selectedPlanetBasePosition, hubOffsets.spend),
+        quests: addOffset(selectedPlanetBasePosition, hubOffsets.quests),
+        games: addOffset(selectedPlanetBasePosition, hubOffsets.games),
+      }) satisfies Record<HubKind, Position>,
+    [hubOffsets, selectedPlanetBasePosition.left, selectedPlanetBasePosition.top],
+  );
   const hubPositions = useMemo(
     () =>
       ({
-        spend: getLayoutPosition(
-          nodeLayout,
-          hubNodeId(selectedPlanet, "spend"),
-          addOffset(selectedPlanetPosition, HUB_OFFSETS.spend),
-        ),
-        quests: getLayoutPosition(
-          nodeLayout,
-          hubNodeId(selectedPlanet, "quests"),
-          addOffset(selectedPlanetPosition, HUB_OFFSETS.quests),
-        ),
-        games: getLayoutPosition(
-          nodeLayout,
-          hubNodeId(selectedPlanet, "games"),
-          addOffset(selectedPlanetPosition, HUB_OFFSETS.games),
-        ),
+        spend: getOrbitPosition(hubBasePositions.spend, orbitAngle),
+        quests: getOrbitPosition(hubBasePositions.quests, orbitAngle),
+        games: getOrbitPosition(hubBasePositions.games, orbitAngle),
       }) satisfies Record<HubKind, Position>,
-    [nodeLayout, selectedPlanet, selectedPlanetPosition.left, selectedPlanetPosition.top],
+    [hubBasePositions, orbitAngle],
   );
   const selectedQuests = useMemo(
     () => quests.filter((quest) => quest.planet_code === selectedPlanet).slice(0, 3),
@@ -374,10 +400,9 @@ export function GalaxyStage({
     () =>
       selectedQuests.map((quest, index) => ({
         quest,
-        position: getLayoutPosition(
-          nodeLayout,
-          questNodeId(quest.quest_id),
-          addOffset(hubPositions.quests, QUEST_OFFSETS[index] ?? QUEST_OFFSETS[0]),
+        position: addOffset(
+          hubPositions.quests,
+          getLayoutPosition(nodeLayout, questNodeId(quest.quest_id), QUEST_OFFSETS[index] ?? QUEST_OFFSETS[0]),
         ),
       })),
     [hubPositions.quests, nodeLayout, selectedQuests],
@@ -386,10 +411,9 @@ export function GalaxyStage({
     () =>
       selectedGames.map((game, index) => ({
         game,
-        position: getLayoutPosition(
-          nodeLayout,
-          gameNodeId(game.code),
-          addOffset(hubPositions.games, GAME_OFFSETS[index] ?? GAME_OFFSETS[0]),
+        position: addOffset(
+          hubPositions.games,
+          getLayoutPosition(nodeLayout, gameNodeId(game.code), GAME_OFFSETS[index] ?? GAME_OFFSETS[0]),
         ),
       })),
     [hubPositions.games, nodeLayout, selectedGames],
@@ -478,76 +502,34 @@ export function GalaxyStage({
     resetPan();
   }
 
-  function getChildPositions(draggedNodeId: GalaxyNodeId) {
-    if (!isPlanetExpanded) {
-      return [];
+  function getNodeAnchorPosition(nodeId: GalaxyNodeId): Position | null {
+    if (nodeId.startsWith("planet:")) {
+      return null;
     }
 
-    if (draggedNodeId === selectedPlanetNodeId) {
-      return [
-        ...(["spend", "quests", "games"] as HubKind[]).map((kind) => ({
-          nodeId: hubNodeId(selectedPlanet, kind),
-          position: hubPositions[kind],
-        })),
-        ...questPositions.map(({ quest, position }) => ({
-          nodeId: questNodeId(quest.quest_id),
-          position,
-        })),
-        ...gamePositions.map(({ game, position }) => ({
-          nodeId: gameNodeId(game.code),
-          position,
-        })),
-      ];
+    if (nodeId.startsWith(`hub:${selectedPlanet}:`)) {
+      return selectedPlanetBasePosition;
     }
 
-    if (draggedNodeId === hubNodeId(selectedPlanet, "quests")) {
-      return questPositions.map(({ quest, position }) => ({
-        nodeId: questNodeId(quest.quest_id),
-        position,
-      }));
+    if (nodeId.startsWith("quest:")) {
+      return hubBasePositions.quests;
     }
 
-    if (draggedNodeId === hubNodeId(selectedPlanet, "games")) {
-      return gamePositions.map(({ game, position }) => ({
-        nodeId: gameNodeId(game.code),
-        position,
-      }));
+    if (nodeId.startsWith("game:")) {
+      return hubBasePositions.games;
     }
 
-    return [];
-  }
-
-  function movePosition(position: Position, delta: Position): Position {
-    return {
-      left: clamp(position.left + delta.left, 8, 92),
-      top: clamp(position.top + delta.top, 8, 90),
-    };
+    return null;
   }
 
   function applyDraggedNodePosition(
     drag: NonNullable<typeof nodeDragRef.current>,
     basePosition: Position,
   ) {
-    const delta = {
-      left: basePosition.left - drag.lastPosition.left,
-      top: basePosition.top - drag.lastPosition.top,
-    };
-
-    if (Math.abs(delta.left) < 0.001 && Math.abs(delta.top) < 0.001) {
-      return;
-    }
-
-    const currentLayout = nodeLayoutRef.current;
     const nextLayout: GalaxyLayout = {
-      ...currentLayout,
-      [drag.nodeId]: basePosition,
+      ...nodeLayoutRef.current,
+      [drag.nodeId]: drag.anchorPosition ? subtractOffset(basePosition, drag.anchorPosition) : clampStagePosition(basePosition),
     };
-
-    drag.childPositions.forEach(({ nodeId, position }) => {
-      nextLayout[nodeId] = movePosition(currentLayout[nodeId] ?? position, delta);
-    });
-
-    drag.lastPosition = basePosition;
     nodeLayoutRef.current = nextLayout;
     setNodeLayout(nextLayout);
   }
@@ -610,8 +592,7 @@ export function GalaxyStage({
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      lastPosition: position,
-      childPositions: getChildPositions(nodeId),
+      anchorPosition: getNodeAnchorPosition(nodeId),
       pendingPosition: null,
       animationFrame: null,
       stageRect: stageElement.getBoundingClientRect(),
@@ -650,7 +631,7 @@ export function GalaxyStage({
       left: clamp(((event.clientX - worldRect.left) / worldRect.width) * 100, 8, 92),
       top: clamp(((event.clientY - worldRect.top) / worldRect.height) * 100, 8, 90),
     };
-    const basePosition = rotatePosition(visualPosition, -orbitAngle);
+    const basePosition = clampStagePosition(rotatePosition(visualPosition, -orbitAngle));
     drag.pendingPosition = basePosition;
     scheduleDragFrame(drag);
   }
@@ -715,6 +696,28 @@ export function GalaxyStage({
         animate={{ x: focusX, y: focusY, scale: zoom }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
+        {isPlanetExpanded ? (
+          <div
+            className="galaxy-stage__satellite-orbit galaxy-stage__satellite-orbit--planet"
+            style={{ top: `${selectedPlanetPosition.top}%`, left: `${selectedPlanetPosition.left}%` }}
+            aria-hidden="true"
+          />
+        ) : null}
+        {isPlanetExpanded && selectedHub === "quests" ? (
+          <div
+            className="galaxy-stage__satellite-orbit galaxy-stage__satellite-orbit--detail"
+            style={{ top: `${hubPositions.quests.top}%`, left: `${hubPositions.quests.left}%` }}
+            aria-hidden="true"
+          />
+        ) : null}
+        {isPlanetExpanded && selectedHub === "games" ? (
+          <div
+            className="galaxy-stage__satellite-orbit galaxy-stage__satellite-orbit--detail"
+            style={{ top: `${hubPositions.games.top}%`, left: `${hubPositions.games.left}%` }}
+            aria-hidden="true"
+          />
+        ) : null}
+
         {isPlanetExpanded ? (
           <svg className="galaxy-stage__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {(["spend", "quests", "games"] as HubKind[]).map((kind) => (
