@@ -1,7 +1,15 @@
 export * from "./generated/api";
 
 export type PlanetCode = "ORBIT_COMMERCE" | "CREDIT_SHIELD" | "SOCIAL_RING";
-export type GameCode = "halva_snake" | "credit_shield_reactor" | "social_ring_signal";
+export type GameCode =
+  | "halva_snake"
+  | "credit_shield_reactor"
+  | "social_ring_signal"
+  | "moby_bird"
+  | "cashback_tetris"
+  | "moby_jump"
+  | "fintech_match3"
+  | "super_moby_bros";
 
 export interface PlanetProgress {
   planet_code: PlanetCode;

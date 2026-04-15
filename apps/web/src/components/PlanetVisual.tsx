@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
+import { memo } from "react";
 
-export function PlanetVisual({
+export const PlanetVisual = memo(function PlanetVisual({
   hue,
   size = 180,
   glow = 0.5,
@@ -10,10 +10,8 @@ export function PlanetVisual({
   glow?: number;
 }) {
   return (
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{ duration: 26, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-      className="relative"
+    <div
+      className="planet-visual"
       style={{ width: size, height: size }}
     >
       <div
@@ -28,6 +26,6 @@ export function PlanetVisual({
         }}
       />
       <div className="absolute inset-[-18px] rounded-full border border-dashed border-white/20" />
-    </motion.div>
+    </div>
   );
-}
+});

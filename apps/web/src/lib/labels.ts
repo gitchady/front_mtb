@@ -16,6 +16,11 @@ export const GAME_CODE_LABELS: Record<GameCode, string> = {
   halva_snake: "Змейка Халва",
   credit_shield_reactor: "Реактор щита",
   social_ring_signal: "Сигнальный ринг",
+  moby_bird: "Moby Bird",
+  cashback_tetris: "Cashback Tetris",
+  moby_jump: "Moby Jump",
+  fintech_match3: "Fintech Match-3",
+  super_moby_bros: "Super Moby Bros",
 };
 
 const STATUS_LABELS: Record<string, string> = {

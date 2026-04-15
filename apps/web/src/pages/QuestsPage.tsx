@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PlanetCode } from "@mtb/contracts";
+import { useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useGameStore } from "@/lib/game-store";
 import { formatRewardKind, formatStatus, PLANET_CODE_LABELS } from "@/lib/labels";
@@ -8,6 +9,8 @@ import { useSessionStore } from "@/lib/session-store";
 export function QuestsPage() {
   const { userId } = useSessionStore();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const focusedQuestId = searchParams.get("quest");
   const claimQuestReward = useGameStore((state) => state.claimQuestReward);
   const questsQuery = useQuery({
     queryKey: ["quests", userId],
@@ -19,6 +22,7 @@ export function QuestsPage() {
       const quest = questsQuery.data?.find((item) => item.quest_id === questId);
       claimQuestReward({
         planetCode: (quest?.planet_code as PlanetCode | undefined) ?? "ORBIT_COMMERCE",
+        questId,
         title: `Получена награда: ${quest?.title ?? "квест"}`,
         detail: "Награда квеста добавлена в локальное бонусное хранилище.",
         baseReward: Math.max(5, Math.round(quest?.reward_value ?? 5)),
@@ -44,7 +48,7 @@ export function QuestsPage() {
           const progressPercent = quest.threshold > 0 ? Math.min(100, (quest.current_value / quest.threshold) * 100) : 0;
 
           return (
-            <article key={quest.quest_id} className="surface-panel">
+            <article key={quest.quest_id} className={`surface-panel ${focusedQuestId === quest.quest_id ? "quest-card-focused" : ""}`}>
               <p className="text-xs uppercase tracking-[0.32em] text-white/45">
                 {PLANET_CODE_LABELS[quest.planet_code as PlanetCode]}
               </p>

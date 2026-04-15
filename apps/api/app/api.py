@@ -42,6 +42,11 @@ GAME_PLANETS = {
     "halva_snake": "ORBIT_COMMERCE",
     "credit_shield_reactor": "CREDIT_SHIELD",
     "social_ring_signal": "SOCIAL_RING",
+    "moby_bird": "CREDIT_SHIELD",
+    "cashback_tetris": "ORBIT_COMMERCE",
+    "moby_jump": "CREDIT_SHIELD",
+    "fintech_match3": "ORBIT_COMMERCE",
+    "super_moby_bros": "SOCIAL_RING",
 }
 
 

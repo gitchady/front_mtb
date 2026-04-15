@@ -1,41 +1,135 @@
-import type { PlanetCode, PlanetProgress } from "@mtb/contracts";
-import { motion } from "framer-motion";
+import type { GameCode, PlanetCode, PlanetProgress, QuestItem } from "@mtb/contracts";
 import { PLANET_META } from "@mtb/contracts";
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { PLANET_STAGE } from "@/lib/game-config";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { PlanetVisual } from "@/components/PlanetVisual";
+import { PLANET_STAGE } from "@/lib/game-config";
+import { MINI_GAMES, type MiniGameMeta } from "@/lib/mini-games";
+import { isPlanetUnlocked, PLANET_UNLOCK_REQUIREMENTS, type PlanetUnlockMap } from "@/lib/planet-unlocks";
 
-type PlanetLayout = Record<PlanetCode, { left: number; top: number }>;
+type PlanetMasteryMap = Record<PlanetCode, number>;
+type Position = { left: number; top: number };
+type HubKind = "spend" | "quests" | "games";
+type GalaxyNodeId = `planet:${PlanetCode}` | `hub:${PlanetCode}:${HubKind}` | `quest:${string}` | `game:${GameCode}`;
+type GalaxyLayout = Partial<Record<GalaxyNodeId, Position>>;
 
-const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-planet-layout-v1";
-const PLANET_STAGE_PAD = 48;
-const DRAG_CLICK_THRESHOLD = 4;
-const DRAG_BOUNDARY_GUTTER = 16;
-const ORBIT_TICK_MS = 80;
-const ORBIT_MOTION: Record<PlanetCode, { radiusX: number; radiusY: number; duration: number; phase: number }> = {
-  ORBIT_COMMERCE: { radiusX: 2.1, radiusY: 1.25, duration: 76000, phase: 0.2 },
-  CREDIT_SHIELD: { radiusX: 1.65, radiusY: 1.8, duration: 88000, phase: 2.4 },
-  SOCIAL_RING: { radiusX: 1.95, radiusY: 1.35, duration: 94000, phase: 4.1 },
+const HUB_META: Record<HubKind, { title: string; detail: string; short: string }> = {
+  spend: {
+    title: "Траты",
+    detail: "Запишите статистику операции, чтобы усилить большую планету категории.",
+    short: "BYN",
+  },
+  quests: {
+    title: "Квесты",
+    detail: "Откройте квестовые спутники и перейдите к выполнению условия.",
+    short: "Q",
+  },
+  games: {
+    title: "Игры",
+    detail: "Выберите мини-игру, запуск которой прокачает эту категорию.",
+    short: "G",
+  },
 };
 
-const DEFAULT_PLANET_LAYOUT = Object.entries(PLANET_STAGE).reduce((acc, [planetCode, stage]) => {
-  acc[planetCode as PlanetCode] = {
-    left: Number.parseFloat(stage.left),
-    top: Number.parseFloat(stage.top),
-  };
-  return acc;
-}, {} as PlanetLayout);
+const HUB_OFFSETS: Record<HubKind, Position> = {
+  spend: { left: -12, top: 18 },
+  quests: { left: 16, top: -14 },
+  games: { left: 22, top: 17 },
+};
+
+const QUEST_OFFSETS: Position[] = [
+  { left: -12, top: -12 },
+  { left: 12, top: -13 },
+  { left: 1, top: 13 },
+];
+
+const GAME_OFFSETS: Position[] = [
+  { left: -13, top: -11 },
+  { left: 12, top: -12 },
+  { left: -2, top: 14 },
+];
+
+const PLANET_CODES: PlanetCode[] = ["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"];
+const PLANET_ACTION_KIND: Record<PlanetCode, string> = {
+  ORBIT_COMMERCE: "покупки",
+  CREDIT_SHIELD: "платежа",
+  SOCIAL_RING: "социальной активности",
+};
+const PLANET_DRAG_CLICK_THRESHOLD = 5;
+const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-node-layout-v1";
+
+function planetNodeId(planetCode: PlanetCode): GalaxyNodeId {
+  return `planet:${planetCode}`;
+}
+
+function hubNodeId(planetCode: PlanetCode, kind: HubKind): GalaxyNodeId {
+  return `hub:${planetCode}:${kind}`;
+}
+
+function questNodeId(questId: string): GalaxyNodeId {
+  return `quest:${questId}`;
+}
+
+function gameNodeId(gameCode: GameCode): GalaxyNodeId {
+  return `game:${gameCode}`;
+}
+
+function getPlanetCodeFromNodeId(nodeId: GalaxyNodeId): PlanetCode | null {
+  if (!nodeId.startsWith("planet:")) {
+    return null;
+  }
+
+  const planetCode = nodeId.slice("planet:".length) as PlanetCode;
+  return PLANET_CODES.includes(planetCode) ? planetCode : null;
+}
+
+function isGalaxyNodeId(value: string): value is GalaxyNodeId {
+  return (
+    value.startsWith("planet:") ||
+    value.startsWith("hub:") ||
+    value.startsWith("quest:") ||
+    value.startsWith("game:")
+  );
+}
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function isSavedPlanetPosition(value: unknown): value is { left: number; top: number } {
+function canDragPlanetLayout(pointerType: string) {
+  return pointerType === "mouse" || pointerType === "pen" || pointerType === "touch";
+}
+
+function addOffset(position: Position, offset: Position): Position {
+  return {
+    left: clamp(position.left + offset.left, 7, 93),
+    top: clamp(position.top + offset.top, 8, 90),
+  };
+}
+
+function getPlanetPosition(planetCode: PlanetCode): Position {
+  const stage = PLANET_STAGE[planetCode];
+  return {
+    left: clamp(Number.parseFloat(stage.left), 8, 90),
+    top: clamp(Number.parseFloat(stage.top), 8, 86),
+  };
+}
+
+function getDefaultGalaxyLayout(): GalaxyLayout {
+  return PLANET_CODES.reduce((acc, planetCode) => {
+    return {
+      ...acc,
+      [planetNodeId(planetCode)]: getPlanetPosition(planetCode),
+    };
+  }, {} as GalaxyLayout);
+}
+
+function isSavedPlanetPosition(value: unknown): value is Position {
   if (!value || typeof value !== "object") {
     return false;
   }
 
-  const position = value as { left?: unknown; top?: unknown };
+  const position = value as Partial<Position>;
   return (
     typeof position.left === "number" &&
     Number.isFinite(position.left) &&
@@ -44,256 +138,870 @@ function isSavedPlanetPosition(value: unknown): value is { left: number; top: nu
   );
 }
 
-function readSavedPlanetPosition(parsed: Partial<Record<PlanetCode, unknown>>, planetCode: PlanetCode) {
-  const savedPosition = parsed[planetCode];
-  return isSavedPlanetPosition(savedPosition) ? savedPosition : DEFAULT_PLANET_LAYOUT[planetCode];
-}
+function readSavedLayout(): GalaxyLayout {
+  const defaultLayout = getDefaultGalaxyLayout();
 
-function readSavedLayout(): PlanetLayout {
   if (typeof window === "undefined") {
-    return DEFAULT_PLANET_LAYOUT;
+    return defaultLayout;
   }
 
   try {
-    const raw = window.localStorage.getItem(PLANET_LAYOUT_STORAGE_KEY);
-    if (!raw) {
-      return DEFAULT_PLANET_LAYOUT;
+    const rawLayout = window.localStorage.getItem(PLANET_LAYOUT_STORAGE_KEY);
+    if (!rawLayout) {
+      return defaultLayout;
     }
 
-    const parsed = JSON.parse(raw) as Partial<Record<PlanetCode, unknown>>;
-    return {
-      ORBIT_COMMERCE: readSavedPlanetPosition(parsed, "ORBIT_COMMERCE"),
-      CREDIT_SHIELD: readSavedPlanetPosition(parsed, "CREDIT_SHIELD"),
-      SOCIAL_RING: readSavedPlanetPosition(parsed, "SOCIAL_RING"),
-    };
+    const parsed = JSON.parse(rawLayout) as Record<string, unknown>;
+    return Object.entries(parsed).reduce((acc, [nodeId, savedPosition]) => {
+      if (isGalaxyNodeId(nodeId) && isSavedPlanetPosition(savedPosition)) {
+        acc[nodeId] = {
+          left: clamp(savedPosition.left, 8, 92),
+          top: clamp(savedPosition.top, 8, 90),
+        };
+      }
+      return acc;
+    }, { ...defaultLayout });
   } catch {
-    return DEFAULT_PLANET_LAYOUT;
+    return defaultLayout;
   }
 }
 
-function getOrbitOffset(planetCode: PlanetCode, orbitTime: number | null) {
-  if (orbitTime === null) {
-    return { left: 0, top: 0 };
+function writeSavedLayout(layout: GalaxyLayout) {
+  if (typeof window === "undefined") {
+    return;
   }
 
-  const motion = ORBIT_MOTION[planetCode];
-  const angle = (orbitTime / motion.duration) * Math.PI * 2 + motion.phase;
+  try {
+    window.localStorage.setItem(PLANET_LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+  } catch {
+    // Dragging still works for the current session if browser storage is unavailable.
+  }
+}
+
+function getLayoutPosition(layout: GalaxyLayout, nodeId: GalaxyNodeId, fallback: Position): Position {
+  return layout[nodeId] ?? fallback;
+}
+
+function rotatePosition(position: Position, angle: number): Position {
+  const x = position.left - 50;
+  const y = position.top - 50;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
   return {
-    left: Math.cos(angle) * motion.radiusX,
-    top: Math.sin(angle) * motion.radiusY,
+    left: clamp(50 + x * cos - y * sin, 8, 92),
+    top: clamp(50 + x * sin + y * cos, 8, 90),
   };
 }
 
-function getOrbitingPosition(planetCode: PlanetCode, position: { left: number; top: number }, orbitTime: number | null) {
-  const offset = getOrbitOffset(planetCode, orbitTime);
-  return {
-    left: clamp(position.left + offset.left, 2, 98),
-    top: clamp(position.top + offset.top, 2, 98),
-  };
+function getOrbitPosition(position: Position, orbitAngle: number): Position {
+  return rotatePosition(position, orbitAngle);
+}
+
+function parseSelectedHub(selectedNode: GalaxyNodeId, selectedPlanet: PlanetCode): HubKind | null {
+  if (selectedNode.startsWith(`hub:${selectedPlanet}:`)) {
+    return selectedNode.split(":")[2] as HubKind;
+  }
+  if (selectedNode.startsWith("quest:")) {
+    return "quests";
+  }
+  if (selectedNode.startsWith("game:")) {
+    return "games";
+  }
+  return null;
+}
+
+function shouldLightNode(nodeId: GalaxyNodeId, selectedNode: GalaxyNodeId, selectedPlanet: PlanetCode) {
+  if (nodeId === planetNodeId(selectedPlanet)) {
+    return true;
+  }
+
+  if (selectedNode === planetNodeId(selectedPlanet)) {
+    return nodeId.startsWith(`hub:${selectedPlanet}:`);
+  }
+
+  const selectedHub = parseSelectedHub(selectedNode, selectedPlanet);
+  if (!selectedHub) {
+    return false;
+  }
+
+  if (nodeId === hubNodeId(selectedPlanet, selectedHub)) {
+    return true;
+  }
+
+  if (selectedHub === "quests" && selectedNode === hubNodeId(selectedPlanet, "quests")) {
+    return nodeId.startsWith("quest:");
+  }
+
+  if (selectedHub === "games" && selectedNode === hubNodeId(selectedPlanet, "games")) {
+    return nodeId.startsWith("game:");
+  }
+
+  return nodeId === selectedNode;
+}
+
+function getPlanetSize(planet: PlanetProgress | undefined, planetCode: PlanetCode, planetMastery: PlanetMasteryMap) {
+  const stage = PLANET_STAGE[planetCode];
+  const levelGrowth = Math.min(Math.max((planet?.level ?? 1) - 1, 0) * 1.5, 26);
+  const xpGrowth = Math.min(Math.floor((planet?.xp ?? 0) / 1200), 12);
+  const masteryGrowth = Math.min((planetMastery[planetCode] ?? 0) * 1.7, 20);
+  return stage.size + levelGrowth + xpGrowth + masteryGrowth;
+}
+
+function getQuestProgress(quest: QuestItem) {
+  if (quest.threshold <= 0) {
+    return 0;
+  }
+  return Math.min(100, Math.round((quest.current_value / quest.threshold) * 100));
 }
 
 export function GalaxyStage({
   planets,
   selectedPlanet,
+  planetMastery,
+  unlockedPlanets,
+  quests = [],
+  spendPending = false,
   onSelect,
+  onLockedSelect,
+  onRunSpend,
+  onOpenQuest,
+  onOpenGame,
 }: {
   planets: PlanetProgress[];
   selectedPlanet: PlanetCode;
+  planetMastery: PlanetMasteryMap;
+  unlockedPlanets: PlanetUnlockMap;
+  quests?: QuestItem[];
+  spendPending?: boolean;
   onSelect: (planetCode: PlanetCode) => void;
+  onLockedSelect?: (planetCode: PlanetCode) => void;
+  onRunSpend: (planetCode: PlanetCode, amount: number) => void;
+  onOpenQuest: (questId: string) => void;
+  onOpenGame: (route: string) => void;
 }) {
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{
-    planetCode: PlanetCode;
+  const worldRef = useRef<HTMLDivElement | null>(null);
+  const [selectedNode, setSelectedNode] = useState<GalaxyNodeId>(() => planetNodeId(selectedPlanet));
+  const [expandedPlanet, setExpandedPlanet] = useState<PlanetCode | null>(null);
+  const [nodeLayout, setNodeLayout] = useState<GalaxyLayout>(() => readSavedLayout());
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [draggingNode, setDraggingNode] = useState<GalaxyNodeId | null>(null);
+  const [manualLayoutMode, setManualLayoutMode] = useState(false);
+  const [spendAmount, setSpendAmount] = useState("120");
+  const orbitAngle = 0;
+  const nodeLayoutRef = useRef(nodeLayout);
+  const lastSelectedPlanetRef = useRef(selectedPlanet);
+  const skipNodeClickRef = useRef(false);
+  const nodeDragRef = useRef<{
+    nodeId: GalaxyNodeId;
     pointerId: number;
-    offsetX: number;
-    offsetY: number;
     startX: number;
     startY: number;
+    lastPosition: Position;
+    childPositions: { nodeId: GalaxyNodeId; position: Position }[];
+    pendingPosition: Position | null;
+    animationFrame: number | null;
+    stageRect: DOMRect;
     moved: boolean;
-    minLeft: number;
-    maxLeft: number;
-    minTop: number;
-    maxTop: number;
   } | null>(null);
-  const skipClickRef = useRef(false);
-  const [layout, setLayout] = useState<PlanetLayout>(() => readSavedLayout());
-  const [draggingPlanet, setDraggingPlanet] = useState<PlanetCode | null>(null);
-  const [orbitTime, setOrbitTime] = useState<number | null>(null);
-  const orderedPlanets = useMemo(() => planets, [planets]);
 
   useEffect(() => {
-    const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduceMotionQuery.matches) {
+    if (lastSelectedPlanetRef.current !== selectedPlanet) {
+      setSelectedNode(planetNodeId(selectedPlanet));
+      setExpandedPlanet(null);
+      setPanOffset({ x: 0, y: 0 });
+      setManualLayoutMode(false);
+      lastSelectedPlanetRef.current = selectedPlanet;
+    }
+  }, [selectedPlanet]);
+
+  useEffect(() => {
+    nodeLayoutRef.current = nodeLayout;
+  }, [nodeLayout]);
+
+  const planetByCode = useMemo(
+    () =>
+      planets.reduce(
+        (acc, planet) => {
+          acc[planet.planet_code] = planet;
+          return acc;
+        },
+        {} as Partial<Record<PlanetCode, PlanetProgress>>,
+      ),
+    [planets],
+  );
+
+  const selectedPlanetNodeId = planetNodeId(selectedPlanet);
+  const selectedPlanetBasePosition = getLayoutPosition(
+    nodeLayout,
+    selectedPlanetNodeId,
+    getPlanetPosition(selectedPlanet),
+  );
+  const selectedPlanetPosition = getOrbitPosition(selectedPlanetBasePosition, orbitAngle);
+  const isPlanetExpanded = expandedPlanet === selectedPlanet;
+  const selectedHub = isPlanetExpanded ? parseSelectedHub(selectedNode, selectedPlanet) : null;
+  const hubPositions = useMemo(
+    () =>
+      ({
+        spend: getLayoutPosition(
+          nodeLayout,
+          hubNodeId(selectedPlanet, "spend"),
+          addOffset(selectedPlanetPosition, HUB_OFFSETS.spend),
+        ),
+        quests: getLayoutPosition(
+          nodeLayout,
+          hubNodeId(selectedPlanet, "quests"),
+          addOffset(selectedPlanetPosition, HUB_OFFSETS.quests),
+        ),
+        games: getLayoutPosition(
+          nodeLayout,
+          hubNodeId(selectedPlanet, "games"),
+          addOffset(selectedPlanetPosition, HUB_OFFSETS.games),
+        ),
+      }) satisfies Record<HubKind, Position>,
+    [nodeLayout, selectedPlanet, selectedPlanetPosition.left, selectedPlanetPosition.top],
+  );
+  const selectedQuests = useMemo(
+    () => quests.filter((quest) => quest.planet_code === selectedPlanet).slice(0, 3),
+    [quests, selectedPlanet],
+  );
+  const selectedGames = useMemo(
+    () => MINI_GAMES.filter((game) => game.planetCode === selectedPlanet).slice(0, 3),
+    [selectedPlanet],
+  );
+  const questPositions = useMemo(
+    () =>
+      selectedQuests.map((quest, index) => ({
+        quest,
+        position: getLayoutPosition(
+          nodeLayout,
+          questNodeId(quest.quest_id),
+          addOffset(hubPositions.quests, QUEST_OFFSETS[index] ?? QUEST_OFFSETS[0]),
+        ),
+      })),
+    [hubPositions.quests, nodeLayout, selectedQuests],
+  );
+  const gamePositions = useMemo(
+    () =>
+      selectedGames.map((game, index) => ({
+        game,
+        position: getLayoutPosition(
+          nodeLayout,
+          gameNodeId(game.code),
+          addOffset(hubPositions.games, GAME_OFFSETS[index] ?? GAME_OFFSETS[0]),
+        ),
+      })),
+    [hubPositions.games, nodeLayout, selectedGames],
+  );
+  const selectedQuest = isPlanetExpanded && selectedNode.startsWith("quest:")
+    ? selectedQuests.find((quest) => questNodeId(quest.quest_id) === selectedNode)
+    : undefined;
+  const selectedGame = isPlanetExpanded && selectedNode.startsWith("game:")
+    ? selectedGames.find((game) => gameNodeId(game.code) === selectedNode)
+    : undefined;
+  const selectedDetailPosition =
+    selectedQuest
+      ? questPositions.find((item) => item.quest.quest_id === selectedQuest.quest_id)?.position
+      : selectedGame
+        ? gamePositions.find((item) => item.game.code === selectedGame.code)?.position
+        : selectedHub
+          ? hubPositions[selectedHub]
+          : undefined;
+  const focusPosition = selectedDetailPosition ?? selectedPlanetPosition;
+  const hasFocusedNode = Boolean(selectedHub || selectedQuest || selectedGame);
+  const shouldFocusSelectedNode = isPlanetExpanded && !manualLayoutMode && hasFocusedNode;
+  const zoom = manualLayoutMode
+    ? 1
+    : selectedQuest || selectedGame
+      ? 1.48
+      : selectedHub
+        ? 1.3
+        : isPlanetExpanded
+          ? 1.08
+          : 1;
+  const focusX = shouldFocusSelectedNode ? `calc(${50 - focusPosition.left}% + ${panOffset.x}px)` : `${panOffset.x}px`;
+  const focusY = shouldFocusSelectedNode ? `calc(${50 - focusPosition.top}% + ${panOffset.y}px)` : `${panOffset.y}px`;
+
+  function getFocusedNodeOpacity(lit: boolean, active: boolean) {
+    if (active) {
+      return 1;
+    }
+    if (lit) {
+      return hasFocusedNode ? 0.76 : 1;
+    }
+    return hasFocusedNode ? 0.1 : 0.26;
+  }
+
+  function resetPan() {
+    setPanOffset({ x: 0, y: 0 });
+  }
+
+  function selectPlanetNode(planetCode: PlanetCode) {
+    if (skipNodeClickRef.current) {
+      return;
+    }
+    if (!isPlanetUnlocked(unlockedPlanets, planetCode)) {
+      setSelectedNode(planetNodeId(planetCode));
+      setExpandedPlanet(null);
+      setManualLayoutMode(false);
+      resetPan();
+      onLockedSelect?.(planetCode);
       return;
     }
 
-    let animationFrame = 0;
-    let lastTick = 0;
+    lastSelectedPlanetRef.current = planetCode;
+    setSelectedNode(planetNodeId(planetCode));
+    setExpandedPlanet(planetCode);
+    setManualLayoutMode(false);
+    resetPan();
+    onSelect(planetCode);
+  }
 
-    const animate = (time: number) => {
-      if (time - lastTick >= ORBIT_TICK_MS) {
-        setOrbitTime(time);
-        lastTick = time;
-      }
-      animationFrame = window.requestAnimationFrame(animate);
+  function selectHubNode(kind: HubKind) {
+    if (skipNodeClickRef.current) {
+      return;
+    }
+
+    setSelectedNode(hubNodeId(selectedPlanet, kind));
+    setManualLayoutMode(false);
+    resetPan();
+  }
+
+  function selectDetailNode(nodeId: GalaxyNodeId) {
+    if (skipNodeClickRef.current) {
+      return;
+    }
+
+    setSelectedNode(nodeId);
+    setManualLayoutMode(false);
+    resetPan();
+  }
+
+  function getChildPositions(draggedNodeId: GalaxyNodeId) {
+    if (!isPlanetExpanded) {
+      return [];
+    }
+
+    if (draggedNodeId === selectedPlanetNodeId) {
+      return [
+        ...(["spend", "quests", "games"] as HubKind[]).map((kind) => ({
+          nodeId: hubNodeId(selectedPlanet, kind),
+          position: hubPositions[kind],
+        })),
+        ...questPositions.map(({ quest, position }) => ({
+          nodeId: questNodeId(quest.quest_id),
+          position,
+        })),
+        ...gamePositions.map(({ game, position }) => ({
+          nodeId: gameNodeId(game.code),
+          position,
+        })),
+      ];
+    }
+
+    if (draggedNodeId === hubNodeId(selectedPlanet, "quests")) {
+      return questPositions.map(({ quest, position }) => ({
+        nodeId: questNodeId(quest.quest_id),
+        position,
+      }));
+    }
+
+    if (draggedNodeId === hubNodeId(selectedPlanet, "games")) {
+      return gamePositions.map(({ game, position }) => ({
+        nodeId: gameNodeId(game.code),
+        position,
+      }));
+    }
+
+    return [];
+  }
+
+  function movePosition(position: Position, delta: Position): Position {
+    return {
+      left: clamp(position.left + delta.left, 8, 92),
+      top: clamp(position.top + delta.top, 8, 90),
+    };
+  }
+
+  function applyDraggedNodePosition(
+    drag: NonNullable<typeof nodeDragRef.current>,
+    basePosition: Position,
+  ) {
+    const delta = {
+      left: basePosition.left - drag.lastPosition.left,
+      top: basePosition.top - drag.lastPosition.top,
     };
 
-    animationFrame = window.requestAnimationFrame(animate);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(PLANET_LAYOUT_STORAGE_KEY, JSON.stringify(layout));
-    } catch {
-      // Planet dragging still works for the current session if browser storage is unavailable.
-    }
-  }, [layout]);
-
-  function handlePointerDown(event: PointerEvent<HTMLButtonElement>, planetCode: PlanetCode) {
-    if (event.button !== 0) {
+    if (Math.abs(delta.left) < 0.001 && Math.abs(delta.top) < 0.001) {
       return;
     }
 
+    const currentLayout = nodeLayoutRef.current;
+    const nextLayout: GalaxyLayout = {
+      ...currentLayout,
+      [drag.nodeId]: basePosition,
+    };
+
+    drag.childPositions.forEach(({ nodeId, position }) => {
+      nextLayout[nodeId] = movePosition(currentLayout[nodeId] ?? position, delta);
+    });
+
+    drag.lastPosition = basePosition;
+    nodeLayoutRef.current = nextLayout;
+    setNodeLayout(nextLayout);
+  }
+
+  function flushPendingDragPosition(drag: NonNullable<typeof nodeDragRef.current>) {
+    if (drag.animationFrame !== null) {
+      window.cancelAnimationFrame(drag.animationFrame);
+      drag.animationFrame = null;
+    }
+
+    if (!drag.pendingPosition) {
+      return;
+    }
+
+    const nextPosition = drag.pendingPosition;
+    drag.pendingPosition = null;
+    applyDraggedNodePosition(drag, nextPosition);
+  }
+
+  function scheduleDragFrame(drag: NonNullable<typeof nodeDragRef.current>) {
+    if (drag.animationFrame !== null) {
+      return;
+    }
+
+    drag.animationFrame = window.requestAnimationFrame(() => {
+      const currentDrag = nodeDragRef.current;
+      if (!currentDrag) {
+        return;
+      }
+
+      currentDrag.animationFrame = null;
+      if (!currentDrag.pendingPosition) {
+        return;
+      }
+
+      const nextPosition = currentDrag.pendingPosition;
+      currentDrag.pendingPosition = null;
+      applyDraggedNodePosition(currentDrag, nextPosition);
+    });
+  }
+
+  function handleNodePointerDown(event: PointerEvent<HTMLButtonElement>, nodeId: GalaxyNodeId, position: Position) {
+    if (event.button !== 0 || !canDragPlanetLayout(event.pointerType)) {
+      return;
+    }
+    const draggedPlanet = getPlanetCodeFromNodeId(nodeId);
+    if (draggedPlanet && !isPlanetUnlocked(unlockedPlanets, draggedPlanet)) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.preventDefault();
     const stageElement = stageRef.current;
     if (!stageElement) {
       return;
     }
 
-    const stageRect = stageElement.getBoundingClientRect();
-    const planetRect = event.currentTarget.getBoundingClientRect();
-    const currentLayout = layout[planetCode];
-    const currentPosition = getOrbitingPosition(planetCode, currentLayout, orbitTime);
-    const anchorX = stageRect.left + (currentPosition.left / 100) * stageRect.width;
-    const anchorY = stageRect.top + (currentPosition.top / 100) * stageRect.height;
-
-    setLayout((current) => ({
-      ...current,
-      [planetCode]: currentPosition,
-    }));
-
-    dragRef.current = {
-      planetCode,
+    nodeDragRef.current = {
+      nodeId,
       pointerId: event.pointerId,
-      offsetX: event.clientX - anchorX,
-      offsetY: event.clientY - anchorY,
       startX: event.clientX,
       startY: event.clientY,
+      lastPosition: position,
+      childPositions: getChildPositions(nodeId),
+      pendingPosition: null,
+      animationFrame: null,
+      stageRect: stageElement.getBoundingClientRect(),
       moved: false,
-      minLeft: (DRAG_BOUNDARY_GUTTER / stageRect.width) * 100,
-      maxLeft: ((stageRect.width - DRAG_BOUNDARY_GUTTER - (planetRect.width - PLANET_STAGE_PAD * 2)) / stageRect.width) * 100,
-      minTop: (DRAG_BOUNDARY_GUTTER / stageRect.height) * 100,
-      maxTop: ((stageRect.height - DRAG_BOUNDARY_GUTTER - (planetRect.height - PLANET_STAGE_PAD * 2)) / stageRect.height) * 100,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDraggingPlanet(planetCode);
+    setDraggingNode(nodeId);
   }
 
-  function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
-    const drag = dragRef.current;
-    const stageElement = stageRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || !stageElement) {
-      return;
-    }
-
-    const stageRect = stageElement.getBoundingClientRect();
-    const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
-    if (distance > DRAG_CLICK_THRESHOLD) {
-      drag.moved = true;
-    }
-
-    const left = ((event.clientX - drag.offsetX - stageRect.left) / stageRect.width) * 100;
-    const top = ((event.clientY - drag.offsetY - stageRect.top) / stageRect.height) * 100;
-    setLayout((current) => ({
-      ...current,
-      [drag.planetCode]: {
-        left: clamp(left, drag.minLeft, drag.maxLeft),
-        top: clamp(top, drag.minTop, drag.maxTop),
-      },
-    }));
-  }
-
-  function handlePointerUp(event: PointerEvent<HTMLButtonElement>) {
-    const drag = dragRef.current;
+  function handleNodePointerMove(event: PointerEvent<HTMLButtonElement>) {
+    const drag = nodeDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) {
       return;
     }
 
-    if (drag.moved) {
-      skipClickRef.current = true;
-      window.setTimeout(() => {
-        skipClickRef.current = false;
-      }, 0);
-    }
-
-    const offset = getOrbitOffset(drag.planetCode, orbitTime);
-    setLayout((current) => {
-      const finalPosition = current[drag.planetCode];
-      return {
-        ...current,
-        [drag.planetCode]: {
-          left: clamp(finalPosition.left - offset.left, drag.minLeft, drag.maxLeft),
-          top: clamp(finalPosition.top - offset.top, drag.minTop, drag.maxTop),
-        },
-      };
-    });
-    dragRef.current = null;
-    setDraggingPlanet(null);
-  }
-
-  function handleSelect(planetCode: PlanetCode) {
-    if (skipClickRef.current) {
+    event.stopPropagation();
+    event.preventDefault();
+    const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+    if (distance <= PLANET_DRAG_CLICK_THRESHOLD && !drag.moved) {
       return;
     }
-    onSelect(planetCode);
+
+    if (!drag.moved) {
+      drag.moved = true;
+      setManualLayoutMode(true);
+      const draggedPlanet = getPlanetCodeFromNodeId(drag.nodeId);
+      if (draggedPlanet) {
+        lastSelectedPlanetRef.current = draggedPlanet;
+        setExpandedPlanet(draggedPlanet);
+        onSelect(draggedPlanet);
+      }
+    }
+
+    const worldRect = drag.stageRect;
+    const visualPosition = {
+      left: clamp(((event.clientX - worldRect.left) / worldRect.width) * 100, 8, 92),
+      top: clamp(((event.clientY - worldRect.top) / worldRect.height) * 100, 8, 90),
+    };
+    const basePosition = rotatePosition(visualPosition, -orbitAngle);
+    drag.pendingPosition = basePosition;
+    scheduleDragFrame(drag);
+  }
+
+  function handleNodePointerUp(event: PointerEvent<HTMLButtonElement>) {
+    const drag = nodeDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.preventDefault();
+    flushPendingDragPosition(drag);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (drag.moved) {
+      skipNodeClickRef.current = true;
+      window.setTimeout(() => {
+        skipNodeClickRef.current = false;
+      }, 0);
+    }
+    writeSavedLayout(nodeLayoutRef.current);
+    nodeDragRef.current = null;
+    setDraggingNode(null);
+  }
+
+  function submitSpend(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const amount = Number.parseFloat(spendAmount.replace(",", "."));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return;
+    }
+    onRunSpend(selectedPlanet, amount);
+  }
+
+  function renderStatusText(quest: QuestItem) {
+    if (quest.status === "completed") {
+      return "Готово";
+    }
+    if (quest.status === "claimed") {
+      return "Получено";
+    }
+    return `${quest.current_value}/${quest.threshold}`;
   }
 
   return (
-    <div className="galaxy-stage" ref={stageRef}>
+    <div
+      ref={stageRef}
+      className={`galaxy-stage ${hasFocusedNode ? "galaxy-stage--focused" : ""}`}
+      aria-label="Интерактивная карта галактики. Перетаскивайте большие планеты, чтобы менять их положение."
+    >
       <div className="galaxy-stage__orbits">
         <div className="galaxy-stage__orbit galaxy-stage__orbit--one" />
         <div className="galaxy-stage__orbit galaxy-stage__orbit--two" />
         <div className="galaxy-stage__orbit galaxy-stage__orbit--three" />
       </div>
-      {orderedPlanets.map((planet) => {
-        const stage = PLANET_STAGE[planet.planet_code];
-        const active = selectedPlanet === planet.planet_code;
-        const dragging = draggingPlanet === planet.planet_code;
-        const planetPosition = dragging
-          ? layout[planet.planet_code]
-          : getOrbitingPosition(planet.planet_code, layout[planet.planet_code], orbitTime);
-        return (
-          <motion.button
-            key={planet.planet_code}
-            whileHover={dragging ? undefined : { scale: 1.03, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            onPointerDown={(event) => handlePointerDown(event, planet.planet_code)}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onClick={() => handleSelect(planet.planet_code)}
-            className={`galaxy-stage__planet galaxy-stage__planet--${planet.planet_code.toLowerCase().replace("_", "-")} ${
-              active ? "galaxy-stage__planet--active" : ""
-            } ${dragging ? "galaxy-stage__planet--dragging" : ""}`}
-            style={{
-              top: `calc(${planetPosition.top}% - ${PLANET_STAGE_PAD}px)`,
-              left: `calc(${planetPosition.left}% - ${PLANET_STAGE_PAD}px)`,
-              width: stage.size + PLANET_STAGE_PAD * 2,
-              height: stage.size + PLANET_STAGE_PAD * 2,
-            }}
+
+      <motion.div
+        ref={worldRef}
+        className="galaxy-stage__world"
+        animate={{ x: focusX, y: focusY, scale: zoom }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {isPlanetExpanded ? (
+          <svg className="galaxy-stage__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {(["spend", "quests", "games"] as HubKind[]).map((kind) => (
+              <line
+                key={kind}
+                className="galaxy-stage__link"
+                x1={selectedPlanetPosition.left}
+                y1={selectedPlanetPosition.top}
+                x2={hubPositions[kind].left}
+                y2={hubPositions[kind].top}
+              />
+            ))}
+            {selectedHub === "quests"
+              ? questPositions.map(({ quest, position }) => (
+                  <line
+                    key={quest.quest_id}
+                    className="galaxy-stage__link galaxy-stage__link--branch"
+                    x1={hubPositions.quests.left}
+                    y1={hubPositions.quests.top}
+                    x2={position.left}
+                    y2={position.top}
+                  />
+                ))
+              : null}
+            {selectedHub === "games"
+              ? gamePositions.map(({ game, position }) => (
+                  <line
+                    key={game.code}
+                    className="galaxy-stage__link galaxy-stage__link--branch"
+                    x1={hubPositions.games.left}
+                    y1={hubPositions.games.top}
+                    x2={position.left}
+                    y2={position.top}
+                  />
+                ))
+              : null}
+          </svg>
+        ) : null}
+
+        {PLANET_CODES.map((planetCode) => {
+          const planet = planetByCode[planetCode];
+          const nodeId = planetNodeId(planetCode);
+          const position = getOrbitPosition(
+            getLayoutPosition(nodeLayout, nodeId, getPlanetPosition(planetCode)),
+            orbitAngle,
+          );
+          const locked = !isPlanetUnlocked(unlockedPlanets, planetCode);
+          const active = selectedPlanet === planetCode && !locked;
+          const nodeActive = selectedNode === nodeId;
+          const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
+          const planetSize = getPlanetSize(planet, planetCode, planetMastery);
+
+          return (
+            <motion.button
+              key={planetCode}
+              aria-label={locked ? `${PLANET_META[planetCode].title}: планета закрыта` : PLANET_META[planetCode].title}
+              whileHover={locked ? undefined : { scale: active ? 1.02 : 1.04 }}
+              whileTap={locked ? undefined : { scale: 0.98 }}
+              onClick={() => selectPlanetNode(planetCode)}
+              onPointerCancel={handleNodePointerUp}
+              onPointerDown={(event) => handleNodePointerDown(event, nodeId, position)}
+              onPointerMove={handleNodePointerMove}
+              onPointerUp={handleNodePointerUp}
+              className={`galaxy-stage__planet ${active ? "galaxy-stage__planet--active" : ""} ${
+                locked ? "galaxy-stage__planet--locked" : ""
+              } ${
+                nodeActive ? "galaxy-stage__node--active" : ""
+              } ${
+                draggingNode === nodeId ? "galaxy-stage__planet--dragging galaxy-stage__node--dragging" : ""
+              } ${
+                lit ? "galaxy-stage__node--lit" : "galaxy-stage__node--muted"
+              }`}
+              style={{
+                top: `${position.top}%`,
+                left: `${position.left}%`,
+              }}
+              type="button"
+            >
+              <PlanetVisual
+                hue={locked ? "linear-gradient(135deg, #6f7684, #323844)" : PLANET_STAGE[planetCode].hue}
+                size={planetSize}
+                glow={locked ? 0.06 : active ? 0.55 : 0.16}
+              />
+              <div className="galaxy-stage__label">
+                <span>{PLANET_META[planetCode].title}</span>
+                <strong>{locked ? "Закрыта" : `Ур. ${planet?.level ?? 1} · ${planetMastery[planetCode] ?? 0}/12`}</strong>
+              </div>
+              {locked ? <em className="galaxy-stage__lock-hint">{PLANET_UNLOCK_REQUIREMENTS[planetCode]}</em> : null}
+            </motion.button>
+          );
+        })}
+
+        <AnimatePresence>
+          {isPlanetExpanded
+            ? (["spend", "quests", "games"] as HubKind[]).map((kind) => {
+                const nodeId = hubNodeId(selectedPlanet, kind);
+                const position = hubPositions[kind];
+                const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
+                const active = selectedNode === nodeId;
+
+                return (
+                  <motion.button
+                    key={kind}
+                    initial={{ opacity: 0, scale: 0.72 }}
+                    animate={{ opacity: getFocusedNodeOpacity(lit, active), scale: active ? 1.06 : 1 }}
+                    exit={{ opacity: 0, scale: 0.66 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => selectHubNode(kind)}
+                    onPointerCancel={handleNodePointerUp}
+                    onPointerDown={(event) => handleNodePointerDown(event, nodeId, position)}
+                    onPointerMove={handleNodePointerMove}
+                    onPointerUp={handleNodePointerUp}
+                    className={`galaxy-stage__moon galaxy-stage__moon--${kind} ${active ? "galaxy-stage__moon--active" : ""} ${
+                      active ? "galaxy-stage__node--active" : ""
+                    } ${
+                      draggingNode === nodeId ? "galaxy-stage__node--dragging" : ""
+                    } ${
+                      lit ? "galaxy-stage__node--lit" : "galaxy-stage__node--muted"
+                    }`}
+                    style={{ top: `${position.top}%`, left: `${position.left}%` }}
+                    type="button"
+                  >
+                    <span>{HUB_META[kind].short}</span>
+                    <strong>{HUB_META[kind].title}</strong>
+                  </motion.button>
+                );
+              })
+            : null}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isPlanetExpanded && selectedHub === "quests"
+            ? questPositions.map(({ quest, position }) => {
+                const nodeId = questNodeId(quest.quest_id);
+                const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
+                const active = selectedNode === nodeId;
+
+                return (
+                  <motion.button
+                    key={quest.quest_id}
+                    initial={{ opacity: 0, scale: 0.56 }}
+                    animate={{ opacity: getFocusedNodeOpacity(lit, active), scale: active ? 1.08 : 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => selectDetailNode(nodeId)}
+                    onPointerCancel={handleNodePointerUp}
+                    onPointerDown={(event) => handleNodePointerDown(event, nodeId, position)}
+                    onPointerMove={handleNodePointerMove}
+                    onPointerUp={handleNodePointerUp}
+                    className={`galaxy-stage__micro galaxy-stage__micro--quest ${active ? "galaxy-stage__micro--active" : ""} ${
+                      active ? "galaxy-stage__node--active" : ""
+                    } ${
+                      draggingNode === nodeId ? "galaxy-stage__node--dragging" : ""
+                    } ${
+                      lit ? "galaxy-stage__node--lit" : "galaxy-stage__node--muted"
+                    }`}
+                    style={{ top: `${position.top}%`, left: `${position.left}%` }}
+                    type="button"
+                  >
+                    <span>{getQuestProgress(quest)}%</span>
+                    <strong>{quest.title}</strong>
+                  </motion.button>
+                );
+              })
+            : null}
+
+          {isPlanetExpanded && selectedHub === "games"
+            ? gamePositions.map(({ game, position }) => {
+                const nodeId = gameNodeId(game.code);
+                const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
+                const active = selectedNode === nodeId;
+
+                return (
+                  <motion.button
+                    key={game.code}
+                    initial={{ opacity: 0, scale: 0.56 }}
+                    animate={{ opacity: getFocusedNodeOpacity(lit, active), scale: active ? 1.08 : 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => selectDetailNode(nodeId)}
+                    onPointerCancel={handleNodePointerUp}
+                    onPointerDown={(event) => handleNodePointerDown(event, nodeId, position)}
+                    onPointerMove={handleNodePointerMove}
+                    onPointerUp={handleNodePointerUp}
+                    className={`galaxy-stage__micro galaxy-stage__micro--game ${active ? "galaxy-stage__micro--active" : ""} ${
+                      active ? "galaxy-stage__node--active" : ""
+                    } ${
+                      draggingNode === nodeId ? "galaxy-stage__node--dragging" : ""
+                    } ${
+                      lit ? "galaxy-stage__node--lit" : "galaxy-stage__node--muted"
+                    }`}
+                    style={{ top: `${position.top}%`, left: `${position.left}%` }}
+                    type="button"
+                  >
+                    <span>Играть</span>
+                    <strong>{game.title}</strong>
+                  </motion.button>
+                );
+              })
+            : null}
+        </AnimatePresence>
+
+      </motion.div>
+
+      <AnimatePresence mode="wait">
+        {selectedHub || selectedQuest || selectedGame ? (
+          <motion.div
+            key={selectedNode}
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.96 }}
+            className="galaxy-stage__node-panel"
           >
-            <PlanetVisual hue={stage.hue} size={stage.size} glow={active ? 0.4 : 0.25} />
-            <div className="galaxy-stage__label">
-              <span>{PLANET_META[planet.planet_code].title}</span>
-              <strong>Ур. {planet.level}</strong>
-            </div>
-          </motion.button>
-        );
-      })}
-      <div className="galaxy-stage__core">
-        <span>MTB</span>
-        <strong>Ядро</strong>
-      </div>
+            {selectedHub === "spend" && !selectedQuest && !selectedGame ? (
+              <form onSubmit={submitSpend}>
+                <p className="eyebrow">Статистика {PLANET_ACTION_KIND[selectedPlanet]}</p>
+                <h4>{HUB_META.spend.title}</h4>
+                <p>{HUB_META.spend.detail}</p>
+                <label className="galaxy-stage__field">
+                  Сумма
+                  <input
+                    inputMode="decimal"
+                    min="1"
+                    onChange={(event) => setSpendAmount(event.target.value)}
+                    type="number"
+                    value={spendAmount}
+                  />
+                </label>
+                <button className="primary-button" disabled={spendPending} type="submit">
+                  {spendPending ? "Записываем..." : "Записать траты"}
+                </button>
+              </form>
+            ) : null}
+
+            {selectedHub === "quests" && !selectedQuest ? (
+              <>
+                <p className="eyebrow">Квестовые спутники</p>
+                <h4>{HUB_META.quests.title}</h4>
+                <p>
+                  {selectedQuests.length
+                    ? "Выберите маленькую планету квеста, чтобы приблизиться к ней и открыть действие."
+                    : "Для этой планеты пока нет активных квестов."}
+                </p>
+              </>
+            ) : null}
+
+            {selectedQuest ? (
+              <>
+                <p className="eyebrow">Квест · {renderStatusText(selectedQuest)}</p>
+                <h4>{selectedQuest.title}</h4>
+                <p>{selectedQuest.description}</p>
+                <button className="primary-button" onClick={() => onOpenQuest(selectedQuest.quest_id)} type="button">
+                  Начать квест
+                </button>
+              </>
+            ) : null}
+
+            {selectedHub === "games" && !selectedGame ? (
+              <>
+                <p className="eyebrow">Игровые спутники</p>
+                <h4>{HUB_META.games.title}</h4>
+                <p>Выберите маленькую планету игры, чтобы приблизиться к ней и открыть запуск.</p>
+              </>
+            ) : null}
+
+            {selectedGame ? (
+              <GamePanel game={selectedGame} onOpenGame={onOpenGame} />
+            ) : null}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function GamePanel({ game, onOpenGame }: { game: MiniGameMeta; onOpenGame: (route: string) => void }) {
+  return (
+    <>
+      <p className="eyebrow">Игра</p>
+      <h4>{game.title}</h4>
+      <p>{game.detail}</p>
+      <button className="primary-button" onClick={() => onOpenGame(game.route)} type="button">
+        Начать игру
+      </button>
+    </>
   );
 }

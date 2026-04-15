@@ -17,6 +17,8 @@ export function PlanetInspector({
   selectedPlanet,
   stardust,
   builtStructures,
+  isLocked,
+  unlockRequirement,
   isPending,
   onRunAction,
   onBuild,
@@ -25,6 +27,8 @@ export function PlanetInspector({
   selectedPlanet: PlanetCode;
   stardust: number;
   builtStructures: string[];
+  isLocked: boolean;
+  unlockRequirement: string;
   isPending: boolean;
   onRunAction: (planetCode: PlanetCode, actionId: string) => void;
   onBuild: (planetCode: PlanetCode, structureId: string) => void;
@@ -41,6 +45,39 @@ export function PlanetInspector({
   useEffect(() => {
     setSelectedActionId(actions[0]?.id);
   }, [actions]);
+
+  if (isLocked) {
+    return (
+      <article className="surface-panel h-full planet-panel--locked">
+        <div className="mb-6 space-y-2">
+          <p className="eyebrow">Планета закрыта</p>
+          <h3 className="text-3xl font-semibold">{meta.title}</h3>
+          <p className="max-w-lg text-sm text-white/65">{meta.summary}</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="metric-chip">
+            <span>Статус</span>
+            <strong>Закрыта</strong>
+          </div>
+          <div className="metric-chip">
+            <span>Опыт планеты</span>
+            <strong>{planet?.xp ?? 0}</strong>
+          </div>
+          <div className="metric-chip">
+            <span>Звездная пыль</span>
+            <strong>{stardust}</strong>
+          </div>
+        </div>
+
+        <div className="locked-callout mt-8">
+          <p className="eyebrow">Условие открытия</p>
+          <h4>Сначала откройте сектор</h4>
+          <p>{unlockRequirement}</p>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="surface-panel h-full">

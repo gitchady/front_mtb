@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -130,6 +131,35 @@ def test_mini_game_run_is_persisted_and_summarized() -> None:
         assert payload["total_runs"] == 1
         assert payload["total_reward"] == 48
         assert payload["games"][0]["best_score"] == 12
+
+
+@pytest.mark.parametrize(
+    ("game_code", "planet_code"),
+    [
+        ("moby_bird", "CREDIT_SHIELD"),
+        ("cashback_tetris", "ORBIT_COMMERCE"),
+        ("moby_jump", "CREDIT_SHIELD"),
+        ("fintech_match3", "ORBIT_COMMERCE"),
+        ("super_moby_bros", "SOCIAL_RING"),
+    ],
+)
+def test_documented_mini_games_are_accepted(game_code: str, planet_code: str) -> None:
+    user_id = unique_user_id("u_doc_game")
+    with TestClient(app) as client:
+        run = client.post(
+            "/games/runs",
+            json={
+                "user_id": user_id,
+                "game_code": game_code,
+                "planet_code": planet_code,
+                "score": 9,
+                "base_reward": 18,
+                "total_reward": 24,
+                "bonus_breakdown": {},
+            },
+        )
+        assert run.status_code == 200
+        assert run.json()["game_code"] == game_code
 
 
 def test_mini_game_run_rejects_wrong_planet() -> None:
