@@ -33,12 +33,12 @@ Root Directory: /apps/api
 The service uses `apps/api/railway.json`:
 
 ```text
-Build Command: python -m compileall app
+Builder: Dockerfile
+Dockerfile Path: Dockerfile
 Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-Railpack installs backend dependencies from `apps/api/requirements.txt`.
-The backend start command is also declared in `apps/api/railpack.json` and `apps/api/Procfile` for Railway/Railpack autodetection.
+The backend Docker image installs dependencies from `apps/api/requirements.txt`.
 
 Add variables to the Backend service:
 
