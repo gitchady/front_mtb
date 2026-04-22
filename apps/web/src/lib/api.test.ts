@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { api } from "@/lib/api";
+import { api, getQrActionLabel } from "@/lib/api";
 
 describe("api.buildEvent", () => {
   it("builds a typed risky transaction event", () => {
@@ -14,5 +14,11 @@ describe("api.buildEvent", () => {
     expect(event.amount).toBe(800);
     expect(event.device_mismatch).toBe(true);
     expect(event.multi_account_signal).toBe(true);
+  });
+
+  it("maps QR action kinds to user-facing labels", () => {
+    expect(getQrActionLabel("add_friend")).toBe("Добавить в друзья");
+    expect(getQrActionLabel("ask_assistant")).toBe("Спросить AI");
+    expect(getQrActionLabel("none")).toBe("Без действия");
   });
 });

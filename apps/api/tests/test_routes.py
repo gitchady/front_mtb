@@ -202,3 +202,120 @@ def test_mini_game_run_rejects_wrong_planet() -> None:
             },
         )
         assert run.status_code == 400
+
+
+def test_friend_invite_accept_and_activity_flow() -> None:
+    requester_id = unique_user_id("u_friend_a")
+    target_id = unique_user_id("u_friend_b")
+
+    with TestClient(app) as client:
+        client.post("/auth/demo-login", json={"user_id": requester_id, "display_name": "Alice Orbit", "segment": "student"})
+        client.post("/auth/demo-login", json={"user_id": target_id, "display_name": "Bob Shield", "segment": "student"})
+
+        invite = client.post(
+            "/friends/invite",
+            json={"user_id": requester_id, "target_user_id": target_id, "source": "qr"},
+        )
+        assert invite.status_code == 200
+        friendship_id = invite.json()["friendship_id"]
+        assert invite.json()["status"] == "pending"
+
+        incoming = client.get("/friends", params={"user_id": target_id})
+        assert incoming.status_code == 200
+        assert incoming.json()["pending_incoming"][0]["friendship_id"] == friendship_id
+
+        accept = client.post("/friends/accept", json={"user_id": target_id, "friendship_id": friendship_id})
+        assert accept.status_code == 200
+        assert accept.json()["status"] == "accepted"
+
+        run = client.post(
+            "/games/runs",
+            json={
+                "user_id": target_id,
+                "game_code": "social_ring_signal",
+                "planet_code": "SOCIAL_RING",
+                "score": 14,
+                "base_reward": 22,
+                "total_reward": 29,
+                "bonus_breakdown": {"social_bonus": 7},
+            },
+        )
+        assert run.status_code == 200
+
+        friends = client.get("/friends", params={"user_id": requester_id})
+        assert friends.status_code == 200
+        assert friends.json()["accepted"][0]["user_id"] == target_id
+
+        activity = client.get("/friends/activity", params={"user_id": requester_id})
+        assert activity.status_code == 200
+        assert activity.json()[0]["actor_user_id"] == target_id
+        assert activity.json()[0]["kind"] == "game_run"
+
+
+def test_friend_invite_rejects_self_invite() -> None:
+    user_id = unique_user_id("u_self")
+    with TestClient(app) as client:
+        client.post("/auth/demo-login", json={"user_id": user_id, "display_name": "Solo", "segment": "student"})
+        invite = client.post("/friends/invite", json={"user_id": user_id, "target_user_id": user_id, "source": "manual"})
+        assert invite.status_code == 400
+        assert invite.json()["detail"] == "Нельзя пригласить самого себя"
+
+
+def test_qr_payload_generation_and_resolve_flow() -> None:
+    user_id = unique_user_id("u_qr")
+    with TestClient(app) as client:
+        client.post("/auth/demo-login", json={"user_id": user_id, "display_name": "Qr Pilot", "segment": "student"})
+
+        me = client.get("/qr/me", params={"user_id": user_id})
+        assert me.status_code == 200
+        payload = me.json()
+        assert payload["resolved_type"] == "friend_invite"
+        assert payload["valid"] is True
+        assert payload["raw_payload"]
+
+        resolved = client.post("/qr/resolve", json={"user_id": user_id, "payload": payload["raw_payload"]})
+        assert resolved.status_code == 200
+        assert resolved.json()["valid"] is True
+        assert resolved.json()["resolved_type"] == "friend_invite"
+        assert resolved.json()["cta_kind"] == "add_friend"
+
+        invalid = client.post("/qr/resolve", json={"user_id": user_id, "payload": "not-json"})
+        assert invalid.status_code == 200
+        assert invalid.json()["valid"] is False
+        assert invalid.json()["resolved_type"] == "invalid"
+
+
+def test_assistant_context_and_chat_flow() -> None:
+    user_id = unique_user_id("u_ai")
+    with TestClient(app) as client:
+        client.post("/auth/demo-login", json={"user_id": user_id, "display_name": "Ai Pilot", "segment": "student"})
+        client.post(
+            "/admin/simulate",
+            json={
+                "event_type": "txn_posted",
+                "event_id": f"evt_{uuid4().hex[:8]}",
+                "user_id": user_id,
+                "amount": 75,
+                "merchant_id": "merchant_partner_ai",
+                "category": "food",
+                "is_partner": True,
+                "is_target_category": True,
+                "device_mismatch": False,
+                "multi_account_signal": False,
+                "timestamp": datetime.now(UTC).isoformat(),
+            },
+        )
+
+        context = client.get("/assistant/context", params={"user_id": user_id})
+        assert context.status_code == 200
+        assert context.json()["user_id"] == user_id
+        assert context.json()["recommended_focus"]
+        assert "Что делать дальше?" in context.json()["quick_prompts"]
+
+        chat = client.post(
+            "/assistant/chat",
+            json={"user_id": user_id, "message": "Что делать дальше?"},
+        )
+        assert chat.status_code == 200
+        assert chat.json()["message"]
+        assert "quests" in chat.json()["related_modules"]

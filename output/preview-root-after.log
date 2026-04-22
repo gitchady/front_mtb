@@ -1,0 +1,4 @@
+
+> mtb-galaxy@0.1.0 preview
+> node scripts/serve-web.mjs --host 0.0.0.0 --port 4013
+

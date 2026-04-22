@@ -1,0 +1,30 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - paragraph [ref=e8]: MTB Bank
+        - heading "Галактика" [level=1] [ref=e9]
+      - generic [ref=e10]: Игровое ядро лояльности
+    - navigation "Основная навигация" [ref=e11]:
+      - link "Галактика" [ref=e12] [cursor=pointer]:
+        - /url: /app/galaxy
+      - link "Игры" [ref=e13] [cursor=pointer]:
+        - /url: /app/games
+      - link "Квесты" [ref=e14] [cursor=pointer]:
+        - /url: /app/quests
+      - link "Награды" [ref=e15] [cursor=pointer]:
+        - /url: /app/rewards
+      - link "Социальное кольцо" [ref=e16] [cursor=pointer]:
+        - /url: /app/referrals
+    - navigation "Админка" [ref=e17]:
+      - link "KPI" [ref=e18] [cursor=pointer]:
+        - /url: /admin/kpi
+      - link "Симулятор" [ref=e19] [cursor=pointer]:
+        - /url: /admin/simulator
+      - link "Риски" [ref=e20] [cursor=pointer]:
+        - /url: /admin/risk
+  - main [ref=e21]:
+    - generic [ref=e23]:
+      - paragraph [ref=e24]: Загрузка маршрута
+      - heading "Переходим в следующий сектор…" [level=2] [ref=e25]
+      - paragraph [ref=e26]: Экран загружается отдельным чанком, чтобы первый вход был легче.

@@ -12,6 +12,9 @@ const GamesPage = lazy(() => import("@/pages/GamesPage").then((module) => ({ def
 const QuestsPage = lazy(() => import("@/pages/QuestsPage").then((module) => ({ default: module.QuestsPage })));
 const RewardsPage = lazy(() => import("@/pages/RewardsPage").then((module) => ({ default: module.RewardsPage })));
 const ReferralsPage = lazy(() => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+const FriendsPage = lazy(() => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+const QrPage = lazy(() => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));
+const AiPage = lazy(() => import("@/pages/AiPage").then((module) => ({ default: module.AiPage })));
 const PlanetsMapScreen = lazy(() =>
   import("@/features/planets/screens/PlanetsMapScreen").then((module) => ({ default: module.PlanetsMapScreen })),
 );
@@ -49,13 +52,16 @@ const FeatureLockedPage = lazy(() =>
   import("@/pages/FeatureLockedPage").then((module) => ({ default: module.FeatureLockedPage })),
 );
 
-const appLinks = [
+export const appLinks = [
   { to: "/app/galaxy", label: "Обзор" },
   { to: "/app/planets", label: "Планеты" },
   { to: "/app/games", label: "Игры" },
   { to: "/app/leaderboard", label: "Лидерборд" },
   { to: "/app/quests", label: "Квесты" },
   { to: "/app/rewards", label: "Награды" },
+  { to: "/app/friends", label: "Друзья" },
+  { to: "/app/qr", label: "QR" },
+  { to: "/app/ai", label: "AI" },
   { to: "/app/referrals", label: "Социальное кольцо" },
 ];
 
@@ -155,7 +161,7 @@ function GameRouteGuard({ code, children }: { code: GameCode; children: ReactNod
   );
 }
 
-export const router = createBrowserRouter([
+export const appRoutes = [
   {
     path: "/",
     element: <ShellLayout />,
@@ -169,6 +175,9 @@ export const router = createBrowserRouter([
       { path: "/app/leaderboard", element: renderLazy(<LeaderboardScreen />) },
       { path: "/app/quests", element: renderLazy(<QuestsPage />) },
       { path: "/app/rewards", element: renderLazy(<RewardsPage />) },
+      { path: "/app/friends", element: renderLazy(<FriendsPage />) },
+      { path: "/app/qr", element: renderLazy(<QrPage />) },
+      { path: "/app/ai", element: renderLazy(<AiPage />) },
       { path: "/app/referrals", element: renderLazy(<ReferralsPage />) },
       { path: "/app/game/social-ring-signal", element: renderLazy(<GameRouteGuard code="social_ring_signal"><SocialRingGamePage /></GameRouteGuard>) },
       { path: "/app/game/credit-shield-reactor", element: renderLazy(<GameRouteGuard code="credit_shield_reactor"><CreditShieldGamePage /></GameRouteGuard>) },
@@ -193,4 +202,6 @@ export const router = createBrowserRouter([
       { path: "/admin/risk", element: renderLazy(<AdminRiskPage />) },
     ],
   },
-]);
+] as const;
+
+export const router = createBrowserRouter(appRoutes);

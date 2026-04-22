@@ -154,6 +154,18 @@ class Referral(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class Friendship(Base):
+    __tablename__ = "friendships"
+
+    friendship_id: Mapped[str] = mapped_column(String(40), primary_key=True, default=lambda: generate_id("frd"))
+    requester_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"), index=True)
+    target_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    source: Mapped[str] = mapped_column(String(20), default="manual")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 class InstallmentProfile(Base):
     __tablename__ = "installment_profiles"
 

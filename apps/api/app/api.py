@@ -6,21 +6,29 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.analytics import build_admin_risk_response, build_demo_admin_kpis
 from app.bootstrap import ensure_user
 from app.core.config import get_settings
 from app.db import get_session
-from app.models import EventLog, GameRun, Quest, QuestProgress, Referral, RewardLedger, User
+from app.models import EventLog, Friendship, GameRun, Quest, QuestProgress, Referral, RewardLedger, User
 from app.queue import enqueue_event
 from app.schemas import (
     AdminKpiResponse,
     AdminRiskResponse,
+    AssistantChatRequest,
+    AssistantChatResponse,
+    AssistantContextResponse,
     DemoLoginRequest,
     DemoSessionResponse,
     EventPayload,
+    FriendAcceptRequest,
+    FriendActivityEntry,
+    FriendEntry,
+    FriendInviteRequest,
+    FriendsResponse,
     GalaxyProfileResponse,
     GameRunCreate,
     GameRunOut,
@@ -30,6 +38,8 @@ from app.schemas import (
     LeaderboardEntry,
     QuestClaimResponse,
     QuestOut,
+    QrResolveRequest,
+    QrResolvedPayload,
     ReferralInviteRequest,
     ReferralOut,
     RewardLedgerOut,
@@ -47,6 +57,15 @@ GAME_PLANETS = {
     "fintech_match3": "ORBIT_COMMERCE",
     "super_moby_bros": "SOCIAL_RING",
 }
+
+ASSISTANT_PROMPTS = [
+    "Что делать дальше?",
+    "Какой квест ближе всего к завершению?",
+    "Какая планета проседает?",
+    "Объясни этот QR-код.",
+    "Как лучше использовать друзей и рефералов?",
+    "Почему появился риск-сигнал?",
+]
 
 
 def build_profile(session: Session, user_id: str) -> GalaxyProfileResponse:
@@ -122,6 +141,218 @@ def build_profile(session: Session, user_id: str) -> GalaxyProfileResponse:
             "on_time_payments_3m": installment.on_time_payments_3m,
             "late_flags": installment.late_flags,
         },
+    )
+
+
+def find_existing_friendship(session: Session, left_user_id: str, right_user_id: str) -> Friendship | None:
+    return session.scalar(
+        select(Friendship).where(
+            or_(
+                (Friendship.requester_user_id == left_user_id) & (Friendship.target_user_id == right_user_id),
+                (Friendship.requester_user_id == right_user_id) & (Friendship.target_user_id == left_user_id),
+            )
+        )
+    )
+
+
+def build_friend_entry(session: Session, friendship: Friendship, current_user_id: str) -> FriendEntry:
+    other_user_id = friendship.target_user_id if friendship.requester_user_id == current_user_id else friendship.requester_user_id
+    other_user = session.get(User, other_user_id)
+    return FriendEntry(
+        friendship_id=friendship.friendship_id,
+        user_id=other_user_id,
+        display_name=other_user.display_name if other_user else other_user_id,
+        status=friendship.status,
+        source=friendship.source,
+        created_at=friendship.created_at,
+        accepted_at=friendship.accepted_at,
+    )
+
+
+def get_friend_user_ids(session: Session, user_id: str) -> list[str]:
+    friendships = session.scalars(
+        select(Friendship).where(
+            Friendship.status == "accepted",
+            or_(Friendship.requester_user_id == user_id, Friendship.target_user_id == user_id),
+        )
+    ).all()
+    return [
+        friendship.target_user_id if friendship.requester_user_id == user_id else friendship.requester_user_id
+        for friendship in friendships
+    ]
+
+
+def count_pending_incoming(session: Session, user_id: str) -> int:
+    return session.scalar(
+        select(func.count()).select_from(Friendship).where(Friendship.target_user_id == user_id, Friendship.status == "pending")
+    ) or 0
+
+
+def build_qr_payload(user_id: str, payload_type: str = "friend_invite", meta: dict | None = None) -> str:
+    return json.dumps(
+        {
+            "type": payload_type,
+            "version": 1,
+            "issued_for_user_id": user_id,
+            "source": "mtb_galaxy",
+            "meta": meta or {"label": "Добавить друга в MTB Galaxy"},
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def resolve_qr_payload(raw_payload: str) -> QrResolvedPayload:
+    try:
+        payload = json.loads(raw_payload)
+    except json.JSONDecodeError:
+        return QrResolvedPayload(
+            valid=False,
+            resolved_type="invalid",
+            title="QR-код не распознан",
+            description="Строка не похожа на валидный MTB payload.",
+            cta_kind="none",
+            cta_target=None,
+            raw_payload=raw_payload,
+        )
+
+    if not isinstance(payload, dict) or not payload.get("type") or not payload.get("issued_for_user_id"):
+        return QrResolvedPayload(
+            valid=False,
+            resolved_type="invalid",
+            title="QR-код не распознан",
+            description="В payload отсутствуют обязательные поля.",
+            cta_kind="none",
+            cta_target=None,
+            raw_payload=raw_payload,
+        )
+
+    resolved_type = str(payload["type"])
+    target_user_id = str(payload["issued_for_user_id"])
+    title = "MTB QR-код"
+    description = "Код распознан."
+    cta_kind = "none"
+    if resolved_type == "friend_invite":
+        title = "Приглашение в друзья"
+        description = f"Пользователь {target_user_id} предлагает добавить его в друзья."
+        cta_kind = "add_friend"
+    elif resolved_type == "referral_invite":
+        title = "Реферальный QR"
+        description = f"Код ведет в реферальный сценарий пользователя {target_user_id}."
+        cta_kind = "open_referral"
+    elif resolved_type == "deep_link_action":
+        title = "Быстрое действие"
+        description = "QR-код ведет к действию внутри приложения."
+        cta_kind = "navigate"
+    elif resolved_type == "ai_context":
+        title = "AI-контекст"
+        description = "QR-код содержит контекст для ассистента."
+        cta_kind = "ask_assistant"
+
+    return QrResolvedPayload(
+        valid=True,
+        resolved_type=resolved_type,
+        title=title,
+        description=description,
+        cta_kind=cta_kind,
+        cta_target=target_user_id,
+        raw_payload=raw_payload,
+    )
+
+
+def build_assistant_context(session: Session, user_id: str) -> AssistantContextResponse:
+    profile = build_profile(session, user_id)
+    friend_count = len(get_friend_user_ids(session, user_id))
+    pending_invites_count = count_pending_incoming(session, user_id)
+    weakest_planet = min(profile.planets, key=lambda planet: (planet.level, planet.xp))
+    active_quests = [quest for quest in profile.quests if quest.status == "active"]
+
+    summary_chips = [
+        f"Уровень орбиты: {profile.orbit_level}",
+        f"Активных квестов: {len(active_quests)}",
+        f"Друзей: {friend_count}",
+    ]
+    if pending_invites_count:
+        summary_chips.append(f"Новых приглашений: {pending_invites_count}")
+
+    return AssistantContextResponse(
+        user_id=user_id,
+        recommended_focus=weakest_planet.planet_code,
+        quick_prompts=ASSISTANT_PROMPTS,
+        summary_chips=summary_chips,
+        friend_count=friend_count,
+        pending_invites_count=pending_invites_count,
+    )
+
+
+def build_assistant_reply(
+    session: Session,
+    user_id: str,
+    message: str,
+    qr_payload: str | None = None,
+) -> AssistantChatResponse:
+    context = build_assistant_context(session, user_id)
+    profile = build_profile(session, user_id)
+    normalized_message = message.lower()
+    if qr_payload:
+        resolved = resolve_qr_payload(qr_payload)
+        return AssistantChatResponse(
+            message=f"{resolved.title}. {resolved.description}",
+            suggested_actions=["Открыть QR-раздел", "Продолжить действие по коду"],
+            related_modules=["qr", "friends", "quests"],
+            context_chips=context.summary_chips,
+        )
+
+    active_quests = [quest for quest in profile.quests if quest.status == "active"]
+    nearest_quest = min(
+        active_quests,
+        key=lambda quest: max(0.0, quest.threshold - quest.current_value),
+        default=None,
+    )
+    weakest_planet = min(profile.planets, key=lambda planet: (planet.level, planet.xp))
+
+    if "квест" in normalized_message or "quest" in normalized_message:
+        if nearest_quest is None:
+            text = "Сейчас нет активных квестов, которые требуют следующего шага."
+        else:
+            remaining = max(0.0, nearest_quest.threshold - nearest_quest.current_value)
+            text = f"Ближе всего к завершению квест «{nearest_quest.title}». До цели осталось {remaining:g}."
+        return AssistantChatResponse(
+            message=text,
+            suggested_actions=["Открыть квесты", "Запустить подходящую игру"],
+            related_modules=["quests", "games"],
+            context_chips=context.summary_chips,
+        )
+
+    if "qr" in normalized_message:
+        return AssistantChatResponse(
+            message="QR-раздел поможет показать ваш персональный код, принять чужой payload и сразу понять, что с ним делать дальше.",
+            suggested_actions=["Открыть QR", "Показать мой код"],
+            related_modules=["qr", "friends"],
+            context_chips=context.summary_chips,
+        )
+
+    if "друг" in normalized_message or "friend" in normalized_message or "рефера" in normalized_message:
+        return AssistantChatResponse(
+            message=f"У вас уже {context.friend_count} подтвержденных друзей. Следующий рост даст связка друзей, QR и социального кольца.",
+            suggested_actions=["Открыть друзей", "Создать QR-приглашение"],
+            related_modules=["friends", "qr", "referrals"],
+            context_chips=context.summary_chips,
+        )
+
+    if "риск" in normalized_message:
+        return AssistantChatResponse(
+            message="Риск-сигналы обычно появляются из-за необычных устройств, высокой скорости операций или нетипичной суммы. Их стоит сверять через админ-контур и историю событий.",
+            suggested_actions=["Открыть риски", "Проверить последние события"],
+            related_modules=["admin", "rewards"],
+            context_chips=context.summary_chips,
+        )
+
+    return AssistantChatResponse(
+        message=f"Следующий полезный шаг — усилить планету {weakest_planet.planet_code} и добрать ближайший квест. После этого можно расширить социальный прогресс через друзей или QR.",
+        suggested_actions=["Открыть квесты", "Открыть игры", "Открыть друзей"],
+        related_modules=["quests", "games", "friends"],
+        context_chips=context.summary_chips,
     )
 
 
@@ -271,6 +502,141 @@ def create_referral(payload: ReferralInviteRequest, user_id: str, session: Sessi
     session.commit()
     session.refresh(referral)
     return ReferralOut.model_validate(referral, from_attributes=True)
+
+
+@router.get("/friends", response_model=FriendsResponse)
+def get_friends(user_id: str, session: Session = Depends(get_session)) -> FriendsResponse:
+    ensure_user(session, user_id)
+    friendships = session.scalars(
+        select(Friendship)
+        .where(or_(Friendship.requester_user_id == user_id, Friendship.target_user_id == user_id))
+        .order_by(desc(Friendship.created_at))
+    ).all()
+    accepted = [build_friend_entry(session, friendship, user_id) for friendship in friendships if friendship.status == "accepted"]
+    pending_incoming = [
+        build_friend_entry(session, friendship, user_id)
+        for friendship in friendships
+        if friendship.status == "pending" and friendship.target_user_id == user_id
+    ]
+    pending_outgoing = [
+        build_friend_entry(session, friendship, user_id)
+        for friendship in friendships
+        if friendship.status == "pending" and friendship.requester_user_id == user_id
+    ]
+    return FriendsResponse(accepted=accepted, pending_incoming=pending_incoming, pending_outgoing=pending_outgoing)
+
+
+@router.post("/friends/invite", response_model=FriendEntry)
+def invite_friend(payload: FriendInviteRequest, session: Session = Depends(get_session)) -> FriendEntry:
+    ensure_user(session, payload.user_id)
+    ensure_user(session, payload.target_user_id, display_name=f"Пилот {payload.target_user_id[-4:]}")
+    if payload.user_id == payload.target_user_id:
+        raise HTTPException(status_code=400, detail="Нельзя пригласить самого себя")
+
+    existing = find_existing_friendship(session, payload.user_id, payload.target_user_id)
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="Связь между пользователями уже существует")
+
+    friendship = Friendship(
+        requester_user_id=payload.user_id,
+        target_user_id=payload.target_user_id,
+        source=payload.source,
+        status="pending",
+    )
+    session.add(friendship)
+    session.commit()
+    session.refresh(friendship)
+    return build_friend_entry(session, friendship, payload.user_id)
+
+
+@router.post("/friends/accept", response_model=FriendEntry)
+def accept_friend(payload: FriendAcceptRequest, session: Session = Depends(get_session)) -> FriendEntry:
+    ensure_user(session, payload.user_id)
+    friendship = session.get(Friendship, payload.friendship_id)
+    if friendship is None:
+        raise HTTPException(status_code=404, detail="Приглашение не найдено")
+    if friendship.target_user_id != payload.user_id:
+        raise HTTPException(status_code=403, detail="Нельзя принять чужое приглашение")
+    if friendship.status != "pending":
+        raise HTTPException(status_code=400, detail="Приглашение уже обработано")
+
+    friendship.status = "accepted"
+    friendship.accepted_at = datetime.now(UTC).replace(tzinfo=None)
+    session.commit()
+    session.refresh(friendship)
+    return build_friend_entry(session, friendship, payload.user_id)
+
+
+@router.get("/friends/activity", response_model=list[FriendActivityEntry])
+def friend_activity(user_id: str, session: Session = Depends(get_session)) -> list[FriendActivityEntry]:
+    ensure_user(session, user_id)
+    friend_ids = get_friend_user_ids(session, user_id)
+    if not friend_ids:
+        return []
+
+    activities: list[FriendActivityEntry] = []
+    game_runs = session.scalars(
+        select(GameRun).where(GameRun.user_id.in_(friend_ids)).order_by(desc(GameRun.created_at)).limit(6)
+    ).all()
+    for run in game_runs:
+        actor = session.get(User, run.user_id)
+        activities.append(
+            FriendActivityEntry(
+                activity_id=run.run_id,
+                actor_user_id=run.user_id,
+                actor_display_name=actor.display_name if actor else run.user_id,
+                kind="game_run",
+                title="Друг завершил игровой забег",
+                detail=f"{run.game_code} принес {run.total_reward} единиц награды.",
+                created_at=run.created_at,
+            )
+        )
+
+    rewards = session.scalars(
+        select(RewardLedger).where(RewardLedger.user_id.in_(friend_ids)).order_by(desc(RewardLedger.created_at)).limit(4)
+    ).all()
+    for reward in rewards:
+        actor = session.get(User, reward.user_id)
+        activities.append(
+            FriendActivityEntry(
+                activity_id=reward.ledger_id,
+                actor_user_id=reward.user_id,
+                actor_display_name=actor.display_name if actor else reward.user_id,
+                kind="reward",
+                title="Друг получил награду",
+                detail=f"{reward.reward_type}: {reward.amount:g}.",
+                created_at=reward.created_at,
+            )
+        )
+
+    activity_priority = {"game_run": 2, "reward": 1}
+    activities.sort(key=lambda item: (activity_priority.get(item.kind, 0), item.created_at), reverse=True)
+    return activities[:8]
+
+
+@router.get("/qr/me", response_model=QrResolvedPayload)
+def get_my_qr(user_id: str, session: Session = Depends(get_session)) -> QrResolvedPayload:
+    ensure_user(session, user_id)
+    raw_payload = build_qr_payload(user_id)
+    return resolve_qr_payload(raw_payload)
+
+
+@router.post("/qr/resolve", response_model=QrResolvedPayload)
+def resolve_qr(payload: QrResolveRequest, session: Session = Depends(get_session)) -> QrResolvedPayload:
+    ensure_user(session, payload.user_id)
+    return resolve_qr_payload(payload.payload)
+
+
+@router.get("/assistant/context", response_model=AssistantContextResponse)
+def assistant_context(user_id: str, session: Session = Depends(get_session)) -> AssistantContextResponse:
+    ensure_user(session, user_id)
+    return build_assistant_context(session, user_id)
+
+
+@router.post("/assistant/chat", response_model=AssistantChatResponse)
+def assistant_chat(payload: AssistantChatRequest, session: Session = Depends(get_session)) -> AssistantChatResponse:
+    ensure_user(session, payload.user_id)
+    return build_assistant_reply(session, payload.user_id, payload.message, payload.qr_payload)
 
 
 @router.get("/leaderboard", response_model=list[LeaderboardEntry])

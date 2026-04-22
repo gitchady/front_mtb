@@ -227,3 +227,77 @@ class AdminRiskEntry(BaseModel):
 class AdminRiskResponse(BaseModel):
     active_flags: list[AdminRiskEntry]
     pending_rewards: list[RewardLedgerOut]
+
+
+class FriendInviteRequest(BaseModel):
+    user_id: str
+    target_user_id: str
+    source: Literal["manual", "qr", "referral"] = "manual"
+
+
+class FriendAcceptRequest(BaseModel):
+    user_id: str
+    friendship_id: str
+
+
+class FriendEntry(BaseModel):
+    friendship_id: str
+    user_id: str
+    display_name: str
+    status: str
+    source: str
+    created_at: datetime
+    accepted_at: datetime | None
+
+
+class FriendsResponse(BaseModel):
+    accepted: list[FriendEntry]
+    pending_incoming: list[FriendEntry]
+    pending_outgoing: list[FriendEntry]
+
+
+class FriendActivityEntry(BaseModel):
+    activity_id: str
+    actor_user_id: str
+    actor_display_name: str
+    kind: str
+    title: str
+    detail: str
+    created_at: datetime
+
+
+class QrResolveRequest(BaseModel):
+    user_id: str
+    payload: str
+
+
+class QrResolvedPayload(BaseModel):
+    valid: bool
+    resolved_type: str
+    title: str
+    description: str
+    cta_kind: str
+    cta_target: str | None
+    raw_payload: str
+
+
+class AssistantContextResponse(BaseModel):
+    user_id: str
+    recommended_focus: str
+    quick_prompts: list[str]
+    summary_chips: list[str]
+    friend_count: int
+    pending_invites_count: int
+
+
+class AssistantChatRequest(BaseModel):
+    user_id: str
+    message: str
+    qr_payload: str | None = None
+
+
+class AssistantChatResponse(BaseModel):
+    message: str
+    suggested_actions: list[str]
+    related_modules: list[str]
+    context_chips: list[str]

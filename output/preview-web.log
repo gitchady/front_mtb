@@ -1,0 +1,7 @@
+
+> @mtb/web@0.1.0 preview
+> vite preview --host 0.0.0.0 --port 4012
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4012[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.255.0.1:[1m4012[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.10.113:[1m4012[22m/[39m

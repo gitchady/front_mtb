@@ -11,6 +11,7 @@
     "dev:api": ".\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --app-dir apps/api --reload --port 8000",
     "dev:web": "npm run dev --workspace @mtb/web",
     "build:web": "npm run build --workspace @mtb/web",
+    "preview": "node scripts/serve-web.mjs",
     "start:web": "node scripts/serve-web.mjs",
     "test:api": ".\\.venv\\Scripts\\python.exe -m pytest apps/api/tests",
     "test:web": "npm run test --workspace @mtb/web",

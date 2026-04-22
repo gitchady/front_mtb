@@ -1,0 +1,4 @@
+
+> mtb-galaxy@0.1.0 start:web
+> node scripts/serve-web.mjs
+

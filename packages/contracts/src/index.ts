@@ -105,6 +105,58 @@ export interface ReferralEntry {
   activated_at: string | null;
 }
 
+export interface FriendEntry {
+  friendship_id: string;
+  user_id: string;
+  display_name: string;
+  status: string;
+  source: string;
+  created_at: string;
+  accepted_at: string | null;
+}
+
+export interface FriendsResponse {
+  accepted: FriendEntry[];
+  pending_incoming: FriendEntry[];
+  pending_outgoing: FriendEntry[];
+}
+
+export interface FriendActivityEntry {
+  activity_id: string;
+  actor_user_id: string;
+  actor_display_name: string;
+  kind: string;
+  title: string;
+  detail: string;
+  created_at: string;
+}
+
+export interface QrResolvedPayload {
+  valid: boolean;
+  resolved_type: string;
+  title: string;
+  description: string;
+  cta_kind: string;
+  cta_target: string | null;
+  raw_payload: string;
+}
+
+export interface AssistantContext {
+  user_id: string;
+  recommended_focus: string;
+  quick_prompts: string[];
+  summary_chips: string[];
+  friend_count: number;
+  pending_invites_count: number;
+}
+
+export interface AssistantChatResponse {
+  message: string;
+  suggested_actions: string[];
+  related_modules: string[];
+  context_chips: string[];
+}
+
 export interface LeaderboardEntry {
   user_id: string;
   display_name: string;

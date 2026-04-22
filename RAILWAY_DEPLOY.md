@@ -71,7 +71,7 @@ Root Directory: /
 The service uses the root `railway.json`:
 
 ```text
-Build Command: npm ci && npm run build:web
+Build Command: npm run build:web
 Start Command: npm run start:web
 ```
 

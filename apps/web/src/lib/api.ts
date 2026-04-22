@@ -1,6 +1,11 @@
 import type {
   AdminKpi,
   AdminRiskEntry,
+  AssistantChatResponse,
+  AssistantContext,
+  FriendActivityEntry,
+  FriendEntry,
+  FriendsResponse,
   GalaxyProfile,
   GameCode,
   GameRunEntry,
@@ -8,6 +13,7 @@ import type {
   LeaderboardEntry,
   PlanetCode,
   QuestItem,
+  QrResolvedPayload,
   ReferralEntry,
   RewardEntry,
 } from "@mtb/contracts";
@@ -73,6 +79,39 @@ type GameRunPayload = {
   source_event_id?: string | null;
 };
 
+type FriendInvitePayload = {
+  user_id: string;
+  target_user_id: string;
+  source: "manual" | "qr" | "referral";
+};
+
+type FriendAcceptPayload = {
+  user_id: string;
+  friendship_id: string;
+};
+
+type AssistantChatPayload = {
+  user_id: string;
+  message: string;
+  qr_payload?: string | null;
+};
+
+export function getQrActionLabel(ctaKind: string) {
+  if (ctaKind === "add_friend") {
+    return "Добавить в друзья";
+  }
+  if (ctaKind === "open_referral") {
+    return "Открыть рефералку";
+  }
+  if (ctaKind === "navigate") {
+    return "Перейти";
+  }
+  if (ctaKind === "ask_assistant") {
+    return "Спросить AI";
+  }
+  return "Без действия";
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     headers: {
@@ -104,6 +143,30 @@ export const api = {
     request<ReferralEntry>(`/referrals/invite?user_id=${userId}`, {
       method: "POST",
       body: JSON.stringify({ invitee_id: inviteeId }),
+    }),
+  getFriends: (userId: string) => request<FriendsResponse>(`/friends?user_id=${userId}`),
+  inviteToFriends: (payload: FriendInvitePayload) =>
+    request<FriendEntry>("/friends/invite", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  acceptFriendInvite: (payload: FriendAcceptPayload) =>
+    request<FriendEntry>("/friends/accept", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  getFriendActivity: (userId: string) => request<FriendActivityEntry[]>(`/friends/activity?user_id=${userId}`),
+  getMyQr: (userId: string) => request<QrResolvedPayload>(`/qr/me?user_id=${userId}`),
+  resolveQr: (userId: string, payload: string) =>
+    request<QrResolvedPayload>("/qr/resolve", {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, payload }),
+    }),
+  getAssistantContext: (userId: string) => request<AssistantContext>(`/assistant/context?user_id=${userId}`),
+  assistantChat: (payload: AssistantChatPayload) =>
+    request<AssistantChatResponse>("/assistant/chat", {
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
   getLeaderboard: () => request<LeaderboardEntry[]>("/leaderboard"),
   submitGameRun: (payload: GameRunPayload) =>
