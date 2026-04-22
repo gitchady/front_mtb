@@ -33,9 +33,11 @@ Root Directory: /apps/api
 The service uses `apps/api/railway.json`:
 
 ```text
-Build Command: pip install -e .
+Build Command: python -m compileall app
 Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
+
+Railpack installs backend dependencies from `apps/api/requirements.txt`.
 
 Add variables to the Backend service:
 
