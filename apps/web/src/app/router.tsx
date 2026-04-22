@@ -50,7 +50,7 @@ const FeatureLockedPage = lazy(() =>
 );
 
 const appLinks = [
-  { to: "/app/galaxy", label: "Галактика" },
+  { to: "/app/galaxy", label: "Обзор" },
   { to: "/app/planets", label: "Планеты" },
   { to: "/app/games", label: "Игры" },
   { to: "/app/leaderboard", label: "Лидерборд" },
@@ -74,31 +74,30 @@ function ShellLayout() {
       <div className="mx-auto min-h-screen max-w-[1600px]">
         <header className="top-shell">
           <div className="top-shell__brand">
-            <div>
-              <p>MTB Bank</p>
-              <h1>Галактика</h1>
-            </div>
-            <span>Игровое ядро лояльности</span>
+            <h1>Галактика</h1>
           </div>
-          <nav className="top-nav" aria-label="Основная навигация">
-            {appLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  `nav-link ${
-                    isActive ||
-                    (link.to === "/app/games" && location.pathname.startsWith("/app/game/")) ||
-                    (link.to === "/app/planets" && location.pathname.startsWith("/app/planets/"))
-                      ? "nav-link-active"
-                      : ""
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="top-shell__nav-stack">
+            <nav className="top-nav" aria-label="Основная навигация">
+              {appLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    `nav-link ${
+                      isActive ||
+                      (link.to === "/app/games" && location.pathname.startsWith("/app/game/")) ||
+                      (link.to === "/app/planets" && location.pathname.startsWith("/app/planets/"))
+                        ? "nav-link-active"
+                        : ""
+                    }`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+            </nav>
+            <p className="top-shell__meta">MTB Bank</p>
+          </div>
           <nav className="top-nav top-nav--admin" aria-label="Админка">
             {adminLinks.map((link) => (
               <NavLink key={link.to} to={link.to} className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}>

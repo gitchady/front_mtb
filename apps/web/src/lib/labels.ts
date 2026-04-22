@@ -1,4 +1,5 @@
 import type { GameCode, PlanetCode } from "@mtb/contracts";
+import type { GameActionKind } from "@/lib/game-config";
 
 export const SEGMENT_LABELS: Record<"student" | "first-jobber" | "freelancer", string> = {
   student: "Студент",
@@ -61,6 +62,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   food: "еда",
 };
 
+const EVENT_KIND_LABELS: Record<GameActionKind, string> = {
+  partner: "партнерская покупка",
+  nonPartner: "обычная покупка",
+  credit: "платеж рассрочки",
+  referral: "активация реферала",
+  education: "финансовый урок",
+  risky: "антифрод-проверка",
+};
+
 const RISK_FLAG_LABELS: Record<string, string> = {
   device_mismatch: "смена устройства",
   large_amount: "крупная операция",
@@ -86,6 +96,10 @@ export function formatRewardKind(value: string) {
 
 export function formatCategory(value: string) {
   return CATEGORY_LABELS[value] ?? fallbackLabel(value);
+}
+
+export function formatEventKind(value: GameActionKind) {
+  return EVENT_KIND_LABELS[value] ?? fallbackLabel(value);
 }
 
 export function formatRiskFlag(value: string) {

@@ -11,8 +11,8 @@ export function PlanetsMapScreen() {
 
   return (
     <div className="space-y-6">
-      <section className="hero-panel">
-        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:items-end">
+      <section className="hero-panel planets-map-hero">
+        <div className="planets-map-hero__grid grid gap-6 xl:items-end">
           <div className="space-y-4">
             <p className="eyebrow">Планетарная карта</p>
             <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
@@ -22,7 +22,7 @@ export function PlanetsMapScreen() {
               Орбиты держат прогресс по большим и малым звездам, а каждая планета ведет к своей игре.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="planets-map-hero__metrics grid gap-3 sm:grid-cols-2">
             <div className="metric-chip">
               <span>Планет</span>
               <strong>{planetsQuery.isLoading ? "..." : planets.length}</strong>

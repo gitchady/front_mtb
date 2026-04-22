@@ -1,16 +1,6 @@
 import type { PlanetCode, PlanetProgress } from "@mtb/contracts";
 import { PLANET_META } from "@mtb/contracts";
-import { useEffect, useMemo, useState } from "react";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
-
-const EVENT_KIND_LABELS: Record<string, string> = {
-  partner: "партнерская покупка",
-  nonPartner: "обычная покупка",
-  credit: "платеж рассрочки",
-  referral: "активация реферала",
-  education: "финансовый урок",
-  risky: "антифрод-проверка",
-};
 
 export function PlanetInspector({
   planet,
@@ -19,8 +9,8 @@ export function PlanetInspector({
   builtStructures,
   isLocked,
   unlockRequirement,
-  isPending,
-  onRunAction,
+  selectedActionId,
+  onSelectAction,
   onBuild,
 }: {
   planet?: PlanetProgress;
@@ -29,22 +19,14 @@ export function PlanetInspector({
   builtStructures: string[];
   isLocked: boolean;
   unlockRequirement: string;
-  isPending: boolean;
-  onRunAction: (planetCode: PlanetCode, actionId: string) => void;
+  selectedActionId?: string;
+  onSelectAction: (actionId: string) => void;
   onBuild: (planetCode: PlanetCode, structureId: string) => void;
 }) {
   const meta = PLANET_META[selectedPlanet];
   const actions = PLANET_ACTIONS[selectedPlanet];
   const structures = PLANET_STRUCTURES[selectedPlanet];
-  const [selectedActionId, setSelectedActionId] = useState(actions[0]?.id);
-  const selectedAction = useMemo(
-    () => actions.find((action) => action.id === selectedActionId) ?? actions[0],
-    [actions, selectedActionId],
-  );
-
-  useEffect(() => {
-    setSelectedActionId(actions[0]?.id);
-  }, [actions]);
+  const selectedAction = actions.find((action) => action.id === selectedActionId) ?? actions[0];
 
   if (isLocked) {
     return (
@@ -109,7 +91,7 @@ export function PlanetInspector({
             <button
               key={action.id}
               className={`action-card ${selectedAction?.id === action.id ? "action-card-selected" : ""}`}
-              onClick={() => setSelectedActionId(action.id)}
+              onClick={() => onSelectAction(action.id)}
               type="button"
             >
               <div>
@@ -122,22 +104,6 @@ export function PlanetInspector({
               </div>
             </button>
           ))}
-          <div className="mission-confirm">
-            <p className="eyebrow">Подготовка события</p>
-            <h4 className="mt-2 text-xl font-semibold">{selectedAction?.title}</h4>
-            <p className="mt-2 text-sm text-white/58">
-              Будет отправлено банковское событие: {selectedAction ? EVENT_KIND_LABELS[selectedAction.eventKind] : "не выбрано"}.
-              Награда появится только после синхронизации события с ядром.
-            </p>
-            <button
-              className="primary-button mt-4"
-              disabled={!selectedAction || isPending}
-              onClick={() => selectedAction && onRunAction(selectedPlanet, selectedAction.id)}
-              type="button"
-            >
-              {isPending ? "Синхронизация…" : "Подтвердить событие"}
-            </button>
-          </div>
         </div>
 
         <div className="space-y-3">
