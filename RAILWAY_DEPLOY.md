@@ -38,6 +38,7 @@ Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
 Railpack installs backend dependencies from `apps/api/requirements.txt`.
+The backend start command is also declared in `apps/api/railpack.json` and `apps/api/Procfile` for Railway/Railpack autodetection.
 
 Add variables to the Backend service:
 
