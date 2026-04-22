@@ -12,6 +12,16 @@ const GamesPage = lazy(() => import("@/pages/GamesPage").then((module) => ({ def
 const QuestsPage = lazy(() => import("@/pages/QuestsPage").then((module) => ({ default: module.QuestsPage })));
 const RewardsPage = lazy(() => import("@/pages/RewardsPage").then((module) => ({ default: module.RewardsPage })));
 const ReferralsPage = lazy(() => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+const PlanetsMapScreen = lazy(() =>
+  import("@/features/planets/screens/PlanetsMapScreen").then((module) => ({ default: module.PlanetsMapScreen })),
+);
+const PlanetDetailScreen = lazy(() =>
+  import("@/features/planets/screens/PlanetDetailScreen").then((module) => ({ default: module.PlanetDetailScreen })),
+);
+const GameScreen = lazy(() => import("@/features/games/screens/GameScreen").then((module) => ({ default: module.GameScreen })));
+const LeaderboardScreen = lazy(() =>
+  import("@/features/leaderboard/screens/LeaderboardScreen").then((module) => ({ default: module.LeaderboardScreen })),
+);
 const SnakePage = lazy(() => import("@/pages/SnakePage").then((module) => ({ default: module.SnakePage })));
 const MobyBirdPage = lazy(() => import("@/pages/MobyBirdPage").then((module) => ({ default: module.MobyBirdPage })));
 const CashbackTetrisPage = lazy(() =>
@@ -41,7 +51,9 @@ const FeatureLockedPage = lazy(() =>
 
 const appLinks = [
   { to: "/app/galaxy", label: "Галактика" },
+  { to: "/app/planets", label: "Планеты" },
   { to: "/app/games", label: "Игры" },
+  { to: "/app/leaderboard", label: "Лидерборд" },
   { to: "/app/quests", label: "Квесты" },
   { to: "/app/rewards", label: "Награды" },
   { to: "/app/referrals", label: "Социальное кольцо" },
@@ -74,7 +86,13 @@ function ShellLayout() {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `nav-link ${isActive || (link.to === "/app/games" && location.pathname.startsWith("/app/game/")) ? "nav-link-active" : ""}`
+                  `nav-link ${
+                    isActive ||
+                    (link.to === "/app/games" && location.pathname.startsWith("/app/game/")) ||
+                    (link.to === "/app/planets" && location.pathname.startsWith("/app/planets/"))
+                      ? "nav-link-active"
+                      : ""
+                  }`
                 }
               >
                 {link.label}
@@ -145,7 +163,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/app/galaxy" replace /> },
       { path: "/app/galaxy", element: renderLazy(<GalaxyPage />) },
+      { path: "/app/planets", element: renderLazy(<PlanetsMapScreen />) },
+      { path: "/app/planets/:planetId", element: renderLazy(<PlanetDetailScreen />) },
+      { path: "/app/planets/:planetId/game/:gameCode", element: renderLazy(<GameScreen />) },
       { path: "/app/games", element: renderLazy(<GamesPage />) },
+      { path: "/app/leaderboard", element: renderLazy(<LeaderboardScreen />) },
       { path: "/app/quests", element: renderLazy(<QuestsPage />) },
       { path: "/app/rewards", element: renderLazy(<RewardsPage />) },
       { path: "/app/referrals", element: renderLazy(<ReferralsPage />) },

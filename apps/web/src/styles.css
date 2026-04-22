@@ -293,6 +293,10 @@ body {
 .galaxy-stage__moon:focus-visible,
 .galaxy-stage__micro:focus-visible,
 .signal-pad:focus-visible,
+.planet-map-card:focus-visible,
+.leaderboard-tab:focus-visible,
+.fe2-snake-cell:focus-visible,
+.fe2-signal-pad:focus-visible,
 .bird-stage:focus-visible,
 .match-tile:focus-visible,
 input:focus-visible {
@@ -1255,6 +1259,507 @@ input:focus-visible {
   color: var(--accent-cyan);
 }
 
+.planet-map-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.planet-map-card {
+  position: relative;
+  display: flex;
+  min-height: 248px;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 16% 18%, rgba(109, 242, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 88% 8%, rgba(255, 77, 150, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+    rgba(13, 18, 34, 0.82);
+  padding: 1.2rem;
+  color: white;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.planet-map-card::after {
+  content: "";
+  position: absolute;
+  right: -42px;
+  bottom: -52px;
+  height: 150px;
+  width: 150px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle, rgba(109, 242, 255, 0.14), transparent 62%);
+  pointer-events: none;
+}
+
+.planet-map-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(109, 242, 255, 0.28);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.22);
+}
+
+.planet-map-card h3 {
+  margin: 0.7rem 0 0;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.planet-map-card--empty {
+  filter: grayscale(1);
+  opacity: 0.34;
+}
+
+.planet-map-card--empty:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.planet-map-card__orbit {
+  position: relative;
+  height: 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.planet-map-card__orbit span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+}
+
+.planet-map-card__footer {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.planet-map-card__footer span,
+.planet-map-card__progress {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.planet-map-card__footer strong {
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--accent-cyan);
+}
+
+.planet-map-card__progress {
+  margin: 0;
+}
+
+.planet-detail-hero {
+  display: grid;
+  gap: 1.5rem;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(255, 77, 150, 0.16), transparent 30%),
+    radial-gradient(circle at 86% 18%, rgba(109, 242, 255, 0.14), transparent 28%),
+    rgba(11, 15, 28, 0.9);
+  padding: clamp(1.25rem, 2vw, 2rem);
+}
+
+.planet-detail-hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.planet-detail-hero__copy h2 {
+  margin: 0;
+  font-size: clamp(3rem, 6vw, 5.8rem);
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+.planet-detail-hero__copy p:not(.eyebrow) {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.planet-detail-hero__status {
+  font-size: 0.9rem;
+}
+
+.planet-detail-hero__cashback {
+  display: grid;
+  align-content: end;
+  justify-items: end;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 1.25rem;
+}
+
+.planet-detail-hero__cashback span,
+.planet-detail-hero__cashback em {
+  color: rgba(255, 255, 255, 0.58);
+  font-style: normal;
+}
+
+.planet-detail-hero__cashback strong {
+  font-size: clamp(4rem, 8vw, 7.2rem);
+  line-height: 0.9;
+  color: var(--accent-cyan);
+}
+
+.planet-detail-meter {
+  min-width: 180px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.85rem 1rem;
+}
+
+.planet-detail-meter span {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.planet-detail-meter strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.45rem;
+}
+
+.planet-detail-play {
+  justify-content: center;
+  text-align: center;
+}
+
+.planet-detail-play--disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.constellation-canvas {
+  position: relative;
+  min-height: 420px;
+  margin-top: 1.4rem;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background:
+    radial-gradient(circle at 50% 45%, rgba(109, 242, 255, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.018);
+}
+
+.constellation-canvas svg {
+  display: block;
+  width: 100%;
+  min-height: 380px;
+}
+
+.constellation-canvas--burst::after {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 212, 79, 0.32), transparent 68%);
+  animation: fe2-burst 1.4s ease-out forwards;
+  pointer-events: none;
+}
+
+.constellation-canvas__stats {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.constellation-canvas__stats span {
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes fe2-burst {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+.fe2-game-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.fe2-game-panel--awarded::after {
+  content: "★";
+  position: absolute;
+  right: 1.2rem;
+  top: 0.7rem;
+  color: rgba(255, 212, 79, 0.72);
+  font-size: 6rem;
+  line-height: 1;
+  animation: fe2-star-award 1.2s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes fe2-star-award {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fe2-game-surface {
+  display: grid;
+  gap: 1rem;
+  min-height: 360px;
+  align-content: center;
+}
+
+.fe2-game-surface--snake {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.fe2-snake-cell {
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.fe2-snake-cell--active {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  box-shadow: 0 0 24px rgba(109, 242, 255, 0.18);
+}
+
+.fe2-game-surface--reactor {
+  align-content: center;
+}
+
+.fe2-reactor-track {
+  position: relative;
+  height: 7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(90deg, transparent 0 42%, rgba(109, 242, 255, 0.18) 42% 58%, transparent 58%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.fe2-reactor-track span {
+  position: absolute;
+  top: 50%;
+  height: 4rem;
+  width: 4rem;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, #fff, var(--accent-cyan) 45%, rgba(109, 242, 255, 0.12) 72%);
+  transition: left 180ms ease;
+}
+
+.fe2-game-surface--signal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fe2-signal-pad {
+  min-height: 140px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(109, 242, 255, 0.13), transparent 28%),
+    rgba(255, 255, 255, 0.035);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  padding: 1rem;
+}
+
+.fe2-signal-pad span {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.fe2-signal-pad strong {
+  display: block;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.fe2-game-surface__wide {
+  grid-column: 1 / -1;
+}
+
+.leaderboard-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  max-width: 100%;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.leaderboard-tab {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+}
+
+.leaderboard-tab--active {
+  border-color: rgba(109, 242, 255, 0.32);
+  background: rgba(109, 242, 255, 0.11);
+  color: white;
+}
+
+.leaderboard-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.leaderboard-podium__card {
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 212, 79, 0.14), transparent 32%),
+    rgba(255, 255, 255, 0.035);
+  padding: 1rem;
+}
+
+.leaderboard-podium__card span {
+  color: rgba(255, 212, 79, 0.9);
+  font-weight: 800;
+}
+
+.leaderboard-podium__card strong,
+.leaderboard-podium__card em {
+  display: block;
+}
+
+.leaderboard-podium__card strong {
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.leaderboard-podium__card em {
+  margin-top: 0.3rem;
+  color: rgba(255, 255, 255, 0.56);
+  font-style: normal;
+}
+
+.is-current,
+.leaderboard-row--current {
+  border-color: rgba(109, 242, 255, 0.42);
+  background: rgba(109, 242, 255, 0.08);
+}
+
+.leaderboard-table {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.2rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 64px 44px minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.75rem 0.9rem;
+}
+
+.leaderboard-row__rank {
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.leaderboard-row__avatar {
+  display: grid;
+  height: 2.25rem;
+  width: 2.25rem;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+  font-weight: 800;
+}
+
+.leaderboard-row__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-row strong {
+  color: var(--accent-cyan);
+}
+
+.fe2-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.58);
+  padding: 1rem;
+}
+
+.fe2-modal__panel {
+  width: min(560px, 100%);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(13, 18, 34, 0.96);
+  padding: 1.4rem;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+}
+
+.fe2-modal__panel h3 {
+  margin: 0.5rem 0 1rem;
+  font-size: 2rem;
+}
+
 .bird-stage,
 .jump-stage,
 .bros-stage {
@@ -1461,6 +1966,23 @@ input:focus-visible {
 }
 
 @media (max-width: 1023px) {
+  .planet-map-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .planet-detail-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .planet-detail-hero__cashback {
+    justify-items: start;
+  }
+
+  .leaderboard-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .galaxy-wide-section {
     width: 100vw;
     margin-inline: calc(50% - 50vw);
@@ -1513,6 +2035,34 @@ input:focus-visible {
 }
 
 @media (max-width: 720px) {
+  .planet-map-grid,
+  .leaderboard-podium,
+  .fe2-game-surface--signal {
+    grid-template-columns: 1fr;
+  }
+
+  .planet-map-card {
+    min-height: 220px;
+  }
+
+  .constellation-canvas {
+    min-height: 340px;
+  }
+
+  .constellation-canvas svg {
+    min-height: 310px;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 48px 38px minmax(0, 1fr) auto;
+    padding: 0.7rem;
+  }
+
+  .leaderboard-row__avatar {
+    height: 2rem;
+    width: 2rem;
+  }
+
   .galaxy-wide-section {
     width: 100vw;
     margin-inline: calc(50% - 50vw);
