@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PLANET_META, type PlanetCode, type PlanetProgress } from "@mtb/contracts";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { GalaxyStage } from "@/components/GalaxyStage";
 import { OnboardingOverlay } from "@/components/OnboardingOverlay";
 import { PlanetInspector } from "@/components/PlanetInspector";
 import { api } from "@/lib/api";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
 import { useGameStore } from "@/lib/game-store";
-import { formatCategory, formatRewardType, formatStatus, SEGMENT_LABELS } from "@/lib/labels";
+import { formatCategory, formatEventKind, formatRewardType, formatStatus, SEGMENT_LABELS } from "@/lib/labels";
+import { isPlanetUnlocked, PLANET_UNLOCK_REQUIREMENTS } from "@/lib/planet-unlocks";
 import { useSessionStore } from "@/lib/session-store";
 
 const EMPTY_PLANETS: PlanetProgress[] = [
@@ -17,6 +18,12 @@ const EMPTY_PLANETS: PlanetProgress[] = [
   { planet_code: "CREDIT_SHIELD", xp: 0, level: 1 },
   { planet_code: "SOCIAL_RING", xp: 0, level: 1 },
 ];
+
+const SPEND_EVENT_KIND: Record<PlanetCode, "partner" | "credit" | "referral"> = {
+  ORBIT_COMMERCE: "partner",
+  CREDIT_SHIELD: "credit",
+  SOCIAL_RING: "referral",
+};
 
 function formatWindowEnd(value: string) {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -28,7 +35,9 @@ function formatWindowEnd(value: string) {
 export function GalaxyPage() {
   const { userId, syncProfile } = useSessionStore();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [selectedActionId, setSelectedActionId] = useState(PLANET_ACTIONS.ORBIT_COMMERCE[0]?.id);
   const onboardingComplete = useGameStore((state) => state.onboardingComplete);
   const playerAlias = useGameStore((state) => state.playerAlias);
   const playerSegment = useGameStore((state) => state.playerSegment);
@@ -44,6 +53,7 @@ export function GalaxyPage() {
   const vaultCharge = useGameStore((state) => state.vaultCharge);
   const vaultCrates = useGameStore((state) => state.vaultCrates);
   const planetMastery = useGameStore((state) => state.planetMastery);
+  const unlockedPlanets = useGameStore((state) => state.unlockedPlanets);
   const completeOnboarding = useGameStore((state) => state.completeOnboarding);
   const selectPlanet = useGameStore((state) => state.selectPlanet);
   const buildStructure = useGameStore((state) => state.buildStructure);
@@ -100,16 +110,58 @@ export function GalaxyPage() {
     },
   });
 
+  const planetSpendMutation = useMutation({
+    mutationFn: ({ planetCode, amount }: { planetCode: PlanetCode; amount: number }) =>
+      api.ingest(api.buildEvent(userId, SPEND_EVENT_KIND[planetCode])).then((result) => ({ result, planetCode, amount })),
+    onSuccess: ({ result, planetCode, amount }) => {
+      const reward = 4 + Math.min(8, Math.floor(amount / 50));
+      const outcome = claimPlanetAction({
+        title: "Статистика трат записана",
+        detail: `Внесено ${amount.toFixed(2)} BYN в сектор ${PLANET_META[planetCode].title}.`,
+        baseReward: reward,
+        planetCode,
+      });
+      setFeedback(
+        `Статистика ${PLANET_META[planetCode].title}: +${outcome.totalReward} звездной пыли. Событие ${result.event_id} обработано.`,
+      );
+      startTransition(() => {
+        queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+        queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+        queryClient.invalidateQueries({ queryKey: ["quests", userId] });
+        queryClient.invalidateQueries({ queryKey: ["ledger", userId] });
+        queryClient.invalidateQueries({ queryKey: ["admin-kpi"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-risk"] });
+      });
+    },
+    onError: () => {
+      setFeedback("Статистику не удалось синхронизировать. Попробуйте еще раз.");
+    },
+  });
+
   const builtStructures = structures[selectedPlanet];
+  const selectedPlanetLocked = !isPlanetUnlocked(unlockedPlanets, selectedPlanet);
+  const selectedActions = PLANET_ACTIONS[selectedPlanet];
+  const selectedAction = useMemo(
+    () => selectedActions.find((action) => action.id === selectedActionId) ?? selectedActions[0],
+    [selectedActions, selectedActionId],
+  );
+
+  useEffect(() => {
+    setSelectedActionId(PLANET_ACTIONS[selectedPlanet][0]?.id);
+  }, [selectedPlanet]);
+
+  const showLockedFeedback = (planetCode: PlanetCode) => {
+    setFeedback(`${PLANET_META[planetCode].title} закрыта. ${PLANET_UNLOCK_REQUIREMENTS[planetCode]}`);
+  };
 
   return (
     <div className="space-y-8">
       <section className="hero-panel">
-        <div className="grid gap-8 xl:grid-cols-[1.02fr_0.98fr] xl:items-end">
+        <div className="grid gap-8 xl:grid-cols-[1.08fr_0.92fr] xl:items-start">
           <div className="space-y-6">
             <p className="eyebrow">Игровой клиент</p>
-            <h2 className="max-w-4xl text-5xl font-semibold leading-[0.92] md:text-7xl">
-              Галактика стала командной панелью: выбирайте планеты, запускайте миссии и прокачивайте живой банковский прогресс.
+            <h2 className="max-w-3xl text-4xl font-semibold leading-[0.96] md:text-6xl">
+              Выбирайте планеты, запускайте миссии и прокачивайте банковский прогресс.
             </h2>
             <p className="max-w-2xl text-base text-white/72 md:text-lg">
               Орбита покупок, Кредитный щит и Социальное кольцо имеют свои миссии, постройки, живые события и мини-игры.
@@ -120,18 +172,15 @@ export function GalaxyPage() {
               <span>Фокус: {PLANET_META[selectedPlanet].title}</span>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link className="primary-button" to="/app/game/halva-snake">
-                Играть в Змейку Халва
+              <Link className="primary-button primary-button--hero" to="/app/games">
+                Перейти к играм
               </Link>
-              <Link className="secondary-button" to="/app/game/social-ring-signal">
-                Играть в Сигнальный ринг
-              </Link>
-              <Link className="secondary-button" to="/app/game/credit-shield-reactor">
-                Играть в Реактор щита
+              <Link className="secondary-button" to="/app/quests">
+                Перейти к квестам
               </Link>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 self-start sm:grid-cols-2">
             <div className="metric-chip">
               <span>Уровень орбиты</span>
               <strong>{deferredProfile?.orbit_level ?? "…"}</strong>
@@ -172,42 +221,85 @@ export function GalaxyPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
-        <article className="surface-panel overflow-hidden p-0">
-          <div className="border-b border-white/8 px-6 py-5">
-            <p className="eyebrow">Карта Галактики</p>
-            <h3 className="mt-2 text-3xl font-semibold">Интерактивная орбитальная сцена</h3>
-            <p className="mt-2 max-w-2xl text-sm text-white/62">
-              Планеты медленно движутся по орбитам. Перетаскивайте их внутри сцены и выбирайте кликом.
-            </p>
-          </div>
-          <div className="p-4 md:p-6">
-            <GalaxyStage planets={planets} selectedPlanet={selectedPlanet} onSelect={selectPlanet} />
-            <div className="mt-4 border-t border-white/8 pt-5">
-              <p className="eyebrow">Мастерство планет</p>
-              <div className="mt-3 space-y-3">
-                {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
-                  <div key={planetCode} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
-                      <p className="text-sm text-white/55">{planetMastery[planetCode]}/12 мастерства</p>
-                    </div>
-                    <strong className="text-2xl">построено: {structures[planetCode].length}</strong>
-                  </div>
-                ))}
+      <section className="galaxy-map-panel">
+        <GalaxyStage
+          planets={planets}
+          selectedPlanet={selectedPlanet}
+          planetMastery={planetMastery}
+          unlockedPlanets={unlockedPlanets}
+          quests={deferredProfile?.quests ?? []}
+          spendPending={planetSpendMutation.isPending}
+          onSelect={selectPlanet}
+          onLockedSelect={showLockedFeedback}
+          onRunSpend={(planetCode, amount) =>
+            isPlanetUnlocked(unlockedPlanets, planetCode)
+              ? planetSpendMutation.mutate({ planetCode, amount })
+              : showLockedFeedback(planetCode)
+          }
+          onOpenQuest={(questId) => navigate(`/app/quests?quest=${questId}`)}
+          onOpenGame={(route) => navigate(route)}
+        />
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
+        <article className="surface-panel">
+          <p className="eyebrow">Мастерство планет</p>
+          <div className="mt-3 space-y-3">
+            {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
+              <div key={planetCode} className="list-row">
+                <div>
+                  <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
+                  <p className="text-sm text-white/55">
+                    {isPlanetUnlocked(unlockedPlanets, planetCode)
+                      ? `${planetMastery[planetCode]}/12 мастерства`
+                      : PLANET_UNLOCK_REQUIREMENTS[planetCode]}
+                  </p>
+                </div>
+                <strong className="status-pill">
+                  {isPlanetUnlocked(unlockedPlanets, planetCode) ? `построено: ${structures[planetCode].length}` : "закрыта"}
+                </strong>
               </div>
-            </div>
+            ))}
+          </div>
+          <div className="mission-confirm mission-confirm--left">
+            <p className="eyebrow">Подготовка события</p>
+            <h4 className="mt-2 text-xl font-semibold">{selectedAction?.title}</h4>
+            <p className="mt-2 text-sm text-white/58">
+              {selectedPlanetLocked
+                ? PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]
+                : `Будет отправлено банковское событие: ${
+                    selectedAction ? formatEventKind(selectedAction.eventKind) : "не выбрано"
+                  }. Награда появится после синхронизации с ядром.`}
+            </p>
+            <button
+              className="primary-button mt-4"
+              disabled={selectedPlanetLocked || !selectedAction || playerActionMutation.isPending}
+              onClick={() =>
+                selectedAction &&
+                (isPlanetUnlocked(unlockedPlanets, selectedPlanet)
+                  ? playerActionMutation.mutate({ planetCode: selectedPlanet, actionId: selectedAction.id })
+                  : showLockedFeedback(selectedPlanet))
+              }
+              type="button"
+            >
+              {playerActionMutation.isPending ? "Синхронизация…" : "Подтвердить событие"}
+            </button>
           </div>
         </article>
-
         <PlanetInspector
           planet={selectedPlanetState}
           selectedPlanet={selectedPlanet}
           stardust={stardust}
           builtStructures={builtStructures}
-          isPending={playerActionMutation.isPending}
-          onRunAction={(planetCode, actionId) => playerActionMutation.mutate({ planetCode, actionId })}
+          isLocked={selectedPlanetLocked}
+          unlockRequirement={PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]}
+          selectedActionId={selectedActionId}
+          onSelectAction={setSelectedActionId}
           onBuild={(planetCode, structureId) => {
+            if (!isPlanetUnlocked(unlockedPlanets, planetCode)) {
+              showLockedFeedback(planetCode);
+              return;
+            }
             const structure = PLANET_STRUCTURES[planetCode].find((item) => item.id === structureId);
             if (!structure) {
               return;
@@ -224,12 +316,11 @@ export function GalaxyPage() {
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <article className="surface-panel">
-          <div className="mb-5 flex items-center justify-between gap-4">
+          <div className="mb-5 flex min-h-[3.25rem] items-center">
             <div>
               <p className="eyebrow">Лента миссий</p>
               <h3 className="text-2xl font-semibold">Последние действия пилота</h3>
             </div>
-            {feedback ? <span className="text-sm text-white/55">{feedback}</span> : null}
           </div>
           <div className="space-y-3">
             {actionLog.length ? (
@@ -253,48 +344,10 @@ export function GalaxyPage() {
               <p className="text-sm text-white/60">Запустите первое действие на сцене, чтобы заполнить ленту миссий.</p>
             )}
           </div>
-          <div className="mt-8 border-t border-white/10 pt-6">
-            <div className="mb-4">
-              <p className="eyebrow">Мини-игры</p>
-              <h4 className="mt-2 text-xl font-semibold">Быстрые забеги</h4>
-            </div>
-            <div className="grid gap-3 2xl:grid-cols-3">
-              <Link className="action-card" to="/app/game/halva-snake">
-                <div>
-                  <p className="text-lg font-medium">Змейка Халва</p>
-                  <p className="mt-2 text-sm text-white/58">Забег Орбиты покупок с ростом скорости и синхронизацией наград.</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestSnakeScore}</strong>
-                </div>
-              </Link>
-              <Link className="action-card" to="/app/game/credit-shield-reactor">
-                <div>
-                  <p className="text-lg font-medium">Реактор щита</p>
-                  <p className="mt-2 text-sm text-white/58">Тайминг-цикл Кредитного щита с прогрессией на 12 раундов.</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestShieldScore}</strong>
-                </div>
-              </Link>
-              <Link className="action-card" to="/app/game/social-ring-signal">
-                <div>
-                  <p className="text-lg font-medium">Сигнальный ринг</p>
-                  <p className="mt-2 text-sm text-white/58">Игра на память, которая питает Социальное кольцо живым реферальным импульсом.</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Рекорд</span>
-                  <strong className="block text-xl text-[var(--accent-cyan)]">{bestSocialScore}</strong>
-                </div>
-              </Link>
-            </div>
-          </div>
         </article>
 
         <article className="surface-panel">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5 flex min-h-[3.25rem] items-center">
             <div>
               <p className="eyebrow">Живые связи</p>
               <h3 className="text-2xl font-semibold">Бустеры и журнал наград</h3>
@@ -314,7 +367,13 @@ export function GalaxyPage() {
                   </div>
                 ))}
                 {!liveBoosters.length ? (
-                  <p className="text-sm text-white/60">Проведите партнерскую операцию, чтобы открыть первое окно бустера.</p>
+                  <div className="list-row list-row--empty">
+                    <div>
+                      <p className="text-lg font-medium">Окно бустера</p>
+                      <p className="text-sm text-white/55">Проведите партнерскую операцию, чтобы открыть первое окно.</p>
+                    </div>
+                    <strong className="status-pill">ожидает</strong>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -336,7 +395,15 @@ export function GalaxyPage() {
                     </div>
                   </div>
                 ))}
-                {!liveLedger.length ? <p className="text-sm text-white/60">Журнал обновится после первого события с наградой.</p> : null}
+                {!liveLedger.length ? (
+                  <div className="list-row list-row--empty">
+                    <div>
+                      <p className="text-lg font-medium">Журнал наград</p>
+                      <p className="text-sm text-white/55">Обновится после первого события с наградой.</p>
+                    </div>
+                    <strong className="status-pill">ожидает</strong>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

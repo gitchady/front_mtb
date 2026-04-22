@@ -1,8 +1,16 @@
-import type { PlanetCode } from "@mtb/contracts";
+import { PLANET_META, type GameCode, type PlanetCode } from "@mtb/contracts";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { calculateBonusOutcome, type BonusOutcome } from "@/lib/bonus-engine";
 import { PLANET_CODE_LABELS, SEGMENT_LABELS } from "@/lib/labels";
+import { MINI_GAME_BY_CODE } from "@/lib/mini-games";
+import {
+  getGameUnlockTarget,
+  getPlanetRunUnlockTarget,
+  getQuestUnlockTarget,
+  INITIAL_UNLOCKED_PLANETS,
+  type PlanetUnlockMap,
+} from "@/lib/planet-unlocks";
 
 export interface ActionLogItem {
   id: string;
@@ -42,11 +50,13 @@ interface GameState {
   bestShieldScore: number;
   bestSocialScore: number;
   bestSnakeScore: number;
+  bestGameScores: Partial<Record<GameCode, number>>;
   bonusStreak: number;
   vaultCharge: number;
   vaultCrates: number;
   structures: StructureMap;
   planetMastery: PlanetMasteryMap;
+  unlockedPlanets: PlanetUnlockMap;
   actionLog: ActionLogItem[];
   bonusHistory: BonusHistoryItem[];
   completeOnboarding: (payload: {
@@ -55,6 +65,7 @@ interface GameState {
     starterPlanet: PlanetCode;
   }) => void;
   selectPlanet: (planetCode: PlanetCode) => void;
+  unlockPlanet: (planetCode: PlanetCode, source: string) => boolean;
   buildStructure: (planetCode: PlanetCode, structureId: string, cost: number, title: string) => boolean;
   claimPlanetAction: (payload: {
     planetCode: PlanetCode;
@@ -64,6 +75,7 @@ interface GameState {
   }) => BonusOutcome;
   claimQuestReward: (payload: {
     planetCode: PlanetCode;
+    questId?: string;
     title: string;
     detail: string;
     baseReward: number;
@@ -71,6 +83,13 @@ interface GameState {
   recordSnakeRun: (score: number, baseReward: number) => BonusOutcome;
   recordShieldRun: (score: number, baseReward: number) => BonusOutcome;
   recordSocialRun: (score: number, baseReward: number) => BonusOutcome;
+  recordMiniGameRun: (payload: {
+    gameCode: GameCode;
+    score: number;
+    baseReward: number;
+    title?: string;
+    detail?: string;
+  }) => BonusOutcome;
   openBonusCrate: () => number | null;
 }
 
@@ -98,6 +117,39 @@ function appendBonusHistory(state: GameState, item: BonusHistoryItem) {
   return [item, ...state.bonusHistory].slice(0, 20);
 }
 
+function createUnlockLogItem(planetCode: PlanetCode, source: string, createdAt: string): ActionLogItem {
+  return {
+    id: createId(),
+    title: `Открыта планета: ${PLANET_META[planetCode].title}`,
+    detail: source,
+    reward: 0,
+    planetCode,
+    createdAt,
+  };
+}
+
+function appendUnlockToPatch<T extends { actionLog?: ActionLogItem[]; unlockedPlanets?: PlanetUnlockMap }>(
+  state: GameState,
+  patch: T,
+  planetCode: PlanetCode | undefined,
+  source: string,
+  createdAt: string,
+): T {
+  if (!planetCode || state.unlockedPlanets[planetCode]) {
+    return patch;
+  }
+
+  return {
+    ...patch,
+    unlockedPlanets: {
+      ...state.unlockedPlanets,
+      ...patch.unlockedPlanets,
+      [planetCode]: true,
+    },
+    actionLog: [createUnlockLogItem(planetCode, source, createdAt), ...(patch.actionLog ?? state.actionLog)].slice(0, 12),
+  } as T;
+}
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
@@ -110,32 +162,54 @@ export const useGameStore = create<GameState>()(
       bestShieldScore: 0,
       bestSocialScore: 0,
       bestSnakeScore: 0,
+      bestGameScores: {},
       bonusStreak: 0,
       vaultCharge: 16,
       vaultCrates: 0,
       structures: initialStructures,
       planetMastery: initialMastery,
+      unlockedPlanets: INITIAL_UNLOCKED_PLANETS,
       actionLog: [],
       bonusHistory: [],
-      completeOnboarding: ({ playerAlias, playerSegment, starterPlanet }) =>
+      completeOnboarding: ({ playerAlias, playerSegment }) =>
         set((state) => ({
           onboardingComplete: true,
           playerAlias,
           playerSegment,
-          selectedPlanet: starterPlanet,
+          selectedPlanet: "ORBIT_COMMERCE",
           stardust: state.stardust + 10,
           actionLog: appendActionLog(state, {
             id: createId(),
             title: "Вход в MTB Galaxy",
-            detail: `${playerAlias} стартовал как ${SEGMENT_LABELS[playerSegment].toLowerCase()} и выбрал планету ${PLANET_CODE_LABELS[starterPlanet]}.`,
+            detail: `${playerAlias} стартовал как ${SEGMENT_LABELS[playerSegment].toLowerCase()} на планете ${PLANET_CODE_LABELS.ORBIT_COMMERCE}.`,
             reward: 10,
-            planetCode: starterPlanet,
+            planetCode: "ORBIT_COMMERCE",
             createdAt: new Date().toISOString(),
           }),
         })),
-      selectPlanet: (planetCode) => set({ selectedPlanet: planetCode }),
+      selectPlanet: (planetCode) => {
+        set({ selectedPlanet: planetCode });
+      },
+      unlockPlanet: (planetCode, source) => {
+        const state = get();
+        if (state.unlockedPlanets[planetCode]) {
+          return false;
+        }
+        const createdAt = new Date().toISOString();
+        set({
+          unlockedPlanets: {
+            ...state.unlockedPlanets,
+            [planetCode]: true,
+          },
+          actionLog: appendActionLog(state, createUnlockLogItem(planetCode, source, createdAt)),
+        });
+        return true;
+      },
       buildStructure: (planetCode, structureId, cost, title) => {
         const state = get();
+        if (!state.unlockedPlanets[planetCode]) {
+          return false;
+        }
         const built = state.structures[planetCode];
         if (built.includes(structureId) || state.stardust < cost) {
           return false;
@@ -210,7 +284,7 @@ export const useGameStore = create<GameState>()(
         });
         return outcome;
       },
-      claimQuestReward: ({ planetCode, title, detail, baseReward }) => {
+      claimQuestReward: ({ planetCode, questId, title, detail, baseReward }) => {
         const state = get();
         const outcome = calculateBonusOutcome(
           {
@@ -227,39 +301,47 @@ export const useGameStore = create<GameState>()(
           },
         );
         const createdAt = new Date().toISOString();
-        set({
-          stardust: state.stardust + outcome.totalReward,
-          bonusStreak: outcome.nextStreak,
-          vaultCharge: outcome.nextVaultCharge,
-          vaultCrates: state.vaultCrates + outcome.cratesEarned,
-          planetMastery: {
-            ...state.planetMastery,
-            [planetCode]: outcome.nextMastery,
-          },
-          actionLog: appendActionLog(state, {
-            id: createId(),
-            title,
-            detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
-            reward: outcome.totalReward,
-            planetCode,
-            createdAt,
-          }),
-          bonusHistory: appendBonusHistory(state, {
-            id: createId(),
-            title,
-            detail,
-            planetCode,
-            totalReward: outcome.totalReward,
-            baseReward: outcome.baseReward,
-            streakBonus: outcome.streakBonus,
-            masteryBonus: outcome.masteryBonus,
-            performanceBonus: outcome.performanceBonus,
-            focusBonus: outcome.focusBonus,
-            chargeGain: outcome.chargeGain,
-            cratesEarned: outcome.cratesEarned,
-            createdAt,
-          }),
+        const actionLog = appendActionLog(state, {
+          id: createId(),
+          title,
+          detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          reward: outcome.totalReward,
+          planetCode,
+          createdAt,
         });
+        const patch = appendUnlockToPatch(
+          state,
+          {
+            stardust: state.stardust + outcome.totalReward,
+            bonusStreak: outcome.nextStreak,
+            vaultCharge: outcome.nextVaultCharge,
+            vaultCrates: state.vaultCrates + outcome.cratesEarned,
+            planetMastery: {
+              ...state.planetMastery,
+              [planetCode]: outcome.nextMastery,
+            },
+            actionLog,
+            bonusHistory: appendBonusHistory(state, {
+              id: createId(),
+              title,
+              detail,
+              planetCode,
+              totalReward: outcome.totalReward,
+              baseReward: outcome.baseReward,
+              streakBonus: outcome.streakBonus,
+              masteryBonus: outcome.masteryBonus,
+              performanceBonus: outcome.performanceBonus,
+              focusBonus: outcome.focusBonus,
+              chargeGain: outcome.chargeGain,
+              cratesEarned: outcome.cratesEarned,
+              createdAt,
+            }),
+          },
+          getQuestUnlockTarget(questId),
+          "Планета открыта после получения награды ключевого квеста.",
+          createdAt,
+        );
+        set(patch);
         return outcome;
       },
       recordSnakeRun: (score, baseReward) => {
@@ -280,41 +362,49 @@ export const useGameStore = create<GameState>()(
           },
         );
         const createdAt = new Date().toISOString();
-        set({
-          stardust: state.stardust + outcome.totalReward,
-          totalRuns: state.totalRuns + 1,
-          bestSnakeScore: Math.max(state.bestSnakeScore, score),
-          bonusStreak: outcome.nextStreak,
-          vaultCharge: outcome.nextVaultCharge,
-          vaultCrates: state.vaultCrates + outcome.cratesEarned,
-          planetMastery: {
-            ...state.planetMastery,
-            ORBIT_COMMERCE: outcome.nextMastery,
-          },
-          actionLog: appendActionLog(state, {
-            id: createId(),
-            title: "Получена награда Змейки Халва",
-            detail: `Забег превращен в орбитальное топливо после ${score} токенов.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
-            reward: outcome.totalReward,
-            planetCode: "ORBIT_COMMERCE",
-            createdAt,
-          }),
-          bonusHistory: appendBonusHistory(state, {
-            id: createId(),
-            title: "Получена награда Змейки Халва",
-            detail: `Собрано орбитальных токенов в Змейке Халва: ${score}.`,
-            planetCode: "ORBIT_COMMERCE",
-            totalReward: outcome.totalReward,
-            baseReward: outcome.baseReward,
-            streakBonus: outcome.streakBonus,
-            masteryBonus: outcome.masteryBonus,
-            performanceBonus: outcome.performanceBonus,
-            focusBonus: outcome.focusBonus,
-            chargeGain: outcome.chargeGain,
-            cratesEarned: outcome.cratesEarned,
-            createdAt,
-          }),
+        const actionLog = appendActionLog(state, {
+          id: createId(),
+          title: "Получена награда Змейки Халва",
+          detail: `Забег превращен в орбитальное топливо после ${score} токенов.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          reward: outcome.totalReward,
+          planetCode: "ORBIT_COMMERCE",
+          createdAt,
         });
+        const patch = appendUnlockToPatch(
+          state,
+          {
+            stardust: state.stardust + outcome.totalReward,
+            totalRuns: state.totalRuns + 1,
+            bestSnakeScore: Math.max(state.bestSnakeScore, score),
+            bonusStreak: outcome.nextStreak,
+            vaultCharge: outcome.nextVaultCharge,
+            vaultCrates: state.vaultCrates + outcome.cratesEarned,
+            planetMastery: {
+              ...state.planetMastery,
+              ORBIT_COMMERCE: outcome.nextMastery,
+            },
+            actionLog,
+            bonusHistory: appendBonusHistory(state, {
+              id: createId(),
+              title: "Получена награда Змейки Халва",
+              detail: `Собрано орбитальных токенов в Змейке Халва: ${score}.`,
+              planetCode: "ORBIT_COMMERCE",
+              totalReward: outcome.totalReward,
+              baseReward: outcome.baseReward,
+              streakBonus: outcome.streakBonus,
+              masteryBonus: outcome.masteryBonus,
+              performanceBonus: outcome.performanceBonus,
+              focusBonus: outcome.focusBonus,
+              chargeGain: outcome.chargeGain,
+              cratesEarned: outcome.cratesEarned,
+              createdAt,
+            }),
+          },
+          getPlanetRunUnlockTarget("ORBIT_COMMERCE", score),
+          "Планета открыта после успешного забега игры Орбиты покупок.",
+          createdAt,
+        );
+        set(patch);
         return outcome;
       },
       recordShieldRun: (score, baseReward) => {
@@ -335,41 +425,49 @@ export const useGameStore = create<GameState>()(
           },
         );
         const createdAt = new Date().toISOString();
-        set({
-          stardust: state.stardust + outcome.totalReward,
-          totalRuns: state.totalRuns + 1,
-          bestShieldScore: Math.max(state.bestShieldScore, score),
-          bonusStreak: outcome.nextStreak,
-          vaultCharge: outcome.nextVaultCharge,
-          vaultCrates: state.vaultCrates + outcome.cratesEarned,
-          planetMastery: {
-            ...state.planetMastery,
-            CREDIT_SHIELD: outcome.nextMastery,
-          },
-          actionLog: appendActionLog(state, {
-            id: createId(),
-            title: "Получена награда Кредитного щита",
-            detail: `Управление импульсом стабилизировало щит со счетом ${score}.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
-            reward: outcome.totalReward,
-            planetCode: "CREDIT_SHIELD",
-            createdAt,
-          }),
-          bonusHistory: appendBonusHistory(state, {
-            id: createId(),
-            title: "Получена награда Кредитного щита",
-            detail: `Счет в реакторе щита: ${score}.`,
-            planetCode: "CREDIT_SHIELD",
-            totalReward: outcome.totalReward,
-            baseReward: outcome.baseReward,
-            streakBonus: outcome.streakBonus,
-            masteryBonus: outcome.masteryBonus,
-            performanceBonus: outcome.performanceBonus,
-            focusBonus: outcome.focusBonus,
-            chargeGain: outcome.chargeGain,
-            cratesEarned: outcome.cratesEarned,
-            createdAt,
-          }),
+        const actionLog = appendActionLog(state, {
+          id: createId(),
+          title: "Получена награда Кредитного щита",
+          detail: `Управление импульсом стабилизировало щит со счетом ${score}.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          reward: outcome.totalReward,
+          planetCode: "CREDIT_SHIELD",
+          createdAt,
         });
+        const patch = appendUnlockToPatch(
+          state,
+          {
+            stardust: state.stardust + outcome.totalReward,
+            totalRuns: state.totalRuns + 1,
+            bestShieldScore: Math.max(state.bestShieldScore, score),
+            bonusStreak: outcome.nextStreak,
+            vaultCharge: outcome.nextVaultCharge,
+            vaultCrates: state.vaultCrates + outcome.cratesEarned,
+            planetMastery: {
+              ...state.planetMastery,
+              CREDIT_SHIELD: outcome.nextMastery,
+            },
+            actionLog,
+            bonusHistory: appendBonusHistory(state, {
+              id: createId(),
+              title: "Получена награда Кредитного щита",
+              detail: `Счет в реакторе щита: ${score}.`,
+              planetCode: "CREDIT_SHIELD",
+              totalReward: outcome.totalReward,
+              baseReward: outcome.baseReward,
+              streakBonus: outcome.streakBonus,
+              masteryBonus: outcome.masteryBonus,
+              performanceBonus: outcome.performanceBonus,
+              focusBonus: outcome.focusBonus,
+              chargeGain: outcome.chargeGain,
+              cratesEarned: outcome.cratesEarned,
+              createdAt,
+            }),
+          },
+          getPlanetRunUnlockTarget("CREDIT_SHIELD", score),
+          "Планета открыта после успешного забега игры Кредитного щита.",
+          createdAt,
+        );
+        set(patch);
         return outcome;
       },
       recordSocialRun: (score, baseReward) => {
@@ -427,6 +525,80 @@ export const useGameStore = create<GameState>()(
         });
         return outcome;
       },
+      recordMiniGameRun: ({ gameCode, score, baseReward, title, detail }) => {
+        const state = get();
+        const meta = MINI_GAME_BY_CODE[gameCode];
+        const outcome = calculateBonusOutcome(
+          {
+            bonusStreak: state.bonusStreak,
+            vaultCharge: state.vaultCharge,
+            selectedPlanet: state.selectedPlanet,
+            structures: state.structures,
+            planetMastery: state.planetMastery,
+          },
+          {
+            planetCode: meta.planetCode,
+            baseReward,
+            performanceScore: score,
+            category: "mini_game",
+          },
+        );
+        const createdAt = new Date().toISOString();
+        const historyTitle = title ?? `Получена награда ${meta.title}`;
+        const historyDetail = detail ?? `${meta.title}: счет ${score}.`;
+        const actionLog = appendActionLog(state, {
+          id: createId(),
+          title: historyTitle,
+          detail: `${historyDetail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          reward: outcome.totalReward,
+          planetCode: meta.planetCode,
+          createdAt,
+        });
+        const patch = appendUnlockToPatch(
+          state,
+          {
+            stardust: state.stardust + outcome.totalReward,
+            totalRuns: state.totalRuns + 1,
+            bestGameScores: {
+              ...state.bestGameScores,
+              [gameCode]: Math.max(state.bestGameScores[gameCode] ?? 0, score),
+            },
+            bestSnakeScore: gameCode === "halva_snake" ? Math.max(state.bestSnakeScore, score) : state.bestSnakeScore,
+            bestShieldScore:
+              gameCode === "credit_shield_reactor" ? Math.max(state.bestShieldScore, score) : state.bestShieldScore,
+            bestSocialScore:
+              gameCode === "social_ring_signal" ? Math.max(state.bestSocialScore, score) : state.bestSocialScore,
+            bonusStreak: outcome.nextStreak,
+            vaultCharge: outcome.nextVaultCharge,
+            vaultCrates: state.vaultCrates + outcome.cratesEarned,
+            planetMastery: {
+              ...state.planetMastery,
+              [meta.planetCode]: outcome.nextMastery,
+            },
+            actionLog,
+            bonusHistory: appendBonusHistory(state, {
+              id: createId(),
+              title: historyTitle,
+              detail: historyDetail,
+              planetCode: meta.planetCode,
+              totalReward: outcome.totalReward,
+              baseReward: outcome.baseReward,
+              streakBonus: outcome.streakBonus,
+              masteryBonus: outcome.masteryBonus,
+              performanceBonus: outcome.performanceBonus,
+              focusBonus: outcome.focusBonus,
+              chargeGain: outcome.chargeGain,
+              cratesEarned: outcome.cratesEarned,
+              createdAt,
+            }),
+          },
+          getGameUnlockTarget(gameCode, score),
+          `Планета открыта после успешного забега игры ${meta.title}.`,
+          createdAt,
+        );
+        set(patch);
+        return outcome;
+      },
       openBonusCrate: () => {
         const state = get();
         if (state.vaultCrates <= 0) {
@@ -476,11 +648,13 @@ export const useGameStore = create<GameState>()(
         bestShieldScore: state.bestShieldScore,
         bestSocialScore: state.bestSocialScore,
         bestSnakeScore: state.bestSnakeScore,
+        bestGameScores: state.bestGameScores,
         bonusStreak: state.bonusStreak,
         vaultCharge: state.vaultCharge,
         vaultCrates: state.vaultCrates,
         structures: state.structures,
         planetMastery: state.planetMastery,
+        unlockedPlanets: state.unlockedPlanets,
         actionLog: state.actionLog,
         bonusHistory: state.bonusHistory,
       }),

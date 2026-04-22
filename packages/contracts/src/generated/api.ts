@@ -399,7 +399,7 @@ export interface components {
              * Game Code
              * @enum {string}
              */
-            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal";
+            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal" | "moby_bird" | "cashback_tetris" | "moby_jump" | "fintech_match3" | "super_moby_bros";
             /**
              * Planet Code
              * @enum {string}
@@ -428,7 +428,7 @@ export interface components {
              * Game Code
              * @enum {string}
              */
-            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal";
+            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal" | "moby_bird" | "cashback_tetris" | "moby_jump" | "fintech_match3" | "super_moby_bros";
             /**
              * Planet Code
              * @enum {string}
@@ -458,7 +458,7 @@ export interface components {
              * Game Code
              * @enum {string}
              */
-            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal";
+            game_code: "halva_snake" | "credit_shield_reactor" | "social_ring_signal" | "moby_bird" | "cashback_tetris" | "moby_jump" | "fintech_match3" | "super_moby_bros";
             /**
              * Planet Code
              * @enum {string}

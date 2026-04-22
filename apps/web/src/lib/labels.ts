@@ -1,4 +1,5 @@
 import type { GameCode, PlanetCode } from "@mtb/contracts";
+import type { GameActionKind } from "@/lib/game-config";
 
 export const SEGMENT_LABELS: Record<"student" | "first-jobber" | "freelancer", string> = {
   student: "Студент",
@@ -16,6 +17,11 @@ export const GAME_CODE_LABELS: Record<GameCode, string> = {
   halva_snake: "Змейка Халва",
   credit_shield_reactor: "Реактор щита",
   social_ring_signal: "Сигнальный ринг",
+  moby_bird: "Moby Bird",
+  cashback_tetris: "Cashback Tetris",
+  moby_jump: "Moby Jump",
+  fintech_match3: "Fintech Match-3",
+  super_moby_bros: "Super Moby Bros",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -56,6 +62,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   food: "еда",
 };
 
+const EVENT_KIND_LABELS: Record<GameActionKind, string> = {
+  partner: "партнерская покупка",
+  nonPartner: "обычная покупка",
+  credit: "платеж рассрочки",
+  referral: "активация реферала",
+  education: "финансовый урок",
+  risky: "антифрод-проверка",
+};
+
 const RISK_FLAG_LABELS: Record<string, string> = {
   device_mismatch: "смена устройства",
   large_amount: "крупная операция",
@@ -81,6 +96,10 @@ export function formatRewardKind(value: string) {
 
 export function formatCategory(value: string) {
   return CATEGORY_LABELS[value] ?? fallbackLabel(value);
+}
+
+export function formatEventKind(value: GameActionKind) {
+  return EVENT_KIND_LABELS[value] ?? fallbackLabel(value);
 }
 
 export function formatRiskFlag(value: string) {

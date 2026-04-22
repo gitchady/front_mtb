@@ -8,7 +8,16 @@ from pydantic import BaseModel, Field
 
 PlanetCode = Literal["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"]
 EventType = Literal["txn_posted", "installment_paid_on_time", "referral_activated", "education_module_completed"]
-GameCode = Literal["halva_snake", "credit_shield_reactor", "social_ring_signal"]
+GameCode = Literal[
+    "halva_snake",
+    "credit_shield_reactor",
+    "social_ring_signal",
+    "moby_bird",
+    "cashback_tetris",
+    "moby_jump",
+    "fintech_match3",
+    "super_moby_bros",
+]
 
 
 class DemoLoginRequest(BaseModel):

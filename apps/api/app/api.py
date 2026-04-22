@@ -9,15 +9,14 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
-from app.analytics import calculate_admin_kpis
+from app.analytics import build_admin_risk_response, build_demo_admin_kpis
 from app.bootstrap import ensure_user
 from app.core.config import get_settings
 from app.db import get_session
-from app.models import EventLog, GameRun, Quest, QuestProgress, Referral, RewardLedger, RiskFlag, User
+from app.models import EventLog, GameRun, Quest, QuestProgress, Referral, RewardLedger, User
 from app.queue import enqueue_event
 from app.schemas import (
     AdminKpiResponse,
-    AdminRiskEntry,
     AdminRiskResponse,
     DemoLoginRequest,
     DemoSessionResponse,
@@ -42,6 +41,11 @@ GAME_PLANETS = {
     "halva_snake": "ORBIT_COMMERCE",
     "credit_shield_reactor": "CREDIT_SHIELD",
     "social_ring_signal": "SOCIAL_RING",
+    "moby_bird": "CREDIT_SHIELD",
+    "cashback_tetris": "ORBIT_COMMERCE",
+    "moby_jump": "CREDIT_SHIELD",
+    "fintech_match3": "ORBIT_COMMERCE",
+    "super_moby_bros": "SOCIAL_RING",
 }
 
 
@@ -291,8 +295,8 @@ def leaderboard(session: Session = Depends(get_session)) -> list[LeaderboardEntr
 
 
 @router.get("/admin/kpi", response_model=AdminKpiResponse)
-def admin_kpi(session: Session = Depends(get_session)) -> AdminKpiResponse:
-    return AdminKpiResponse(**calculate_admin_kpis(session))
+def admin_kpi() -> AdminKpiResponse:
+    return AdminKpiResponse(**build_demo_admin_kpis())
 
 
 @router.post("/admin/simulate", response_model=IngestResponse)
@@ -302,14 +306,7 @@ def admin_simulate(payload: EventPayload, session: Session = Depends(get_session
 
 @router.get("/admin/risk", response_model=AdminRiskResponse)
 def admin_risk(session: Session = Depends(get_session)) -> AdminRiskResponse:
-    flags = session.scalars(select(RiskFlag).where(RiskFlag.is_active.is_(True)).order_by(desc(RiskFlag.created_at))).all()
-    pending = session.scalars(
-        select(RewardLedger).where(RewardLedger.status == "pending").order_by(desc(RewardLedger.created_at))
-    ).all()
-    return AdminRiskResponse(
-        active_flags=[AdminRiskEntry.model_validate(flag, from_attributes=True) for flag in flags],
-        pending_rewards=[RewardLedgerOut.model_validate(entry, from_attributes=True) for entry in pending],
-    )
+    return build_admin_risk_response(session)
 
 
 @router.get("/admin/stream")
@@ -318,10 +315,7 @@ async def admin_stream() -> StreamingResponse:
 
     async def event_generator():
         while True:
-            from app.db import SessionLocal
-
-            with SessionLocal() as session:
-                payload = calculate_admin_kpis(session)
+            payload = build_demo_admin_kpis()
             yield f"data: {json.dumps(payload)}\n\n"
             await asyncio.sleep(settings.sse_interval_seconds)
 

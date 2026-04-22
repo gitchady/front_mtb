@@ -1,12 +1,87 @@
 import { useQuery } from "@tanstack/react-query";
-import { PLANET_META, type PlanetCode } from "@mtb/contracts";
+import { PLANET_META, type PlanetCode, type RewardEntry } from "@mtb/contracts";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { useGameStore } from "@/lib/game-store";
+import { useGameStore, type BonusHistoryItem } from "@/lib/game-store";
 import { formatRewardType, formatStatus, GAME_CODE_LABELS } from "@/lib/labels";
 import { useSessionStore } from "@/lib/session-store";
 
 const PLANETS: PlanetCode[] = ["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"];
+
+function formatPayoutCount(count: number) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${count} выплата`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${count} выплаты`;
+  }
+
+  return `${count} выплат`;
+}
+
+function formatLedgerEntryCount(count: number) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${count} запись`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${count} записи`;
+  }
+
+  return `${count} записей`;
+}
+
+function getBonusHistoryGroups(bonusHistory: BonusHistoryItem[]) {
+  return PLANETS.map((planetCode) => {
+    const entries = bonusHistory.filter((entry) => entry.planetCode === planetCode);
+
+    return {
+      planetCode,
+      entries,
+      latestEntry: entries[0],
+      totalChargeGain: entries.reduce((sum, entry) => sum + entry.chargeGain, 0),
+      totalReward: entries.reduce((sum, entry) => sum + entry.totalReward, 0),
+    };
+  }).filter((group) => group.entries.length > 0);
+}
+
+function getLedgerStatusSummary(entries: RewardEntry[]) {
+  const statusCounts = entries.reduce<Record<string, number>>((counts, entry) => {
+    counts[entry.status] = (counts[entry.status] ?? 0) + 1;
+    return counts;
+  }, {});
+  const statuses = Object.entries(statusCounts);
+
+  if (statuses.length === 1) {
+    return formatStatus(statuses[0][0]);
+  }
+
+  return statuses.map(([status, count]) => `${count} ${formatStatus(status)}`).join(" - ");
+}
+
+function getLedgerGroups(ledger: RewardEntry[]) {
+  const groupedEntries = ledger.reduce<Map<string, RewardEntry[]>>((groups, entry) => {
+    const entries = groups.get(entry.reward_type) ?? [];
+    entries.push(entry);
+    groups.set(entry.reward_type, entries);
+    return groups;
+  }, new Map());
+
+  return Array.from(groupedEntries.entries()).map(([rewardType, entries]) => ({
+    rewardType,
+    entries,
+    latestEntry: entries[0],
+    statusSummary: getLedgerStatusSummary(entries),
+    totalAmount: entries.reduce((sum, entry) => sum + entry.amount, 0),
+  }));
+}
 
 export function RewardsPage() {
   const { userId } = useSessionStore();
@@ -26,6 +101,8 @@ export function RewardsPage() {
     queryKey: ["games-summary", userId],
     queryFn: () => api.getGameSummary(userId),
   });
+  const bonusHistoryGroups = getBonusHistoryGroups(bonusHistory);
+  const ledgerGroups = getLedgerGroups(ledgerQuery.data ?? []);
 
   return (
     <div className="space-y-6">
@@ -111,20 +188,38 @@ export function RewardsPage() {
           </div>
           <div className="space-y-3">
             {bonusHistory.length ? (
-              bonusHistory.map((entry) => (
-                <div key={entry.id} className="list-row">
-                  <div>
-                    <p className="text-lg font-medium">{entry.title}</p>
-                    <p className="text-sm text-white/55">
-                      База {entry.baseReward} - серия +{entry.streakBonus} - мастерство +{entry.masteryBonus} - результат +{entry.performanceBonus} - фокус +{entry.focusBonus}
-                    </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/36">{PLANET_META[entry.planetCode].title}</p>
+              bonusHistoryGroups.map((group) => (
+                <details key={group.planetCode} className="bonus-history-group">
+                  <summary className="bonus-history-group__summary">
+                    <div>
+                      <p className="text-lg font-medium">{PLANET_META[group.planetCode].title}</p>
+                      <p className="text-sm text-white/55">
+                        {formatPayoutCount(group.entries.length)} - последняя: {group.latestEntry.title}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <strong className="text-2xl text-[var(--accent-cyan)]">+{group.totalReward}</strong>
+                      <p className="text-xs text-white/42">Хранилище +{group.totalChargeGain}</p>
+                    </div>
+                  </summary>
+                  <div className="bonus-history-group__details">
+                    {group.entries.map((entry) => (
+                      <div key={entry.id} className="bonus-history-entry">
+                        <div>
+                          <p className="font-medium">{entry.title}</p>
+                          <p className="text-sm text-white/55">{entry.detail}</p>
+                          <p className="bonus-history-entry__breakdown">
+                            База {entry.baseReward} - серия +{entry.streakBonus} - мастерство +{entry.masteryBonus} - результат +{entry.performanceBonus} - фокус +{entry.focusBonus}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <strong className="text-lg text-[var(--accent-cyan)]">+{entry.totalReward}</strong>
+                          <p className="text-xs text-white/42">Хранилище +{entry.chargeGain}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="text-right">
-                    <strong className="text-2xl text-[var(--accent-cyan)]">+{entry.totalReward}</strong>
-                    <p className="text-xs text-white/42">Хранилище +{entry.chargeGain}</p>
-                  </div>
-                </div>
+                </details>
               ))
             ) : (
               <p className="text-sm text-white/60">Заберите награду мини-игры или квеста, чтобы заполнить историю бонусов.</p>
@@ -171,19 +266,37 @@ export function RewardsPage() {
           <span className="text-sm text-white/55">записей: {ledgerQuery.data?.length ?? 0}</span>
         </div>
         <div className="space-y-3">
-          {ledgerQuery.data?.map((entry) => (
-            <div key={entry.ledger_id} className="list-row">
-              <div>
-                <p className="text-lg font-medium">{formatRewardType(entry.reward_type)}</p>
-                <p className="text-sm text-white/55">{new Date(entry.created_at).toLocaleString("ru-RU")}</p>
+          {ledgerGroups.map((group) => (
+            <details key={group.rewardType} className="bonus-history-group">
+              <summary className="bonus-history-group__summary">
+                <div>
+                  <p className="text-lg font-medium">{formatRewardType(group.rewardType)}</p>
+                  <p className="text-sm text-white/55">
+                    {formatLedgerEntryCount(group.entries.length)} - последняя: {new Date(group.latestEntry.created_at).toLocaleString("ru-RU")}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm uppercase tracking-[0.25em] text-white/45">{group.statusSummary}</p>
+                  <strong className="text-2xl">{group.totalAmount.toFixed(2)} BYN</strong>
+                </div>
+              </summary>
+              <div className="bonus-history-group__details">
+                {group.entries.map((entry) => (
+                  <div key={entry.ledger_id} className="bonus-history-entry">
+                    <div>
+                      <p className="font-medium">{formatRewardType(entry.reward_type)}</p>
+                      <p className="text-sm text-white/55">{new Date(entry.created_at).toLocaleString("ru-RU")}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm uppercase tracking-[0.25em] ${entry.status === "pending" ? "text-amber-300" : "text-emerald-300"}`}>
+                        {formatStatus(entry.status)}
+                      </p>
+                      <strong className="text-lg">{entry.amount.toFixed(2)} BYN</strong>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="text-right">
-                <p className={`text-sm uppercase tracking-[0.25em] ${entry.status === "pending" ? "text-amber-300" : "text-emerald-300"}`}>
-                  {formatStatus(entry.status)}
-                </p>
-                <strong className="text-2xl">{entry.amount.toFixed(2)} BYN</strong>
-              </div>
-            </div>
+            </details>
           ))}
           {!ledgerQuery.data?.length ? <p className="text-sm text-white/60">Синхронизированные награды появятся после получения живых событий.</p> : null}
         </div>

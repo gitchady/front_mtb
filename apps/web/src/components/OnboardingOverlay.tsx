@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { PlanetCode } from "@mtb/contracts";
 import { PLANET_META } from "@mtb/contracts";
+import { PLANET_UNLOCK_REQUIREMENTS } from "@/lib/planet-unlocks";
 
 const SEGMENTS = [
   {
@@ -80,22 +81,31 @@ export function OnboardingOverlay({
 
           <div className="space-y-4">
             <p className="text-sm uppercase tracking-[0.2em] text-white/45">Стартовая планета</p>
-            {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
-              <button
-                key={planetCode}
-                className={`action-card ${starterPlanet === planetCode ? "action-card-built" : ""}`}
-                onClick={() => setStarterPlanet(planetCode)}
-              >
-                <div>
-                  <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
-                  <p className="mt-2 text-sm text-white/58">{PLANET_META[planetCode].summary}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs uppercase tracking-[0.2em] text-white/42">Стартовый бонус</span>
-                  <strong className="block text-xl text-[var(--accent-cyan)]">+10</strong>
-                </div>
-              </button>
-            ))}
+            {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => {
+              const locked = planetCode !== "ORBIT_COMMERCE";
+              return (
+                <button
+                  key={planetCode}
+                  className={`action-card ${starterPlanet === planetCode ? "action-card-built" : ""}`}
+                  disabled={locked}
+                  onClick={() => setStarterPlanet("ORBIT_COMMERCE")}
+                  type="button"
+                >
+                  <div>
+                    <p className="text-lg font-medium">{PLANET_META[planetCode].title}</p>
+                    <p className="mt-2 text-sm text-white/58">
+                      {locked ? PLANET_UNLOCK_REQUIREMENTS[planetCode] : PLANET_META[planetCode].summary}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs uppercase tracking-[0.2em] text-white/42">
+                      {locked ? "Статус" : "Стартовый бонус"}
+                    </span>
+                    <strong className="block text-xl text-[var(--accent-cyan)]">{locked ? "Закрыта" : "+10"}</strong>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -109,7 +119,7 @@ export function OnboardingOverlay({
               onComplete({
                 playerAlias,
                 playerSegment,
-                starterPlanet,
+                starterPlanet: "ORBIT_COMMERCE",
               })
             }
           >
