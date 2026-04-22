@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from "react";
-import { createBrowserRouter, Link, Navigate, Outlet, NavLink, useLocation } from "react-router-dom";
+import { createBrowserRouter, Link, Navigate, Outlet, NavLink, useLocation, type RouteObject } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PLANET_META, type GameCode } from "@mtb/contracts";
 import { features } from "@/lib/features";
@@ -161,7 +161,7 @@ function GameRouteGuard({ code, children }: { code: GameCode; children: ReactNod
   );
 }
 
-export const appRoutes = [
+export const appRoutes: RouteObject[] = [
   {
     path: "/",
     element: <ShellLayout />,
@@ -202,6 +202,8 @@ export const appRoutes = [
       { path: "/admin/risk", element: renderLazy(<AdminRiskPage />) },
     ],
   },
-] as const;
+];
 
-export const router = createBrowserRouter(appRoutes);
+export function createAppRouter() {
+  return createBrowserRouter(appRoutes);
+}

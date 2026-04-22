@@ -1,16 +1,17 @@
+import type { RouteObject } from "react-router-dom";
 import { describe, expect, it } from "vitest";
-import { appLinks, router } from "@/app/router";
+import { appLinks, appRoutes } from "@/app/router";
 
-function collectPaths(routes: { path?: string; children?: { path?: string; children?: unknown[] }[] }[]): string[] {
+function collectPaths(routes: RouteObject[]): string[] {
   return routes.flatMap((route) => [
     ...(route.path ? [route.path] : []),
-    ...collectPaths((route.children ?? []) as { path?: string; children?: { path?: string; children?: unknown[] }[] }[]),
+    ...collectPaths(route.children ?? []),
   ]);
 }
 
 describe("router", () => {
   it("registers the social-ai-qr routes", () => {
-    const paths = collectPaths(router.routes);
+    const paths = collectPaths(appRoutes);
 
     expect(paths).toContain("/app/friends");
     expect(paths).toContain("/app/qr");
