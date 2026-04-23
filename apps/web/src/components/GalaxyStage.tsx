@@ -16,17 +16,17 @@ type GalaxyLayout = Partial<Record<GalaxyNodeId, Position>>;
 const HUB_META: Record<HubKind, { title: string; detail: string; short: string }> = {
   spend: {
     title: "Импульс",
-    detail: "Запишите уровень сигнала, чтобы усилить большую планету категории.",
+    detail: "Запишите уровень сигнала, чтобы усилить большую планету категории",
     short: "IMP",
   },
   quests: {
     title: "Квесты",
-    detail: "Откройте квестовые спутники и перейдите к выполнению условия.",
+    detail: "Откройте квестовые спутники и перейдите к выполнению условия",
     short: "Q",
   },
   games: {
     title: "Игры",
-    detail: "Выберите мини-игру, запуск которой прокачает эту категорию.",
+    detail: "Выберите мини-игру, запуск которой прокачает эту категорию",
     short: "G",
   },
 };
@@ -727,7 +727,7 @@ export function GalaxyStage({
     <div
       ref={stageRef}
       className={`galaxy-stage ${hasFocusedNode ? "galaxy-stage--focused" : ""}`}
-      aria-label="Интерактивная карта галактики. Перетаскивайте большие планеты, чтобы менять их положение."
+      aria-label="Интерактивная карта галактики Перетаскивайте большие планеты, чтобы менять их положение"
     >
       <div className="galaxy-stage__orbits">
         <div className="galaxy-stage__orbit galaxy-stage__orbit--one" />
@@ -872,7 +872,7 @@ export function GalaxyStage({
               />
               <div className="galaxy-stage__label">
                 <span>{PLANET_META[planetCode].title}</span>
-                <strong>{locked ? "Закрыта" : `Ур. ${planet?.level ?? 1} · ${planetMastery[planetCode] ?? 0}/12`}</strong>
+                <strong>{locked ? "Закрыта" : `Ур ${planet?.level ?? 1} · ${planetMastery[planetCode] ?? 0}/12`}</strong>
               </div>
               {locked ? <em className="galaxy-stage__lock-hint">{PLANET_UNLOCK_REQUIREMENTS[planetCode]}</em> : null}
             </motion.button>
@@ -1001,7 +1001,7 @@ export function GalaxyStage({
                   />
                 </label>
                 <button className="primary-button" disabled={spendPending} type="submit">
-                  {spendPending ? "Записываем..." : "Записать сигнал"}
+                  {spendPending ? "Записываем" : "Записать сигнал"}
                 </button>
               </form>
             ) : null}
@@ -1012,8 +1012,8 @@ export function GalaxyStage({
                 <h4>{HUB_META.quests.title}</h4>
                 <p>
                   {selectedQuests.length
-                    ? "Выберите маленькую планету квеста, чтобы приблизиться к ней и открыть действие."
-                    : "Для этой планеты пока нет активных квестов."}
+                    ? "Выберите маленькую планету квеста, чтобы приблизиться к ней и открыть действие"
+                    : "Для этой планеты пока нет активных квестов"}
                 </p>
               </>
             ) : null}
@@ -1033,7 +1033,7 @@ export function GalaxyStage({
               <>
                 <p className="eyebrow">Игровые спутники</p>
                 <h4>{HUB_META.games.title}</h4>
-                <p>Выберите маленькую планету игры, чтобы приблизиться к ней и открыть запуск.</p>
+                <p>Выберите маленькую планету игры, чтобы приблизиться к ней и открыть запуск</p>
               </>
             ) : null}
 

@@ -73,7 +73,7 @@ export function SnakePage() {
   const [isStarted, setIsStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Подготовьте забег и запускайте, когда будете готовы.");
+  const [status, setStatus] = useState("Подготовьте забег и запускайте, когда будете готовы");
   const directionRef = useRef<Direction>("right");
   const recordSnakeRun = useGameStore((state) => state.recordSnakeRun);
   const bestSnakeScore = useGameStore((state) => state.bestSnakeScore);
@@ -142,7 +142,7 @@ export function SnakePage() {
       });
     },
     onError: () => {
-      setStatus("Забег завершен локально, но синхронизация с Орбитой покупок не прошла. Попробуйте забрать награду еще раз.");
+      setStatus("Забег завершен локально, но синхронизация с Орбитой покупок не прошла Попробуйте забрать награду еще раз");
     },
   });
 
@@ -164,7 +164,7 @@ export function SnakePage() {
     setIsStarted(false);
     setIsPaused(false);
     setRewardClaimed(false);
-    setStatus("Подготовьте забег и запускайте, когда будете готовы.");
+    setStatus("Подготовьте забег и запускайте, когда будете готовы");
   }
 
   function launchRun() {
@@ -179,13 +179,13 @@ export function SnakePage() {
     }
     setIsStarted(true);
     setIsPaused(false);
-    setStatus("Забег идет. Кормите змейку и не врезайтесь.");
+    setStatus("Забег идет Кормите змейку и не врезайтесь");
   }
 
   function togglePause() {
     setIsPaused((value) => {
       const next = !value;
-      setStatus(next ? "Забег поставлен на паузу." : "Забег продолжен.");
+      setStatus(next ? "Забег поставлен на паузу" : "Забег продолжен");
       return next;
     });
   }
@@ -225,7 +225,7 @@ export function SnakePage() {
 
         if (hitsWall || hitsSelf) {
           setIsOver(true);
-          setStatus("Забег завершен. Заберите топливо или начните новую орбиту.");
+          setStatus("Забег завершен Заберите топливо или начните новую орбиту");
           return current;
         }
 
@@ -236,7 +236,7 @@ export function SnakePage() {
         } else {
           setScore((value) => value + 1);
           setFood(randomFood(nextSnake));
-          setStatus("Токен пойман. Держите линию чистой и набирайте комбо.");
+          setStatus("Токен пойман Держите линию чистой и набирайте комбо");
         }
         return nextSnake;
       });
@@ -335,7 +335,7 @@ export function SnakePage() {
               <div className="list-row">
                 <div>
                   <p className="text-lg font-medium">Темп обновления</p>
-                  <p className="text-sm text-white/55">Скорость растет по мере длины забега.</p>
+                  <p className="text-sm text-white/55">Скорость растет по мере длины забега</p>
                 </div>
                 <strong className="text-2xl">{tickRate}ms</strong>
               </div>
@@ -351,7 +351,7 @@ export function SnakePage() {
                   disabled={rewardClaimed || score === 0 || !isOver || claimMutation.isPending}
                   onClick={() => claimMutation.mutate()}
                 >
-                  {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация…" : `Забрать +${bonusPreview.totalReward}`}
+                  {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация" : `Забрать +${bonusPreview.totalReward}`}
                 </button>
               </div>
             </div>

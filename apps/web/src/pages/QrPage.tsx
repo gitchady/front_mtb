@@ -79,7 +79,7 @@ function getResolverHeading(state: ResultState, result: QrPayload | undefined) {
 
 function getResolverDescription(state: ResultState, result: QrPayload | undefined, errorMessage: string) {
   if (state === "loading") {
-    return "Проверяем полезную нагрузку, тип действия и маршрут перехода для текущего пользователя.";
+    return "Проверяем полезную нагрузку, тип действия и маршрут перехода для текущего пользователя";
   }
 
   if (state === "error") {
@@ -87,10 +87,10 @@ function getResolverDescription(state: ResultState, result: QrPayload | undefine
   }
 
   if (state === "invalid" || state === "success") {
-    return result?.description ?? "Ответ получен, но описание сценария отсутствует.";
+    return result?.description ?? "Ответ получен, но описание сценария отсутствует";
   }
 
-  return "Вставьте строку из QR-кода, запустите resolve и проверьте, куда должен вести CTA.";
+  return "Вставьте строку из QR-кода, запустите resolve и проверьте, куда должен вести CTA";
 }
 
 export function QrPage() {
@@ -112,7 +112,7 @@ export function QrPage() {
   const resultDescription = getResolverDescription(
     resultState,
     resolveMutation.data,
-    resolveMutation.error instanceof Error ? resolveMutation.error.message : "Не удалось получить ответ от QR resolver.",
+    resolveMutation.error instanceof Error ? resolveMutation.error.message : "Не удалось получить ответ от QR resolver",
   );
   const primaryRoute = getRouteForKind(resolveMutation.data?.cta_kind ?? "");
   const secondaryRoute: ActionRoute = primaryRoute === "/app/ai" ? "/app/friends" : "/app/ai";
@@ -150,7 +150,7 @@ export function QrPage() {
           <div className="space-y-3 md:space-y-4">
             <p className="eyebrow">QR MVP</p>
             <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
-              Один экран для собственного QR, ручной проверки payload и перехода в следующий пользовательский сценарий.
+              Один экран для собственного QR, ручной проверки payload и перехода в следующий пользовательский сценарий
             </h2>
             <div className="flex flex-wrap gap-3">
               <Link className="secondary-button" to="/app/friends">
@@ -161,7 +161,7 @@ export function QrPage() {
               </Link>
             </div>
             <p className="max-w-2xl text-sm text-white/68 md:text-lg">
-              Страница показывает ваш QR-контекст, принимает любой вставленный payload и сразу говорит, валиден ли он, что означает и куда должен вести CTA.
+              Страница показывает ваш QR-контекст, принимает любой вставленный payload и сразу говорит, валиден ли он, что означает и куда должен вести CTA
             </p>
           </div>
 
@@ -172,7 +172,7 @@ export function QrPage() {
             </div>
             <div className="metric-chip">
               <span>Мой QR</span>
-              <strong>{myQrQuery.isPending ? "..." : myQrQuery.data?.valid ? "Готов" : "Проверить"}</strong>
+              <strong>{myQrQuery.isPending ? "Загрузка" : myQrQuery.data?.valid ? "Готов" : "Проверить"}</strong>
             </div>
             <div className="metric-chip">
               <span>Базовый CTA</span>
@@ -196,7 +196,7 @@ export function QrPage() {
               <h3 className="mt-2 text-3xl font-semibold">Поделиться своим payload</h3>
             </div>
             <button className="secondary-button" type="button" onClick={() => void myQrQuery.refetch()} disabled={myQrQuery.isFetching}>
-              {myQrQuery.isFetching ? "Обновляем…" : "Обновить"}
+              {myQrQuery.isFetching ? "Обновляем" : "Обновить"}
             </button>
           </div>
 
@@ -205,7 +205,7 @@ export function QrPage() {
               <div className="list-row animate-pulse">
                 <div>
                   <p className="text-lg font-medium">Готовим персональный QR</p>
-                  <p className="text-sm text-white/55">Запрашиваем текущий payload и дефолтный CTA.</p>
+                  <p className="text-sm text-white/55">Запрашиваем текущий payload и дефолтный CTA</p>
                 </div>
               </div>
             </div>
@@ -213,7 +213,7 @@ export function QrPage() {
 
           {myQrQuery.isError ? (
             <div className="mt-6 rounded-[24px] border border-rose-300/18 bg-rose-300/[0.05] p-4 text-sm text-white/70" aria-live="polite">
-              Не удалось загрузить ваш QR-контекст. Проверьте API и повторите запрос.
+              Не удалось загрузить ваш QR-контекст Проверьте API и повторите запрос
             </div>
           ) : null}
 
@@ -263,7 +263,7 @@ export function QrPage() {
           <p className="eyebrow">QR resolver</p>
           <h3 className="mt-2 text-3xl font-semibold">Проверить вставленный payload</h3>
           <p className="mt-3 max-w-2xl text-sm text-white/62">
-            Вставьте строку из QR-кода вручную. Страница вызовет `resolveQr`, покажет валидность ответа и предложит следующий маршрут.
+            Вставьте строку из QR-кода вручную Страница вызовет `resolveQr`, покажет валидность ответа и предложит следующий маршрут
           </p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -282,7 +282,7 @@ export function QrPage() {
 
             <div className="flex flex-wrap gap-3">
               <button className="primary-button" type="submit" disabled={!trimmedPayload || resolveMutation.isPending}>
-                {resolveMutation.isPending ? "Проверяем…" : "Resolve QR"}
+                {resolveMutation.isPending ? "Проверяем" : "Resolve QR"}
               </button>
               <button className="secondary-button" type="button" onClick={() => handlePayloadChange("")} disabled={!payloadInput && !resolveMutation.data}>
                 Очистить
@@ -297,7 +297,7 @@ export function QrPage() {
             <div className="list-row">
               <div>
                 <p className="text-lg font-medium">Как читать результат</p>
-                <p className="text-sm text-white/55">`valid` показывает, прошел ли payload проверку, а CTA определяет, какой экран нужен дальше.</p>
+                <p className="text-sm text-white/55">`valid` показывает, прошел ли payload проверку, а CTA определяет, какой экран нужен дальше</p>
               </div>
               <strong className="text-2xl">{trimmedPayload.length}</strong>
             </div>
@@ -336,7 +336,7 @@ export function QrPage() {
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-white/42">Последний payload</p>
                 <p className="mt-3 break-all font-mono text-sm leading-6 text-white/86">
-                  {payloadPreview || "Пока пусто. Вставьте строку в форму выше, чтобы увидеть разбор."}
+                  {payloadPreview || "Пока пусто Вставьте строку в форму выше, чтобы увидеть разбор"}
                 </p>
               </div>
 

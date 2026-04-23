@@ -30,24 +30,26 @@ function renderShell(pathname: string) {
 }
 
 describe("router", () => {
-  it("registers the social-ai-qr routes", () => {
+  it("registers the contacts hub and keeps legacy friends and qr paths", () => {
     const paths = collectPaths(appRoutes);
 
+    expect(paths).toContain("/app/contacts");
     expect(paths).toContain("/app/friends");
     expect(paths).toContain("/app/qr");
     expect(paths).toContain("/app/ai");
   });
 
-  it("exposes top-level navigation links for the new modules", () => {
+  it("exposes contacts as the main social entry in top navigation", () => {
     const labels = appLinks.map((link) => link.label);
 
-    expect(labels).toContain("Друзья");
-    expect(labels).toContain("QR");
+    expect(labels).toContain("Контакты");
+    expect(labels).not.toContain("Друзья");
+    expect(labels).not.toContain("QR");
     expect(labels).toContain("AI");
   });
 
   it("exposes a compact mobile bottom nav with overflow destinations", () => {
-    expect(mobileBottomNavItems.map((item) => item.label)).toEqual(["Обзор", "Друзья", "QR", "AI", "Еще"]);
+    expect(mobileBottomNavItems.map((item) => item.label)).toEqual(["Обзор", "Контакты", "AI", "Еще"]);
     expect(mobileOverflowLinks.map((item) => item.label)).toEqual([
       "Планеты",
       "Игры",
@@ -56,6 +58,14 @@ describe("router", () => {
       "Награды",
       "Социальное кольцо",
     ]);
+  });
+
+  it("treats direct friends and qr routes as part of contacts", () => {
+    const contactsLink = appLinks.find((link) => link.to === "/app/contacts");
+
+    expect(contactsLink).toBeDefined();
+    expect(isShellLinkActive("/app/friends", contactsLink!)).toBe(true);
+    expect(isShellLinkActive("/app/qr", contactsLink!)).toBe(true);
   });
 
   it("treats nested game and planet routes as active shell destinations", () => {

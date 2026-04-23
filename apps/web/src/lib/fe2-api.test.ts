@@ -20,11 +20,33 @@ describe("fe2-api mock adapter", () => {
     const progress = buildMockPlanetProgress("CREDIT_SHIELD");
 
     expect(progress.id).toBe("CREDIT_SHIELD");
+    expect(progress.constellation.name).toBe("Весы");
     expect(progress.constellation.big_stars.length).toBe(progress.constellation.big_stars_total);
     expect(progress.constellation.small_stars.length).toBe(progress.constellation.small_stars_per_segment);
+    expect(progress.constellation.big_stars_total).toBe(6);
+    expect(progress.constellation.small_stars_per_segment).toBe(3);
+    expect(progress.constellation.connections).toHaveLength(9);
     expect(progress.game.remaining_attempts_today).toBe(
       progress.game.daily_attempts_limit - progress.game.daily_attempts_used,
     );
+  });
+
+  it("maps each planet to a distinct zodiac shape with its own number of stars", () => {
+    const gemini = buildMockPlanetProgress("ORBIT_COMMERCE").constellation;
+    const libra = buildMockPlanetProgress("CREDIT_SHIELD").constellation;
+    const aquarius = buildMockPlanetProgress("SOCIAL_RING").constellation;
+
+    expect(gemini.name).toBe("Близнецы");
+    expect(gemini.big_stars_total).toBe(7);
+    expect(gemini.small_stars_per_segment).toBe(5);
+
+    expect(libra.name).toBe("Весы");
+    expect(libra.big_stars_total).toBe(6);
+    expect(libra.small_stars_per_segment).toBe(3);
+
+    expect(aquarius.name).toBe("Водолей");
+    expect(aquarius.big_stars_total).toBe(6);
+    expect(aquarius.small_stars_per_segment).toBe(4);
   });
 
   it("creates a game result that awards a star and decrements remaining attempts", () => {

@@ -20,7 +20,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/halva-snake",
     planetCode: "ORBIT_COMMERCE",
     eventKind: "partner",
-    detail: "Забег Орбиты покупок с ростом скорости и синхронизацией прогресса.",
+    detail: "Забег Орбиты покупок с ростом скорости и синхронизацией прогресса",
   },
   {
     code: "credit_shield_reactor",
@@ -29,7 +29,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/credit-shield-reactor",
     planetCode: "CREDIT_SHIELD",
     eventKind: "credit",
-    detail: "Тайминг-цикл Кредитного щита с прогрессией на 12 раундов.",
+    detail: "Тайминг-цикл Кредитного щита с прогрессией на 12 раундов",
   },
   {
     code: "social_ring_signal",
@@ -38,7 +38,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/social-ring-signal",
     planetCode: "SOCIAL_RING",
     eventKind: "referral",
-    detail: "Игра на память, которая питает Социальное кольцо живым реферальным импульсом.",
+    detail: "Игра на память, которая питает Социальное кольцо живым реферальным импульсом",
   },
   {
     code: "moby_bird",
@@ -47,7 +47,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/moby-bird",
     planetCode: "CREDIT_SHIELD",
     eventKind: "education",
-    detail: "Полет маскота через графики ритма с очками за точные зоны.",
+    detail: "Полет маскота через графики ритма с очками за точные зоны",
   },
   {
     code: "cashback_tetris",
@@ -56,7 +56,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/cashback-tetris",
     planetCode: "ORBIT_COMMERCE",
     eventKind: "partner",
-    detail: "Сборка орбитальных категорий в линии для кратких бонусных окон.",
+    detail: "Сборка орбитальных категорий в линии для кратких бонусных окон",
   },
   {
     code: "moby_jump",
@@ -65,7 +65,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/moby-jump",
     planetCode: "CREDIT_SHIELD",
     eventKind: "education",
-    detail: "Прыжки по целям маршрута с усилителями Халвы.",
+    detail: "Прыжки по целям маршрута с усилителями Халвы",
   },
   {
     code: "fintech_match3",
@@ -74,7 +74,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/fintech-match3",
     planetCode: "ORBIT_COMMERCE",
     eventKind: "partner",
-    detail: "Три в ряд с модульными символами и ежедневными комбо.",
+    detail: "Три в ряд с модульными символами и ежедневными комбо",
   },
   {
     code: "super_moby_bros",
@@ -83,7 +83,7 @@ export const MINI_GAMES: MiniGameMeta[] = [
     route: "/app/game/super-moby-bros",
     planetCode: "SOCIAL_RING",
     eventKind: "referral",
-    detail: "Платформер про световые жетоны, препятствия и тренировку внимания.",
+    detail: "Платформер про световые жетоны, препятствия и тренировку внимания",
   },
 ];
 

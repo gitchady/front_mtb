@@ -23,7 +23,7 @@ describe("planet unlock progression", () => {
       planetCode: "ORBIT_COMMERCE",
       questId: "quest_orbit_001",
       title: "Квест Орбиты",
-      detail: "Награда получена.",
+      detail: "Награда получена",
       baseReward: 5,
     });
 
@@ -35,7 +35,7 @@ describe("planet unlock progression", () => {
       planetCode: "CREDIT_SHIELD",
       questId: "quest_credit_001",
       title: "Квест щита",
-      detail: "Награда получена.",
+      detail: "Награда получена",
       baseReward: 5,
     });
 

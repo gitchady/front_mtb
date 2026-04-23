@@ -67,12 +67,12 @@ export function useMiniGameClaim(gameCode: GameCode, score: number, baseReward: 
         score,
         baseReward,
         title: `Получена награда ${meta.title}`,
-        detail: `${meta.title}: счет ${score}.`,
+        detail: `${meta.title}: счет ${score}`,
       });
       setStatus(
         `Забег ${run.run_id}: +${outcome.totalReward} звездной пыли${
           outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${event.event_id} синхронизировано.`,
+        } Событие ${event.event_id} синхронизировано`,
       );
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
@@ -83,7 +83,7 @@ export function useMiniGameClaim(gameCode: GameCode, score: number, baseReward: 
       });
     },
     onError: () => {
-      setStatus(`${meta.title} завершена локально, но синхронизация не прошла. Попробуйте забрать награду еще раз.`);
+      setStatus(`${meta.title} завершена локально, но синхронизация не прошла Попробуйте забрать награду еще раз`);
     },
   });
 

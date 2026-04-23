@@ -29,44 +29,44 @@ function getErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return "Не удалось получить данные. Попробуйте еще раз.";
+  return "Не удалось получить данные Попробуйте еще раз";
 }
 
 function formatSourceLabel(source: string) {
   if (source === "manual") {
-    return "вручную";
+    return "Вручную";
   }
   if (source === "qr") {
-    return "через QR";
+    return "Через QR";
   }
   if (source === "referral") {
-    return "из рефералки";
+    return "Из рефералки";
   }
   return source;
 }
 
 function formatStatusLabel(status: string) {
   if (status === "accepted") {
-    return "активно";
+    return "Активно";
   }
   if (status === "pending") {
-    return "ожидает";
+    return "Ожидает";
   }
   return status;
 }
 
 function formatActivityKind(kind: string) {
   if (kind === "invite_sent") {
-    return "инвайт";
+    return "Инвайт";
   }
   if (kind === "invite_accepted") {
-    return "принят";
+    return "Принят";
   }
   if (kind === "game_reward") {
-    return "награда";
+    return "Награда";
   }
   if (kind === "quest_completed") {
-    return "квест";
+    return "Квест";
   }
   return kind;
 }
@@ -141,7 +141,7 @@ export function FriendsPage() {
         source: "manual",
       }),
     onSuccess: (entry, targetUserId) => {
-      setFeedback(`Инвайт отправлен для ${entry.display_name || targetUserId}. Теперь ждём подтверждения.`);
+      setFeedback(`Инвайт отправлен для ${entry.display_name || targetUserId} Теперь ждём подтверждения`);
       setInviteeId("");
       queryClient.invalidateQueries({ queryKey: ["friends", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-activity", userId] });
@@ -158,7 +158,7 @@ export function FriendsPage() {
         friendship_id: friendshipId,
       }),
     onSuccess: (entry) => {
-      setFeedback(`Связь с ${entry.display_name} подтверждена. Можно продолжать в QR или AI.`);
+      setFeedback(`Связь с ${entry.display_name} подтверждена Можно продолжать в QR или AI`);
       queryClient.invalidateQueries({ queryKey: ["friends", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-activity", userId] });
       queryClient.invalidateQueries({ queryKey: ["assistant-context", userId] });
@@ -176,7 +176,7 @@ export function FriendsPage() {
   const totalOpenInvites = incomingCount + outgoingCount;
   const canInvite = Boolean(trimmedInviteeId) && trimmedInviteeId !== userId && !inviteMutation.isPending;
   const inviteValidationMessage =
-    trimmedInviteeId === userId ? "Нельзя пригласить собственный user_id." : "Используйте user_id клиента или пилота из QR.";
+    trimmedInviteeId === userId ? "Нельзя пригласить собственный user_id" : "Используйте user_id клиента или пилота из QR";
   const showInitialLoading = (friendsQuery.isLoading && !friendsQuery.data) || (activityQuery.isLoading && !activityQuery.data);
   const hasNetworkError = friendsQuery.isError || activityQuery.isError;
 
@@ -206,19 +206,19 @@ export function FriendsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="metric-chip">
               <span>Активные друзья</span>
-              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : acceptedCount}</strong>
+              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : acceptedCount}</strong>
             </div>
             <div className="metric-chip">
               <span>Открытые инвайты</span>
-              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : totalOpenInvites}</strong>
+              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : totalOpenInvites}</strong>
             </div>
             <div className="metric-chip">
               <span>Входящие</span>
-              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : incomingCount}</strong>
+              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : incomingCount}</strong>
             </div>
             <div className="metric-chip">
               <span>Активность</span>
-              <strong>{activityQuery.isLoading && !activityQuery.data ? "…" : activityCount}</strong>
+              <strong>{activityQuery.isLoading && !activityQuery.data ? "Загрузка" : activityCount}</strong>
             </div>
           </div>
         </div>
@@ -230,7 +230,7 @@ export function FriendsPage() {
           <h3 className="mt-2 text-3xl font-semibold">Добавить друга по user_id</h3>
           <p className="mt-3 text-sm text-white/62">
             Базовый MVP-канал: вручную введите идентификатор, отправьте запрос и используйте QR, когда нужен быстрый офлайн
-            обмен.
+            обмен
           </p>
           <label className="mt-5 block">
             <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">ID пользователя</span>
@@ -238,7 +238,7 @@ export function FriendsPage() {
               className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-white outline-none transition focus:border-white/25"
               name="targetUserId"
               autoComplete="off"
-              placeholder="например, u_demo_friend"
+              placeholder="Например, u_demo_friend"
               value={inviteeId}
               onChange={(event) => setInviteeId(event.target.value)}
             />
@@ -251,31 +251,31 @@ export function FriendsPage() {
               type="button"
               onClick={() => inviteMutation.mutate(trimmedInviteeId)}
             >
-              {inviteMutation.isPending ? "Отправляем…" : "Отправить инвайт"}
+              {inviteMutation.isPending ? "Отправляем" : "Отправить инвайт"}
             </button>
             <Link className="secondary-button inline-flex" to="/app/qr">
               Поделиться через QR
             </Link>
           </div>
           <div className="mt-4 min-h-[1.25rem] text-sm text-white/58" aria-live="polite">
-            {inviteMutation.isError ? getErrorMessage(inviteMutation.error) : inviteMutation.isSuccess ? "Инвайт ушел в обработку." : null}
+            {inviteMutation.isError ? getErrorMessage(inviteMutation.error) : inviteMutation.isSuccess ? "Инвайт ушел в обработку" : null}
           </div>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
             <div className="metric-chip">
               <span>Исходящие</span>
-              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : outgoingCount}</strong>
+              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : outgoingCount}</strong>
             </div>
             <div className="metric-chip">
               <span>Принятые связи</span>
-              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : acceptedCount}</strong>
+              <strong>{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : acceptedCount}</strong>
             </div>
           </div>
 
           <div className="mt-7 border-t border-white/8 pt-5">
             <p className="eyebrow">Следующий шаг</p>
             <p className="mt-2 text-sm text-white/62">
-              Если нужен быстрый сценарий знакомства, ведите пользователя в QR. Если нужны подсказки по контакту, переводите в AI.
+              Если нужен быстрый сценарий знакомства, ведите пользователя в QR Если нужны подсказки по контакту, переводите в AI
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link className="primary-button inline-flex" to="/app/qr">
@@ -294,10 +294,10 @@ export function FriendsPage() {
               <p className="eyebrow">Входящие подтверждения</p>
               <h3 className="text-2xl font-semibold">Запросы, которые ждут решения</h3>
             </div>
-            <span className="text-sm text-white/55">запросов: {friendsQuery.isLoading && !friendsQuery.data ? "…" : incomingCount}</span>
+            <span className="text-sm text-white/55">запросов: {friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : incomingCount}</span>
           </div>
 
-          {showInitialLoading ? <p className="text-sm text-white/60">Подтягиваем социальный граф и последнюю активность…</p> : null}
+          {showInitialLoading ? <p className="text-sm text-white/60">Подтягиваем социальный граф и последнюю активность</p> : null}
           {friendsQuery.isError ? (
             <div className="rounded-3xl border border-rose-300/20 bg-rose-300/10 px-4 py-4 text-sm text-rose-100">
               {getErrorMessage(friendsQuery.error)}
@@ -309,9 +309,9 @@ export function FriendsPage() {
               <div className="list-row list-row--empty">
                 <div>
                   <p className="text-lg font-medium">Пока нет входящих инвайтов</p>
-                  <p className="text-sm text-white/55">Отправьте свой QR или предложите другу открыть AI-ассистента для следующего шага.</p>
+                  <p className="text-sm text-white/55">Отправьте свой QR или предложите другу открыть AI-ассистента для следующего шага</p>
                 </div>
-                <strong className="status-pill">пусто</strong>
+                <strong className="status-pill">Пусто</strong>
               </div>
               {friends.pending_outgoing.slice(0, 3).map((entry) => (
                 <FriendConnectionRow key={entry.friendship_id} entry={entry} />
@@ -336,7 +336,7 @@ export function FriendsPage() {
                         type="button"
                         onClick={() => acceptMutation.mutate(entry.friendship_id)}
                       >
-                        {acceptPending ? "Принимаем…" : "Принять"}
+                        {acceptPending ? "Принимаем" : "Принять"}
                       </button>
                     }
                   />
@@ -351,7 +351,7 @@ export function FriendsPage() {
                 <p className="eyebrow">Исходящие инвайты</p>
                 <h4 className="text-xl font-semibold">Ожидают ответа</h4>
               </div>
-              <span className="text-sm text-white/55">{friendsQuery.isLoading && !friendsQuery.data ? "…" : outgoingCount}</span>
+              <span className="text-sm text-white/55">{friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : outgoingCount}</span>
             </div>
             <div className="space-y-3">
               {friends.pending_outgoing.length ? (
@@ -360,9 +360,9 @@ export function FriendsPage() {
                 <div className="list-row list-row--empty">
                   <div>
                     <p className="text-lg font-medium">Нет исходящих запросов</p>
-                    <p className="text-sm text-white/55">Отправьте первый инвайт вручную или через QR-код.</p>
+                    <p className="text-sm text-white/55">Отправьте первый инвайт вручную или через QR-код</p>
                   </div>
-                  <strong className="status-pill">готово</strong>
+                  <strong className="status-pill">Готово</strong>
                 </div>
               )}
             </div>
@@ -377,7 +377,7 @@ export function FriendsPage() {
               <p className="eyebrow">Активные друзья</p>
               <h3 className="text-2xl font-semibold">Текущий круг доверия</h3>
             </div>
-            <span className="text-sm text-white/55">в сети: {friendsQuery.isLoading && !friendsQuery.data ? "…" : acceptedCount}</span>
+            <span className="text-sm text-white/55">в сети: {friendsQuery.isLoading && !friendsQuery.data ? "Загрузка" : acceptedCount}</span>
           </div>
 
           {friendsQuery.isError ? (
@@ -395,9 +395,9 @@ export function FriendsPage() {
               <div className="list-row list-row--empty">
                 <div>
                   <p className="text-lg font-medium">Список друзей еще пуст</p>
-                  <p className="text-sm text-white/55">Первое подтверждение сразу превратит этот экран в рабочую контактную панель.</p>
+                  <p className="text-sm text-white/55">Первое подтверждение сразу превратит этот экран в рабочую контактную панель</p>
                 </div>
-                <strong className="status-pill">старт</strong>
+                <strong className="status-pill">Старт</strong>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link className="primary-button inline-flex justify-center" to="/app/qr">
@@ -417,7 +417,7 @@ export function FriendsPage() {
               <p className="eyebrow">Социальная активность</p>
               <h3 className="text-2xl font-semibold">Последние события по друзьям</h3>
             </div>
-            <span className="text-sm text-white/55">событий: {activityQuery.isLoading && !activityQuery.data ? "…" : activityCount}</span>
+            <span className="text-sm text-white/55">событий: {activityQuery.isLoading && !activityQuery.data ? "Загрузка" : activityCount}</span>
           </div>
 
           {activityQuery.isError ? (
@@ -427,12 +427,12 @@ export function FriendsPage() {
               </div>
               {!friendsQuery.isError && acceptedCount ? (
                 <p className="text-sm text-white/58">
-                  Список друзей загружен, но лента активности пока недоступна. Можно продолжать работу с инвайтами.
+                  Список друзей загружен, но лента активности пока недоступна Можно продолжать работу с инвайтами
                 </p>
               ) : null}
             </div>
           ) : activityQuery.isLoading && !activityQuery.data ? (
-            <p className="text-sm text-white/60">Собираем события по инвайтам и действиям друзей…</p>
+            <p className="text-sm text-white/60">Собираем события по инвайтам и действиям друзей</p>
           ) : activityQuery.data?.length ? (
             <div className="space-y-3">
               {activityQuery.data.map((item) => (
@@ -444,9 +444,9 @@ export function FriendsPage() {
               <div className="list-row list-row--empty">
                 <div>
                   <p className="text-lg font-medium">Лента пока пустая</p>
-                  <p className="text-sm text-white/55">После первого инвайта или подтверждения здесь появятся новые сигналы.</p>
+                  <p className="text-sm text-white/55">После первого инвайта или подтверждения здесь появятся новые сигналы</p>
                 </div>
-                <strong className="status-pill">ожидает</strong>
+                <strong className="status-pill">Ожидает</strong>
               </div>
               <div className="rounded-3xl border border-white/8 bg-white/[0.03] px-5 py-4 text-sm text-white/60">
                 Для ускорения сценария откройте <Link className="text-white underline decoration-white/30 underline-offset-4" to="/app/qr">QR</Link> или{" "}
@@ -465,7 +465,7 @@ export function FriendsPage() {
           <p className="eyebrow">Состояние сети</p>
           <h3 className="mt-2 text-2xl font-semibold">Часть данных не синхронизировалась</h3>
           <p className="mt-3 max-w-2xl text-sm text-white/60">
-            Друзья и активность загружаются отдельно, поэтому экран остается рабочим даже при частичном сбое. Нажмите обновить, чтобы
+            Друзья и активность загружаются отдельно, поэтому экран остается рабочим даже при частичном сбое Нажмите обновить, чтобы
             повторить запросы.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">

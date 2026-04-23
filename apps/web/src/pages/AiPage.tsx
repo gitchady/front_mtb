@@ -48,28 +48,28 @@ function normalizeAssistantContext(value: AssistantContext | null | undefined, u
     segment === "freelancer"
       ? [
           "Какие действия дадут быстрый прирост прогресса на этой неделе?",
-          "Помоги разобрать активность по друзьям и QR-сценариям.",
+          "Помоги разобрать активность по друзьям и QR-сценариям",
           "С чего лучше начать, если хочу усилить Orbit и Social одновременно?",
         ]
       : segment === "first-jobber"
         ? [
-            "Подскажи короткий план роста через задания и партнерские покупки.",
+            "Подскажи короткий план роста через задания и партнерские покупки",
             "Какие следующие шаги помогут удержать темп в квестах?",
             "Как использовать друзей и QR без лишних действий?",
           ]
         : [
             "С чего начать, чтобы быстро почувствовать прогресс в приложении?",
             "Какие действия сейчас самые выгодные для моего профиля?",
-            "Собери маршрут из друзей, QR и квестов на один день.",
+            "Собери маршрут из друзей, QR и квестов на один день",
           ];
 
   const recommendedFocus =
     asNonEmptyString(value?.recommended_focus) ??
     (segment === "freelancer"
-      ? "Свести воедино социальный контур, QR-точки и быстрые квесты."
+      ? "Свести воедино социальный контур, QR-точки и быстрые квесты"
       : segment === "first-jobber"
-        ? "Удерживать ровный ритм заданий, чтобы AI подсказывал следующий лучший шаг."
-        : "Начать с самых понятных действий и быстро собрать первую серию полезных сигналов.");
+        ? "Удерживать ровный ритм заданий, чтобы AI подсказывал следующий лучший шаг"
+        : "Начать с самых понятных действий и быстро собрать первую серию полезных сигналов");
 
   const summaryChips = asStringArray(value?.summary_chips);
   const quickPrompts = asStringArray(value?.quick_prompts);
@@ -92,7 +92,7 @@ function normalizeAssistantContext(value: AssistantContext | null | undefined, u
 
 function normalizeAssistantReply(value: AssistantChatResponse): Omit<HistoryMessage, "id" | "role" | "createdAt" | "qrPayload"> {
   return {
-    message: asNonEmptyString(value?.message) ?? "Ответ получен, но сервер не прислал текст. Попробуйте уточнить запрос.",
+    message: asNonEmptyString(value?.message) ?? "Ответ получен, но сервер не прислал текст Попробуйте уточнить запрос",
     suggestedActions: asStringArray(value?.suggested_actions),
     relatedModules: asStringArray(value?.related_modules),
     contextChips: asStringArray(value?.context_chips),
@@ -272,7 +272,7 @@ export function AiPage() {
       ]);
     },
     onError: () => {
-      setChatError("Не удалось связаться с AI-ассистентом. Проверьте API и попробуйте еще раз.");
+      setChatError("Не удалось связаться с AI-ассистентом Проверьте API и попробуйте еще раз");
     },
   });
 
@@ -299,7 +299,6 @@ export function AiPage() {
     submitPrompt(prompt, qrPayload);
   }
 
-  const activePromptCount = assistantContext.quick_prompts.length;
   const pendingAssistantState = chatMutation.isPending ? chatMutation.variables : null;
   const latestAssistantMessage = [...history].reverse().find((entry) => entry.role === "assistant") ?? null;
 
@@ -316,17 +315,6 @@ export function AiPage() {
                 Открыть друзей
               </Link>
             </div>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {assistantContext.summary_chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="inline-flex rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs uppercase tracking-[0.18em] text-white/64"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <p className="max-w-3xl text-sm text-white/68 md:text-lg">{assistantContext.recommended_focus}</p>
         </div>
       </section>
 
@@ -337,9 +325,6 @@ export function AiPage() {
               <p className="eyebrow">Диалог</p>
               <h3 className="mt-2 text-2xl font-semibold">Локальная AI-история</h3>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/60">
-              {segment === "freelancer" ? "Freelancer" : segment === "first-jobber" ? "First jobber" : "Student"} profile
-            </div>
           </div>
 
           <form className="mt-6 space-y-4 border-t border-white/8 pt-5" onSubmit={handleSubmit}>
@@ -349,7 +334,7 @@ export function AiPage() {
                 <textarea
                   className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
                   name="assistantPrompt"
-                  placeholder="Например: собери следующий лучший шаг для роста через квесты, друзей и QR."
+                  placeholder="Например: собери следующий лучший шаг для роста через квесты, друзей и QR"
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                 />
@@ -361,7 +346,7 @@ export function AiPage() {
                   <textarea
                     className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
                     name="qrPayload"
-                    placeholder="Опционально: вставьте payload из QR-потока."
+                    placeholder="Опционально: вставьте payload из QR-потока"
                     value={qrPayload}
                     onChange={(event) => setQrPayload(event.target.value)}
                   />
@@ -377,10 +362,10 @@ export function AiPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-white/56">
-                Ответ возвращает текст, suggested actions, related modules и context chips.
+                Ответ возвращает текст, suggested actions, related modules и context chips
               </p>
               <button className="primary-button" disabled={chatMutation.isPending || prompt.trim().length === 0} type="submit">
-                {chatMutation.isPending ? "Отправляем…" : "Спросить AI"}
+                {chatMutation.isPending ? "Отправляем" : "Спросить AI"}
               </button>
             </div>
           </form>
@@ -389,15 +374,15 @@ export function AiPage() {
             {assistantContextQuery.isLoading ? (
               <div className="list-row list-row--empty">
                 <div>
-                  <p className="text-sm text-white/72">Собираем контекст пользователя…</p>
-                  <p className="mt-1 text-sm text-white/50">AI готовит быстрые подсказки и стартовую сводку.</p>
+                  <p className="text-sm text-white/72">Собираем контекст пользователя</p>
+                  <p className="mt-1 text-sm text-white/50">AI готовит быстрые подсказки и стартовую сводку</p>
                 </div>
               </div>
             ) : null}
 
             {assistantContextQuery.isError ? (
               <div className="rounded-[22px] border border-rose-400/25 bg-rose-500/10 px-4 py-4 text-sm text-rose-100">
-                Не удалось загрузить контекст ассистента. Чат все еще доступен, но ответы будут беднее без сводки.
+                Не удалось загрузить контекст ассистента Чат все еще доступен, но ответы будут беднее без сводки
               </div>
             ) : null}
 
@@ -406,7 +391,7 @@ export function AiPage() {
                 <p className="eyebrow">Старт</p>
                 <h4 className="mt-2 text-xl font-semibold">Спросите ассистента о следующем действии</h4>
                 <p className="mt-3 max-w-2xl text-sm text-white/65">
-                  История хранится локально в браузере только для этого пользователя. Ассистент может использовать QR payload,
+                  История хранится локально в браузере только для этого пользователя Ассистент может использовать QR payload,
                   друзья и текущий фокус из контекста.
                 </p>
               </div>
@@ -510,7 +495,7 @@ export function AiPage() {
                 <p className="mt-3 text-sm leading-6 text-white/72">
                   Анализируем запрос
                   {pendingAssistantState.qr ? " вместе с QR payload" : ""}
-                  …
+                  
                 </p>
               </div>
             ) : null}
@@ -526,7 +511,6 @@ export function AiPage() {
                 <p className="eyebrow">Quick prompts</p>
                 <h3 className="mt-2 text-2xl font-semibold">Стартовые вопросы</h3>
               </div>
-              <span className="text-xs uppercase tracking-[0.18em] text-white/45">{activePromptCount} ready</span>
             </div>
             <div className="mt-5 space-y-3">
               {assistantContext.quick_prompts.map((quickPrompt) => (
@@ -550,7 +534,7 @@ export function AiPage() {
                 <h3 className="mt-2 text-2xl font-semibold">Что сейчас держать в фокусе</h3>
               </div>
               <span className="text-xs uppercase tracking-[0.18em] text-white/45">
-                {pendingAssistantState ? "в обработке" : latestAssistantMessage ? "готово" : "ожидает"}
+                {pendingAssistantState ? "В обработке" : latestAssistantMessage ? "Готово" : "Ожидает"}
               </span>
             </div>
             <div className="mt-5 rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
@@ -558,13 +542,13 @@ export function AiPage() {
                 <p className="text-sm leading-6 text-white/72">
                   Анализируем запрос
                   {pendingAssistantState.qr ? " вместе с QR payload" : ""}
-                  …
+                  
                 </p>
               ) : latestAssistantMessage ? (
                 <p className="break-words text-sm leading-6 text-white/78">{latestAssistantMessage.message}</p>
               ) : (
                 <p className="text-sm leading-6 text-white/60">
-                  Отправьте первый запрос или выберите quick prompt, чтобы получить актуальный ответ ассистента.
+                  Отправьте первый запрос или выберите quick prompt, чтобы получить актуальный ответ ассистента
                 </p>
               )}
             </div>

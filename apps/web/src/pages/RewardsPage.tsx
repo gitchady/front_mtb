@@ -59,11 +59,9 @@ export function RewardsPage() {
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:items-end">
           <div className="space-y-4">
             <p className="eyebrow">Бонусная система</p>
-            <h2 className="text-4xl font-semibold leading-[1.02] md:text-5xl">
-              Хранилище наград превращает каждый забег в звездную пыль, серию бонусов, мастерство и контейнеры.
-            </h2>
+            <h2 className="text-4xl font-semibold leading-[1.02] md:text-5xl">Награды, пыль и контейнеры.</h2>
             <p className="max-w-2xl text-base text-white/68 md:text-lg">
-              Бонусы считаются локально: базовая награда, серия, мастерство планеты, результат и множитель фокуса.
+              Бонусы считаются локально: база, серия, мастерство и фокус.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -105,7 +103,7 @@ export function RewardsPage() {
               Открыть контейнер
             </button>
             <span className="text-sm text-white/58">
-              {lastCrateReward ? `Последний контейнер: +${lastCrateReward} звездной пыли` : "В этой сессии контейнер еще не открывался."}
+              {lastCrateReward ? `Последний контейнер: +${lastCrateReward} звездной пыли` : "В этой сессии контейнер еще не открывался"}
             </span>
           </div>
 
@@ -167,7 +165,7 @@ export function RewardsPage() {
                 </details>
               ))
             ) : (
-              <p className="text-sm text-white/60">Заберите награду мини-игры или квеста, чтобы заполнить историю бонусов.</p>
+              <p className="text-sm text-white/60">Заберите награду мини-игры или квеста, чтобы заполнить историю бонусов</p>
             )}
           </div>
         </article>
@@ -196,7 +194,7 @@ export function RewardsPage() {
             </div>
           ))}
           {!gameSummaryQuery.data?.games.length ? (
-            <p className="text-sm text-white/60">Сводки мини-игр появятся после первой полученной награды.</p>
+            <p className="text-sm text-white/60">Сводки мини-игр появятся после первой полученной награды</p>
           ) : null}
         </div>
       </section>

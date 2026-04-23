@@ -9,7 +9,7 @@ vi.mock("@tanstack/react-query", () => ({
       return {
         data: {
           user_id: "u_demo",
-          recommended_focus: "Соберите следующий шаг из друзей и контекста.",
+          recommended_focus: "Соберите следующий шаг из друзей и контекста",
           quick_prompts: ["С чего начать?"],
           summary_chips: ["AI-навигация"],
           friend_count: 0,
@@ -76,5 +76,26 @@ describe("AiPage", () => {
     expect(html).not.toContain("CTA");
     expect(html).not.toContain("Подключить внешние сигналы");
     expect(html).not.toContain("QR-модуль");
+  });
+
+  it("does not render the AI hero summary chips or focus line", () => {
+    const html = renderAiPage();
+
+    expect(html).not.toContain("AI-навигация");
+    expect(html).not.toContain("Соберите следующий шаг из друзей и контекста");
+  });
+
+  it("does not render the quick prompts ready counter", () => {
+    const html = renderAiPage();
+
+    expect(html).not.toContain("1 ready");
+    expect(html).not.toContain("READY");
+  });
+
+  it("does not render the profile badge in the dialogue header", () => {
+    const html = renderAiPage();
+
+    expect(html).not.toContain("Student profile");
+    expect(html).not.toContain("PROFILE");
   });
 });

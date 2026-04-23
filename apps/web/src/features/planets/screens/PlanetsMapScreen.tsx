@@ -25,7 +25,7 @@ export function PlanetsMapScreen() {
           <div className="planets-map-hero__metrics grid gap-3 sm:grid-cols-2">
             <div className="metric-chip">
               <span>Планет</span>
-              <strong>{planetsQuery.isLoading ? "..." : planets.length}</strong>
+              <strong>{planetsQuery.isLoading ? "Загрузка" : planets.length}</strong>
             </div>
             <div className="metric-chip">
               <span>Секторов</span>

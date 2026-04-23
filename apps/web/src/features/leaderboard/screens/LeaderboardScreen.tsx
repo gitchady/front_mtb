@@ -49,7 +49,7 @@ export function LeaderboardScreen() {
             <p className="eyebrow">Лидерборд</p>
             <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Топ планеты за неделю</h2>
             <p className="max-w-2xl text-base text-white/68 md:text-lg">
-              Недельный период собирает лучших пилотов планеты и открывает призовые позиции.
+              Недельный период собирает лучших пилотов планеты и открывает призовые позиции
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -59,7 +59,7 @@ export function LeaderboardScreen() {
             </div>
             <div className="metric-chip">
               <span>Мой ранг</span>
-              <strong>{leaderboardQuery.data?.current_user_rank ?? "..."}</strong>
+              <strong>{leaderboardQuery.data?.current_user_rank ?? "Загрузка"}</strong>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ export function LeaderboardScreen() {
         </div>
 
         <p className="mt-4 text-sm text-white/50">
-          Период завершается: {leaderboardQuery.data ? formatPeriodEnd(leaderboardQuery.data.period_ends_at) : "..."}.
+          Период завершается: {leaderboardQuery.data ? formatPeriodEnd(leaderboardQuery.data.period_ends_at) : "Загрузка"}
         </p>
       </section>
 

@@ -26,7 +26,7 @@ export function PlanetDetailScreen() {
   const progress = progressQuery.data;
   const bigStarsLeftLabel = useMemo(() => {
     if (!progress) {
-      return "...";
+      return "Загрузка";
     }
     return `${progress.big_stars_until_increase} из ${progress.constellation.big_stars_total}`;
   }, [progress]);
@@ -43,14 +43,14 @@ export function PlanetDetailScreen() {
     if (!progress) {
       return;
     }
-    const text = `${progress.name}: ${progress.cashback_percent.toFixed(1)}% усиления, созвездие ${progress.constellation.name}.`;
+    const text = `${progress.name}: ${progress.cashback_percent.toFixed(1)}% усиления, созвездие ${progress.constellation.name}`;
     if (navigator.share) {
       await navigator.share({ title: progress.name, text, url: window.location.href });
-      setShareStatus("Карточка отправлена в системный шеринг.");
+      setShareStatus("Карточка отправлена в системный шеринг");
       return;
     }
     await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-    setShareStatus("Ссылка на карточку скопирована.");
+    setShareStatus("Ссылка на карточку скопирована");
   }
 
   if (!planetId) {
@@ -69,7 +69,7 @@ export function PlanetDetailScreen() {
     return (
       <section className="surface-panel">
         <p className="eyebrow">Планета</p>
-        <h2 className="mt-3 text-3xl font-semibold">Загружаем прогресс...</h2>
+        <h2 className="mt-3 text-3xl font-semibold">Загружаем прогресс</h2>
       </section>
     );
   }
@@ -137,7 +137,7 @@ export function PlanetDetailScreen() {
           >
             {canPlay ? "Играть" : "Лимит попыток исчерпан"}
           </Link>
-          {!canPlay ? <p className="text-sm text-white/58">Новые попытки появятся завтра.</p> : null}
+          {!canPlay ? <p className="text-sm text-white/58">Новые попытки появятся завтра</p> : null}
         </aside>
       </section>
     </div>

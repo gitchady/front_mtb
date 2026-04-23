@@ -55,7 +55,7 @@ export function AdminRiskPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Риски и антифрод</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Журнал активности помогает остановить подозрительные сигналы, не ломая игровой сценарий.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Журнал активности помогает остановить подозрительные сигналы, не ломая игровой сценарий</h2>
         {streamPayload ? (
           <p className="mt-4 text-sm text-white/58">Живой поток: награды/активность {streamPayload.reward_to_revenue_ratio} | активные пользователи {streamPayload.active_users}</p>
         ) : null}
@@ -81,7 +81,7 @@ export function AdminRiskPage() {
                 <strong className="text-xl text-amber-300">Риск {group.maxSeverity}</strong>
               </div>
             ))}
-            {!activeFlags.length ? <p className="text-sm text-white/60">Активных риск-сигналов сейчас нет.</p> : null}
+            {!activeFlags.length ? <p className="text-sm text-white/60">Активных риск-сигналов сейчас нет</p> : null}
           </div>
         </article>
         <article className="surface-panel">
@@ -99,7 +99,7 @@ export function AdminRiskPage() {
                 <strong className="text-2xl text-amber-300">{formatStatus(reward.status)}</strong>
               </div>
             ))}
-            {!riskQuery.data?.pending_rewards.length ? <p className="text-sm text-white/60">Записей на проверке сейчас нет.</p> : null}
+            {!riskQuery.data?.pending_rewards.length ? <p className="text-sm text-white/60">Записей на проверке сейчас нет</p> : null}
           </div>
         </article>
       </section>

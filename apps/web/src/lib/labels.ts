@@ -25,61 +25,61 @@ export const GAME_CODE_LABELS: Record<GameCode, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  active: "активно",
-  activated: "активировано",
-  claimed: "получено",
-  completed: "готово",
-  confirmed: "подтверждено",
-  flagged: "на проверке",
-  invited: "приглашен",
-  pending: "на проверке",
-  processed: "обработано",
-  queued: "в очереди",
-  received: "получено",
+  active: "Активно",
+  activated: "Активировано",
+  claimed: "Получено",
+  completed: "Готово",
+  confirmed: "Подтверждено",
+  flagged: "На проверке",
+  invited: "Приглашен",
+  pending: "На проверке",
+  processed: "Обработано",
+  queued: "В очереди",
+  received: "Получено",
 };
 
 const REWARD_TYPE_LABELS: Record<string, string> = {
-  cashback_booster: "орбитальный бустер",
-  credit_shield_xp: "опыт Кредитного щита",
-  education_hook: "образовательный импульс",
-  mini_game_stardust: "звездная пыль за игру",
-  quest_booster: "квестовый бустер",
-  quest_cashback: "усиление за квест",
-  quest_limit_boost: "рост доступа за квест",
-  quest_tournament_pass: "турнирный пропуск",
-  social_ring_reward: "импульс Социального кольца",
+  cashback_booster: "Орбитальный бустер",
+  credit_shield_xp: "Опыт Кредитного щита",
+  education_hook: "Образовательный импульс",
+  mini_game_stardust: "Звездная пыль за игру",
+  quest_booster: "Квестовый бустер",
+  quest_cashback: "Усиление за квест",
+  quest_limit_boost: "Рост доступа за квест",
+  quest_tournament_pass: "Турнирный пропуск",
+  social_ring_reward: "Импульс Социального кольца",
 };
 
 const REWARD_KIND_LABELS: Record<string, string> = {
-  booster: "бустер",
-  cashback: "усиление",
-  limit_boost: "рост доступа",
-  tournament_pass: "турнирный пропуск",
+  booster: "Бустер",
+  cashback: "Усиление",
+  limit_boost: "Рост доступа",
+  tournament_pass: "Турнирный пропуск",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  electronics: "электроника",
-  food: "еда",
+  electronics: "Электроника",
+  food: "Еда",
 };
 
 const EVENT_KIND_LABELS: Record<GameActionKind, string> = {
-  partner: "партнерский сигнал",
-  nonPartner: "свободный сигнал",
-  credit: "сигнал щита",
-  referral: "активация реферала",
-  education: "обучающий модуль",
-  risky: "антифрод-сигнал",
+  partner: "Партнерский сигнал",
+  nonPartner: "Свободный сигнал",
+  credit: "Сигнал щита",
+  referral: "Активация реферала",
+  education: "Обучающий модуль",
+  risky: "Антифрод-сигнал",
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
-  device_mismatch: "смена устройства",
-  large_amount: "высокая интенсивность",
-  multi_account: "мультиаккаунт",
-  velocity_excess: "частый поток",
+  device_mismatch: "Смена устройства",
+  large_amount: "Высокая интенсивность",
+  multi_account: "Мультиаккаунт",
+  velocity_excess: "Частый поток",
 };
 
 function fallbackLabel(value: string) {
-  return value.replace(/_/g, " ").trim();
+  return value.replace(/_/g, " ").trim().replace(/^./, (char) => char.toUpperCase());
 }
 
 export function formatStatus(value: string) {

@@ -9,6 +9,7 @@ export function ConstellationCanvas({
 }) {
   const activeBigStars = constellation.big_stars.filter((star) => star.lit).length;
   const activeSmallStars = constellation.small_stars.filter((star) => star.lit).length;
+  const starById = new Map([...constellation.big_stars, ...constellation.small_stars].map((star) => [star.id, star]));
 
   return (
     <div className={`constellation-canvas ${burst ? "constellation-canvas--burst" : ""}`}>
@@ -22,13 +23,27 @@ export function ConstellationCanvas({
             </feMerge>
           </filter>
         </defs>
-        <polyline
-          points={constellation.big_stars.map((star) => `${star.x},${star.y}`).join(" ")}
-          fill="none"
-          stroke="rgba(255,255,255,0.18)"
-          strokeDasharray="3 4"
-          strokeWidth="0.7"
-        />
+        {constellation.connections.map(([fromId, toId]) => {
+          const fromStar = starById.get(fromId);
+          const toStar = starById.get(toId);
+          if (!fromStar || !toStar) {
+            return null;
+          }
+
+          const isActive = fromStar.lit && toStar.lit;
+          return (
+            <line
+              key={`${fromId}-${toId}`}
+              x1={fromStar.x}
+              y1={fromStar.y}
+              x2={toStar.x}
+              y2={toStar.y}
+              stroke={isActive ? "rgba(255,212,79,0.44)" : "rgba(255,255,255,0.2)"}
+              strokeDasharray={isActive ? undefined : "3 4"}
+              strokeWidth={isActive ? 1.15 : 0.75}
+            />
+          );
+        })}
         {constellation.big_stars.map((star) => (
           <g key={star.id} filter={star.lit ? `url(#constellation-glow-${constellation.index})` : undefined}>
             <circle cx={star.x} cy={star.y} r={star.lit ? 4.8 : 4.2} fill={star.lit ? "#ffd44f" : "rgba(255,255,255,0.22)"} />

@@ -91,7 +91,7 @@ export function GameHero({
             <p className="mt-2 text-sm text-white/62">{status}</p>
           </div>
           <button className="primary-button" disabled={!canClaim || rewardClaimed || claimMutation.isPending} onClick={claimReward}>
-            {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация..." : `Забрать +${rewardPreview.totalReward}`}
+            {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация" : `Забрать +${rewardPreview.totalReward}`}
           </button>
         </div>
       </section>

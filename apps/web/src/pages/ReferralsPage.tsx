@@ -26,7 +26,7 @@ export function ReferralsPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Социальное кольцо</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Рефералы работают как система роста, а не как разовая промо-механика.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Рефералы работают как система роста, а не как разовая промо-механика</h2>
       </section>
       <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
         <article className="surface-panel">
@@ -43,11 +43,11 @@ export function ReferralsPage() {
             />
           </label>
           <button className="primary-button mt-4" disabled={inviteMutation.isPending} onClick={() => inviteMutation.mutate()}>
-            {inviteMutation.isPending ? "Отправляем…" : "Отправить приглашение"}
+            {inviteMutation.isPending ? "Отправляем" : "Отправить приглашение"}
           </button>
           <div className="mt-3 text-sm text-white/60" aria-live="polite">
             {lastInviteeId ? `Приглашение отправлено: ${lastInviteeId}` : null}
-            {inviteMutation.isError ? "Не удалось отправить приглашение. Проверьте API и попробуйте снова." : null}
+            {inviteMutation.isError ? "Не удалось отправить приглашение Проверьте API и попробуйте снова" : null}
           </div>
           <div className="mt-6 space-y-3">
             <div className="metric-chip">
@@ -61,7 +61,7 @@ export function ReferralsPage() {
           </div>
           <div className="mt-6 border-t border-white/8 pt-5">
             <p className="eyebrow">Мини-игра кольца</p>
-            <p className="mt-2 text-sm text-white/60">Проверьте память и реакцию, чтобы усилить социальный прогресс.</p>
+            <p className="mt-2 text-sm text-white/60">Проверьте память и реакцию, чтобы усилить социальный прогресс</p>
             <Link className="secondary-button mt-4 inline-flex" to="/app/game/social-ring-signal">
               Перейти в Сигнальный ринг
             </Link>

@@ -35,7 +35,7 @@ export function AdminSimulatorPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Симулятор событий</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Админка отправляет продуктовые события через тот же контур синхронизации, что использует клиент.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Админка отправляет продуктовые события через тот же контур синхронизации, что использует клиент</h2>
         {lastEvent ? (
           <p className="mt-4 text-sm text-white/58">
             Последнее событие: {lastEvent.eventId} | статус пайплайна: {formatStatus(lastEvent.status)}

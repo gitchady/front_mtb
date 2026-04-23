@@ -24,7 +24,7 @@ export function MobyJumpPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Прыгайте по целям, ловите ускоряющие платформы и не падайте ниже экрана.");
+  const [status, setStatus] = useState("Прыгайте по целям, ловите ускоряющие платформы и не падайте ниже экрана");
   const directionRef = useRef(0);
   const platformsRef = useRef(platforms);
   const baseReward = gameReward(score, 1.1, 6);
@@ -40,7 +40,7 @@ export function MobyJumpPage() {
     setIsRunning(false);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Прыгайте по целям, ловите ускоряющие платформы и не падайте ниже экрана.");
+    setStatus("Прыгайте по целям, ловите ускоряющие платформы и не падайте ниже экрана");
   }
 
   function move(direction: number) {
@@ -86,7 +86,7 @@ export function MobyJumpPage() {
         if (landing) {
           next = { ...next, y: landing.y - 34, vy: landing.boost ? -470 : -355 };
           setScore((value) => value + (landing.boost ? 8 : 4));
-          setStatus(landing.boost ? "Ускоряющая платформа дала мощный импульс вверх." : "Цель маршрута закреплена.");
+          setStatus(landing.boost ? "Ускоряющая платформа дала мощный импульс вверх" : "Цель маршрута закреплена");
         }
         if (next.y < 150) {
           const lift = 150 - next.y;
@@ -110,7 +110,7 @@ export function MobyJumpPage() {
         if (next.y > 370) {
           setIsRunning(false);
           setIsComplete(true);
-          setStatus("Прыжок завершен. Заберите награду за высоту и цели.");
+          setStatus("Прыжок завершен Заберите награду за высоту и цели");
         }
         return next;
       });
@@ -125,8 +125,8 @@ export function MobyJumpPage() {
       <GameHero
         code="moby_jump"
         kicker="Мини-игра из документа"
-        title="Moby Jump поднимает пользователя по платформам маршрутных целей."
-        description="Двигайтесь влево и вправо, ловите обычные цели и ускорители, чтобы поднять Кредитный щит выше."
+        title="Moby Jump поднимает пользователя по платформам маршрутных целей"
+        description="Двигайтесь влево и вправо, ловите обычные цели и ускорители, чтобы поднять Кредитный щит выше"
         score={score}
         baseReward={baseReward}
         status={status}

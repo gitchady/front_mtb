@@ -181,7 +181,7 @@ export const useGameStore = create<GameState>()(
           actionLog: appendActionLog(state, {
             id: createId(),
             title: "Вход в MTB Galaxy",
-            detail: `${playerAlias} стартовал как ${SEGMENT_LABELS[playerSegment].toLowerCase()} на планете ${PLANET_CODE_LABELS.ORBIT_COMMERCE}.`,
+            detail: `${playerAlias} стартовал как ${SEGMENT_LABELS[playerSegment].toLowerCase()} на планете ${PLANET_CODE_LABELS.ORBIT_COMMERCE}`,
             reward: 10,
             planetCode: "ORBIT_COMMERCE",
             createdAt: new Date().toISOString(),
@@ -224,7 +224,7 @@ export const useGameStore = create<GameState>()(
           actionLog: appendActionLog(state, {
             id: createId(),
             title: `Построено: ${title}`,
-            detail: `Строительство завершено на планете ${PLANET_CODE_LABELS[planetCode]}.`,
+            detail: `Строительство завершено на планете ${PLANET_CODE_LABELS[planetCode]}`,
             reward: -cost,
             planetCode,
             createdAt: new Date().toISOString(),
@@ -261,7 +261,7 @@ export const useGameStore = create<GameState>()(
           actionLog: appendActionLog(state, {
             id: createId(),
             title,
-            detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+            detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
             reward: outcome.totalReward,
             planetCode,
             createdAt,
@@ -304,7 +304,7 @@ export const useGameStore = create<GameState>()(
         const actionLog = appendActionLog(state, {
           id: createId(),
           title,
-          detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          detail: `${detail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
           reward: outcome.totalReward,
           planetCode,
           createdAt,
@@ -338,7 +338,7 @@ export const useGameStore = create<GameState>()(
             }),
           },
           getQuestUnlockTarget(questId),
-          "Планета открыта после получения награды ключевого квеста.",
+          "Планета открыта после получения награды ключевого квеста",
           createdAt,
         );
         set(patch);
@@ -365,7 +365,7 @@ export const useGameStore = create<GameState>()(
         const actionLog = appendActionLog(state, {
           id: createId(),
           title: "Получена награда Змейки Халва",
-          detail: `Забег превращен в орбитальное топливо после ${score} токенов.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          detail: `Забег превращен в орбитальное топливо после ${score} токенов${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
           reward: outcome.totalReward,
           planetCode: "ORBIT_COMMERCE",
           createdAt,
@@ -387,7 +387,7 @@ export const useGameStore = create<GameState>()(
             bonusHistory: appendBonusHistory(state, {
               id: createId(),
               title: "Получена награда Змейки Халва",
-              detail: `Собрано орбитальных токенов в Змейке Халва: ${score}.`,
+              detail: `Собрано орбитальных токенов в Змейке Халва: ${score}`,
               planetCode: "ORBIT_COMMERCE",
               totalReward: outcome.totalReward,
               baseReward: outcome.baseReward,
@@ -401,7 +401,7 @@ export const useGameStore = create<GameState>()(
             }),
           },
           getPlanetRunUnlockTarget("ORBIT_COMMERCE", score),
-          "Планета открыта после успешного забега игры Орбиты покупок.",
+          "Планета открыта после успешного забега игры Орбиты покупок",
           createdAt,
         );
         set(patch);
@@ -428,7 +428,7 @@ export const useGameStore = create<GameState>()(
         const actionLog = appendActionLog(state, {
           id: createId(),
           title: "Получена награда Кредитного щита",
-          detail: `Управление импульсом стабилизировало щит со счетом ${score}.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          detail: `Управление импульсом стабилизировало щит со счетом ${score}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
           reward: outcome.totalReward,
           planetCode: "CREDIT_SHIELD",
           createdAt,
@@ -450,7 +450,7 @@ export const useGameStore = create<GameState>()(
             bonusHistory: appendBonusHistory(state, {
               id: createId(),
               title: "Получена награда Кредитного щита",
-              detail: `Счет в реакторе щита: ${score}.`,
+              detail: `Счет в реакторе щита: ${score}`,
               planetCode: "CREDIT_SHIELD",
               totalReward: outcome.totalReward,
               baseReward: outcome.baseReward,
@@ -464,7 +464,7 @@ export const useGameStore = create<GameState>()(
             }),
           },
           getPlanetRunUnlockTarget("CREDIT_SHIELD", score),
-          "Планета открыта после успешного забега игры Кредитного щита.",
+          "Планета открыта после успешного забега игры Кредитного щита",
           createdAt,
         );
         set(patch);
@@ -502,7 +502,7 @@ export const useGameStore = create<GameState>()(
           actionLog: appendActionLog(state, {
             id: createId(),
             title: "Получена награда Социального кольца",
-            detail: `Сигнальный ринг синхронизировал команду после ${score} точек импульса.${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+            detail: `Сигнальный ринг синхронизировал команду после ${score} точек импульса${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
             reward: outcome.totalReward,
             planetCode: "SOCIAL_RING",
             createdAt,
@@ -510,7 +510,7 @@ export const useGameStore = create<GameState>()(
           bonusHistory: appendBonusHistory(state, {
             id: createId(),
             title: "Получена награда Социального кольца",
-            detail: `Точек импульса в Сигнальном ринге: ${score}.`,
+            detail: `Точек импульса в Сигнальном ринге: ${score}`,
             planetCode: "SOCIAL_RING",
             totalReward: outcome.totalReward,
             baseReward: outcome.baseReward,
@@ -545,11 +545,11 @@ export const useGameStore = create<GameState>()(
         );
         const createdAt = new Date().toISOString();
         const historyTitle = title ?? `Получена награда ${meta.title}`;
-        const historyDetail = detail ?? `${meta.title}: счет ${score}.`;
+        const historyDetail = detail ?? `${meta.title}: счет ${score}`;
         const actionLog = appendActionLog(state, {
           id: createId(),
           title: historyTitle,
-          detail: `${historyDetail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}.` : ""}`,
+          detail: `${historyDetail}${outcome.cratesEarned ? ` Контейнер хранилища +${outcome.cratesEarned}` : ""}`,
           reward: outcome.totalReward,
           planetCode: meta.planetCode,
           createdAt,
@@ -593,7 +593,7 @@ export const useGameStore = create<GameState>()(
             }),
           },
           getGameUnlockTarget(gameCode, score),
-          `Планета открыта после успешного забега игры ${meta.title}.`,
+          `Планета открыта после успешного забега игры ${meta.title}`,
           createdAt,
         );
         set(patch);
@@ -612,7 +612,7 @@ export const useGameStore = create<GameState>()(
           actionLog: appendActionLog(state, {
             id: createId(),
             title: "Открыт контейнер хранилища",
-            detail: "Мгновенная награда выпущена из бонусного хранилища MTB.",
+            detail: "Мгновенная награда выпущена из бонусного хранилища MTB",
             reward,
             planetCode: state.selectedPlanet,
             createdAt,
@@ -620,7 +620,7 @@ export const useGameStore = create<GameState>()(
           bonusHistory: appendBonusHistory(state, {
             id: createId(),
             title: "Открыт контейнер хранилища",
-            detail: "Ручное открытие контейнера за накопленный заряд хранилища.",
+            detail: "Ручное открытие контейнера за накопленный заряд хранилища",
             planetCode: state.selectedPlanet,
             totalReward: reward,
             baseReward: reward,

@@ -44,7 +44,7 @@ export function SocialRingGamePage() {
   const [score, setScore] = useState(0);
   const [activePad, setActivePad] = useState<SignalPadId | null>(null);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Подготовьте ринг, запомните последовательность и повторите ее.");
+  const [status, setStatus] = useState("Подготовьте ринг, запомните последовательность и повторите ее");
   const timersRef = useRef<number[]>([]);
   const baseReward = rewardFromScore(score);
   const rewardPreview = useMemo(
@@ -104,7 +104,7 @@ export function SocialRingGamePage() {
       });
     },
     onError: () => {
-      setStatus("Ринг завершен, но синхронизация не прошла. Попробуйте забрать награду еще раз.");
+      setStatus("Ринг завершен, но синхронизация не прошла Попробуйте забрать награду еще раз");
     },
   });
 
@@ -124,7 +124,7 @@ export function SocialRingGamePage() {
     setScore(0);
     setActivePad(null);
     setRewardClaimed(false);
-    setStatus("Подготовьте ринг, запомните последовательность и повторите ее.");
+    setStatus("Подготовьте ринг, запомните последовательность и повторите ее");
   }
 
   function launchRun() {
@@ -137,7 +137,7 @@ export function SocialRingGamePage() {
     setScore(0);
     setActivePad(null);
     setRewardClaimed(false);
-    setStatus("Ринг активен. Сначала запомните порядок сигналов.");
+    setStatus("Ринг активен Сначала запомните порядок сигналов");
   }
 
   function queueNextRound() {
@@ -145,7 +145,7 @@ export function SocialRingGamePage() {
     setRound((current) => current + 1);
     setUserIndex(0);
     setPhase("showing");
-    setStatus("Цепочка расширена. Загружается новый командный паттерн.");
+    setStatus("Цепочка расширена Загружается новый командный паттерн");
   }
 
   function finishRun(message: string) {
@@ -171,7 +171,7 @@ export function SocialRingGamePage() {
     pulsePad(padId);
 
     if (padId !== sequence[userIndex]) {
-      finishRun("Связь оборвалась. Командный импульс распался до завершения цепочки.");
+      finishRun("Связь оборвалась Командный импульс распался до завершения цепочки");
       return;
     }
 
@@ -180,19 +180,19 @@ export function SocialRingGamePage() {
 
     if (nextIndex < sequence.length) {
       setUserIndex(nextIndex);
-      setStatus("Хорошая фиксация. Продолжайте повторять сигналы без ошибки.");
+      setStatus("Хорошая фиксация Продолжайте повторять сигналы без ошибки");
       return;
     }
 
     setScore((current) => current + round * 2);
 
     if (round >= TOTAL_ROUNDS) {
-      finishRun("Ринг собран идеально. Командный сигнал стабилен и готов к награде.");
+      finishRun("Ринг собран идеально Командный сигнал стабилен и готов к награде");
       return;
     }
 
     setPhase("transition");
-    setStatus("Сигнал сохранен. Готовим следующий командный паттерн.");
+    setStatus("Сигнал сохранен Готовим следующий командный паттерн");
     const nextRoundTimer = window.setTimeout(queueNextRound, 520);
     timersRef.current.push(nextRoundTimer);
   }
@@ -217,7 +217,7 @@ export function SocialRingGamePage() {
       setActivePad(null);
       setUserIndex(0);
       setPhase("input");
-      setStatus("Ваш ход. Нажмите сигнальные панели в том же порядке.");
+      setStatus("Ваш ход Нажмите сигнальные панели в том же порядке");
     }, 360 + sequence.length * 620);
     timersRef.current.push(inputTimer);
 
@@ -313,7 +313,7 @@ export function SocialRingGamePage() {
                 disabled={phase !== "complete" || rewardClaimed || claimMutation.isPending || score === 0}
                 onClick={() => claimMutation.mutate()}
               >
-                {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация…" : `Забрать +${rewardPreview.totalReward}`}
+                {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация" : `Забрать +${rewardPreview.totalReward}`}
               </button>
             </div>
 
@@ -338,7 +338,7 @@ export function SocialRingGamePage() {
                       ? "Загрузка"
                       : phase === "complete"
                         ? "Награда"
-                        : "Синхр."}
+                        : "Синхр"}
               </strong>
             </div>
             <div className="signal-stage__pads">

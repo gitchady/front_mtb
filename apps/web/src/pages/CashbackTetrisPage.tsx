@@ -88,7 +88,7 @@ export function CashbackTetrisPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Собирайте полные линии орбитальных категорий. Стрелки или WASD управляют блоком.");
+  const [status, setStatus] = useState("Собирайте полные линии орбитальных категорий Стрелки или WASD управляют блоком");
   const boardRef = useRef(board);
   const pieceRef = useRef(piece);
   const baseReward = gameReward(score + lines * 5, 1.4, 7);
@@ -110,7 +110,7 @@ export function CashbackTetrisPage() {
     setIsRunning(false);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Собирайте полные линии орбитальных категорий. Стрелки или WASD управляют блоком.");
+    setStatus("Собирайте полные линии орбитальных категорий Стрелки или WASD управляют блоком");
   }
 
   function spawnAfterLock(nextBoard: Board) {
@@ -118,7 +118,7 @@ export function CashbackTetrisPage() {
     if (hasCollision(nextBoard, nextPiece)) {
       setIsRunning(false);
       setIsComplete(true);
-      setStatus("Поле заполнено. Заберите бонус за собранные категории.");
+      setStatus("Поле заполнено Заберите бонус за собранные категории");
       return;
     }
     setPiece(nextPiece);
@@ -137,7 +137,7 @@ export function CashbackTetrisPage() {
     if (result.cleared) {
       setLines((value) => value + result.cleared);
       setScore((value) => value + result.cleared * 12);
-      setStatus(`Линия усиления очищена: +${result.cleared * 12} очков.`);
+      setStatus(`Линия усиления очищена: +${result.cleared * 12} очков`);
     } else {
       setScore((value) => value + 1);
     }
@@ -219,8 +219,8 @@ export function CashbackTetrisPage() {
       <GameHero
         code="cashback_tetris"
         kicker="Мини-игра из документа"
-        title="Орбитальный тетрис собирает категории в линии и запускает бонусные окна."
-        description="Укладывайте орбитальные блоки, очищайте строки и превращайте чистое поле в награды Орбиты покупок."
+        title="Орбитальный тетрис собирает категории в линии и запускает бонусные окна"
+        description="Укладывайте орбитальные блоки, очищайте строки и превращайте чистое поле в награды Орбиты покупок"
         score={score}
         baseReward={baseReward}
         status={status}
@@ -251,7 +251,7 @@ export function CashbackTetrisPage() {
               <button className="control-button control-button-right" onClick={() => movePiece(1)}>→</button>
               <button className="control-button control-button-down" onClick={stepDown}>↓</button>
             </div>
-            <p className="text-sm text-white/58">W - поворот, A/D - движение, S - вниз, Space - быстро вниз. Стрелки тоже работают.</p>
+            <p className="text-sm text-white/58">W - поворот, A/D - движение, S - вниз, Space - быстро вниз Стрелки тоже работают</p>
           </div>
         </article>
         <article className="surface-panel">

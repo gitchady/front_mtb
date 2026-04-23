@@ -28,7 +28,7 @@ export function AdminKpiPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Админская витрина</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Витрина отслеживает живую активность, ритм модулей и состояние прогресса без денежного контура.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Витрина отслеживает живую активность, ритм модулей и состояние прогресса без денежного контура</h2>
         {streamPayload ? (
           <p className="mt-4 text-sm text-white/58">
             Живой поток: активные пользователи {streamPayload.active_users} | награды / активность {streamPayload.reward_to_revenue_ratio}
@@ -39,7 +39,7 @@ export function AdminKpiPage() {
         {KPI_LABELS.map(([key, label]) => (
           <article key={key} className="surface-panel">
             <p className="text-sm uppercase tracking-[0.25em] text-white/45">{label}</p>
-            <strong className="mt-3 block text-4xl font-semibold">{kpiQuery.data?.[key] ?? "…"}</strong>
+            <strong className="mt-3 block text-4xl font-semibold">{kpiQuery.data?.[key] ?? "Загрузка"}</strong>
           </article>
         ))}
       </section>

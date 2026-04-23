@@ -23,8 +23,8 @@ export function QuestsPage() {
       claimQuestReward({
         planetCode: (quest?.planet_code as PlanetCode | undefined) ?? "ORBIT_COMMERCE",
         questId,
-        title: `Получена награда: ${quest?.title ?? "квест"}`,
-        detail: "Награда квеста добавлена в локальное бонусное хранилище.",
+        title: `Получена награда: ${quest?.title ?? "Квест"}`,
+        detail: "Награда квеста добавлена в локальное бонусное хранилище",
         baseReward: Math.max(5, Math.round(quest?.reward_value ?? 5)),
       });
       queryClient.invalidateQueries({ queryKey: ["quests", userId] });
@@ -37,14 +37,14 @@ export function QuestsPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Слой миссий</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Ежедневные квесты связывают игровой эффект с измеримым ритмом действий.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Ежедневные квесты связывают игровой эффект с измеримым ритмом действий</h2>
       </section>
       <section className="grid gap-4 xl:grid-cols-2">
         {questsQuery.data?.map((quest) => {
           const isReady = quest.status === "completed";
           const isClaimed = quest.status === "claimed";
           const isClaimingThisQuest = claimMutation.isPending && claimMutation.variables === quest.quest_id;
-          const claimButtonText = isClaimed ? "Получено" : isClaimingThisQuest ? "Получаем…" : isReady ? "Забрать" : "Не готово";
+          const claimButtonText = isClaimed ? "Получено" : isClaimingThisQuest ? "Получаем" : isReady ? "Забрать" : "Не готово";
           const progressPercent = quest.threshold > 0 ? Math.min(100, (quest.current_value / quest.threshold) * 100) : 0;
 
           return (
@@ -75,7 +75,7 @@ export function QuestsPage() {
                 </button>
               </div>
               {claimMutation.isError && claimMutation.variables === quest.quest_id ? (
-                <p className="mt-3 text-sm text-rose-200">Не удалось получить награду. Обновите квесты и попробуйте еще раз.</p>
+                <p className="mt-3 text-sm text-rose-200">Не удалось получить награду Обновите квесты и попробуйте еще раз</p>
               ) : null}
             </article>
           );

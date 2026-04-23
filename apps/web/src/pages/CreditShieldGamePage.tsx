@@ -24,7 +24,7 @@ export function CreditShieldGamePage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Запустите стабилизатор и нажмите, когда импульс попадет в центральную зону.");
+  const [status, setStatus] = useState("Запустите стабилизатор и нажмите, когда импульс попадет в центральную зону");
   const directionRef = useRef(1);
   const recordShieldRun = useGameStore((state) => state.recordShieldRun);
   const bestShieldScore = useGameStore((state) => state.bestShieldScore);
@@ -90,7 +90,7 @@ export function CreditShieldGamePage() {
       });
     },
     onError: () => {
-      setStatus("Забег завершен, но синхронизация с Кредитным щитом не прошла. Попробуйте забрать награду еще раз.");
+      setStatus("Забег завершен, но синхронизация с Кредитным щитом не прошла Попробуйте забрать награду еще раз");
     },
   });
 
@@ -157,7 +157,7 @@ export function CreditShieldGamePage() {
   function resetGame() {
     resetGameState();
     setIsRunning(false);
-    setStatus("Запустите стабилизатор и нажмите, когда импульс попадет в центральную зону.");
+    setStatus("Запустите стабилизатор и нажмите, когда импульс попадет в центральную зону");
   }
 
   function launchGame() {
@@ -165,7 +165,7 @@ export function CreditShieldGamePage() {
       resetGameState();
     }
     setIsRunning(true);
-    setStatus("Реактор работает. Нажмите фиксацию, когда импульс достигнет центра.");
+    setStatus("Реактор работает Нажмите фиксацию, когда импульс достигнет центра");
   }
 
   function lockPulse() {
@@ -178,10 +178,10 @@ export function CreditShieldGamePage() {
     setScore((value) => value + gained);
     setStatus(
       accuracyBand === "miss"
-        ? "Импульс ушел. Держите щит стабильным и попробуйте поймать центр."
+        ? "Импульс ушел Держите щит стабильным и попробуйте поймать центр"
         : accuracyBand === "perfect"
-          ? "Идеальная фиксация. Прочность щита выросла."
-          : "Хорошая фиксация. Щит стал крепче."
+          ? "Идеальная фиксация Прочность щита выросла"
+          : "Хорошая фиксация Щит стал крепче"
     );
     if (nextRound > ROUNDS) {
       setIsRunning(false);
@@ -260,7 +260,7 @@ export function CreditShieldGamePage() {
                 disabled={!isComplete || rewardClaimed || claimMutation.isPending}
                 onClick={() => claimMutation.mutate()}
               >
-                {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация…" : `Забрать +${bonusPreview.totalReward}`}
+                {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация" : `Забрать +${bonusPreview.totalReward}`}
               </button>
             </div>
             <div className="metric-chip">

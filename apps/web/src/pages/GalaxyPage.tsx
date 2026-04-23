@@ -106,7 +106,7 @@ export function GalaxyPage() {
       });
     },
     onError: () => {
-      setFeedback("Команду не удалось синхронизировать. Попробуйте еще раз, локальный прогресс сохранен.");
+      setFeedback("Команду не удалось синхронизировать Попробуйте еще раз, локальный прогресс сохранен");
     },
   });
 
@@ -117,12 +117,12 @@ export function GalaxyPage() {
       const reward = 4 + Math.min(8, Math.floor(amount / 50));
       const outcome = claimPlanetAction({
         title: "Сигнал записан",
-        detail: `Зафиксирован импульс ${Math.round(amount)} в секторе ${PLANET_META[planetCode].title}.`,
+        detail: `Зафиксирован импульс ${Math.round(amount)} в секторе ${PLANET_META[planetCode].title}`,
         baseReward: reward,
         planetCode,
       });
       setFeedback(
-        `Активность ${PLANET_META[planetCode].title}: +${outcome.totalReward} звездной пыли. Событие ${result.event_id} синхронизировано.`,
+        `Активность ${PLANET_META[planetCode].title}: +${outcome.totalReward} звездной пыли Событие ${result.event_id} синхронизировано`,
       );
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
@@ -134,7 +134,7 @@ export function GalaxyPage() {
       });
     },
     onError: () => {
-      setFeedback("Статистику не удалось синхронизировать. Попробуйте еще раз.");
+      setFeedback("Статистику не удалось синхронизировать Попробуйте еще раз");
     },
   });
 
@@ -151,7 +151,7 @@ export function GalaxyPage() {
   }, [selectedPlanet]);
 
   const showLockedFeedback = (planetCode: PlanetCode) => {
-    setFeedback(`${PLANET_META[planetCode].title} закрыта. ${PLANET_UNLOCK_REQUIREMENTS[planetCode]}`);
+    setFeedback(`${PLANET_META[planetCode].title} закрыта ${PLANET_UNLOCK_REQUIREMENTS[planetCode]}`);
   };
 
   return (
@@ -183,7 +183,7 @@ export function GalaxyPage() {
           <div className="grid grid-cols-2 gap-3 self-start lg:grid-cols-3 xl:grid-cols-2">
             <div className="metric-chip">
               <span>Уровень орбиты</span>
-              <strong>{deferredProfile?.orbit_level ?? "…"}</strong>
+              <strong>{deferredProfile?.orbit_level ?? "Загрузка"}</strong>
             </div>
             <div className="metric-chip">
               <span>Звездная пыль</span>
@@ -256,7 +256,7 @@ export function GalaxyPage() {
                   </p>
                 </div>
                 <strong className="status-pill">
-                  {isPlanetUnlocked(unlockedPlanets, planetCode) ? `построено: ${structures[planetCode].length}` : "закрыта"}
+                  {isPlanetUnlocked(unlockedPlanets, planetCode) ? `Построено: ${structures[planetCode].length}` : "Закрыта"}
                 </strong>
               </div>
             ))}
@@ -268,8 +268,8 @@ export function GalaxyPage() {
               {selectedPlanetLocked
                 ? PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]
                 : `Будет отправлено синхронизируемое событие: ${
-                    selectedAction ? formatEventKind(selectedAction.eventKind) : "не выбрано"
-                  }. Результат появится после синхронизации.`}
+                    selectedAction ? formatEventKind(selectedAction.eventKind) : "Не выбрано"
+                  } Результат появится после синхронизации`}
             </p>
             <button
               className="primary-button mt-4"
@@ -282,7 +282,7 @@ export function GalaxyPage() {
               }
               type="button"
             >
-              {playerActionMutation.isPending ? "Синхронизация…" : "Подтвердить событие"}
+              {playerActionMutation.isPending ? "Синхронизация" : "Подтвердить событие"}
             </button>
           </div>
         </article>
@@ -308,8 +308,8 @@ export function GalaxyPage() {
               const success = buildStructure(planetCode, structureId, structure.cost, structure.title);
               setFeedback(
                 success
-                  ? `${structure.title} построен на планете ${PLANET_META[planetCode].title}.`
-                  : `Недостаточно звездной пыли или постройка уже есть на планете ${PLANET_META[planetCode].title}.`,
+                  ? `${structure.title} построен на планете ${PLANET_META[planetCode].title}`
+                  : `Недостаточно звездной пыли или постройка уже есть на планете ${PLANET_META[planetCode].title}`,
               );
             }}
           />
@@ -343,7 +343,7 @@ export function GalaxyPage() {
                 </motion.div>
               ))
             ) : (
-              <p className="text-sm text-white/60">Запустите первое действие на сцене, чтобы заполнить ленту миссий.</p>
+              <p className="text-sm text-white/60">Запустите первое действие на сцене, чтобы заполнить ленту миссий</p>
             )}
           </div>
         </article>
@@ -352,7 +352,7 @@ export function GalaxyPage() {
           <div className="mb-5 flex min-h-[3.25rem] items-center">
             <div>
               <p className="eyebrow">Живые связи</p>
-              <h3 className="text-2xl font-semibold">Бустеры и журнал активности</h3>
+              <h3 className="text-2xl font-semibold">Бустеры и активность</h3>
             </div>
           </div>
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
@@ -372,9 +372,9 @@ export function GalaxyPage() {
                   <div className="list-row list-row--empty">
                     <div>
                       <p className="text-lg font-medium">Окно бустера</p>
-                      <p className="text-sm text-white/55">Запустите партнерский сигнал, чтобы открыть первое окно.</p>
+                      <p className="text-sm text-white/55">Запустите партнерский сигнал, чтобы открыть первое окно</p>
                     </div>
-                    <strong className="status-pill">ожидает</strong>
+                    <strong className="status-pill">Ожидает</strong>
                   </div>
                 ) : null}
               </div>
@@ -401,9 +401,9 @@ export function GalaxyPage() {
                   <div className="list-row list-row--empty">
                     <div>
                       <p className="text-lg font-medium">Журнал активности</p>
-                      <p className="text-sm text-white/55">Обновится после первого синхронизированного события.</p>
+                      <p className="text-sm text-white/55">Обновится после первого синхронизированного события</p>
                     </div>
-                    <strong className="status-pill">ожидает</strong>
+                    <strong className="status-pill">Ожидает</strong>
                   </div>
                 ) : null}
               </div>
@@ -420,7 +420,7 @@ export function GalaxyPage() {
               displayName: payload.playerAlias,
               segment: payload.playerSegment,
             });
-            setFeedback(`${payload.playerAlias} стартовал с планеты ${PLANET_META[payload.starterPlanet].title}.`);
+            setFeedback(`${payload.playerAlias} стартовал с планеты ${PLANET_META[payload.starterPlanet].title}`);
             startTransition(() => {
               queryClient.invalidateQueries({ queryKey: ["profile", userId] });
               queryClient.invalidateQueries({ queryKey: ["leaderboard"] });

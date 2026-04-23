@@ -28,7 +28,7 @@ export function MobyBirdPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Нажмите старт, затем удерживайте высоту через Space или игровую зону.");
+  const [status, setStatus] = useState("Нажмите старт, затем удерживайте высоту через Space или игровую зону");
   const yRef = useRef(birdY);
   const velocityRef = useRef(velocity);
   const obstaclesRef = useRef(obstacles);
@@ -54,13 +54,13 @@ export function MobyBirdPage() {
     setIsRunning(false);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Нажмите старт, затем удерживайте высоту через Space или игровую зону.");
+    setStatus("Нажмите старт, затем удерживайте высоту через Space или игровую зону");
   }
 
   function launchRun() {
     resetRun();
     setIsRunning(true);
-    setStatus("Полет активен. Держите Moby между графиками расходов.");
+    setStatus("Полет активен Держите Moby между графиками расходов");
   }
 
   function lift() {
@@ -95,7 +95,7 @@ export function MobyBirdPage() {
       setBirdY(nextY);
 
       if (nextY < 0 || nextY > STAGE_HEIGHT - 34) {
-        finishRun("Полет завершен. График расходов поймал Moby за пределами коридора.");
+        finishRun("Полет завершен График расходов поймал Moby за пределами коридора");
         return;
       }
 
@@ -112,7 +112,7 @@ export function MobyBirdPage() {
           if (!scored && nextX + 58 < BIRD_X) {
             scored = true;
             setScore((value) => value + 1);
-            setStatus("Зона экономии пройдена. Бонусный маршрут стал длиннее.");
+            setStatus("Зона экономии пройдена Бонусный маршрут стал длиннее");
           }
           return { ...obstacle, x: nextX, gapY, scored };
         });
@@ -126,7 +126,7 @@ export function MobyBirdPage() {
         return overlapsX && !inGap;
       });
       if (hit) {
-        finishRun("Полет завершен. График расходов перекрыл траекторию.");
+        finishRun("Полет завершен График расходов перекрыл траекторию");
         return;
       }
 
@@ -157,8 +157,8 @@ export function MobyBirdPage() {
       <GameHero
         code="moby_bird"
         kicker="Мини-игра из документа"
-        title="Moby Bird ведет маскота через графики расходов и зоны экономии."
-        description="Удерживайте высоту, проходите чистые коридоры и конвертируйте пролет в ресурс для Кредитного щита."
+        title="Moby Bird ведет маскота через графики расходов и зоны экономии"
+        description="Удерживайте высоту, проходите чистые коридоры и конвертируйте пролет в ресурс для Кредитного щита"
         score={score}
         baseReward={baseReward}
         status={status}
@@ -180,7 +180,7 @@ export function MobyBirdPage() {
                 Сбросить
               </button>
             </div>
-            <p className="text-sm text-white/58">Space запускает полет и поддерживает высоту. Очки начисляются за каждый пройденный коридор.</p>
+            <p className="text-sm text-white/58">Space запускает полет и поддерживает высоту Очки начисляются за каждый пройденный коридор</p>
           </div>
         </article>
         <article className="surface-panel">

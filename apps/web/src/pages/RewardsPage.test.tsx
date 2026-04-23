@@ -67,4 +67,11 @@ describe("RewardsPage", () => {
     expect(html).not.toContain("Журнал синхронизации");
     expect(html).not.toContain("Синхронизированная активность");
   });
+
+  it("renders a shorter rewards hero copy", () => {
+    const html = renderRewardsPage();
+
+    expect(html).toContain("Награды, пыль и контейнеры.");
+    expect(html).not.toContain("Хранилище наград превращает каждый забег в звездную пыль, серию бонусов, мастерство и контейнеры.");
+  });
 });

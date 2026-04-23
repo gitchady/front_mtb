@@ -21,6 +21,8 @@ export interface ConstellationStar {
   lit: boolean;
 }
 
+export type ConstellationConnection = readonly [string, string];
+
 export interface Fe2Constellation {
   name: string;
   index: number;
@@ -29,6 +31,7 @@ export interface Fe2Constellation {
   small_stars_per_segment: number;
   big_stars: ConstellationStar[];
   small_stars: ConstellationStar[];
+  connections: ConstellationConnection[];
 }
 
 export interface Fe2PlanetGame {
@@ -73,40 +76,117 @@ export interface Fe2PlanetLeaderboard {
   period_ends_at: string;
 }
 
-const PLANET_BASE: Record<PlanetCode, { cashback: number; constellation: string; gameCode: GameCode }> = {
+interface ConstellationTemplate {
+  name: string;
+  bigStars: Array<{ x: number; y: number }>;
+  smallStars: Array<{ x: number; y: number }>;
+  connections: ConstellationConnection[];
+}
+
+const CONSTELLATION_TEMPLATES: Record<PlanetCode, ConstellationTemplate> = {
+  ORBIT_COMMERCE: {
+    name: "Близнецы",
+    bigStars: [
+      { x: 23, y: 14 },
+      { x: 43, y: 18 },
+      { x: 31, y: 34 },
+      { x: 40, y: 44 },
+      { x: 24, y: 72 },
+      { x: 55, y: 60 },
+      { x: 63, y: 76 },
+    ],
+    smallStars: [
+      { x: 19, y: 26 },
+      { x: 48, y: 31 },
+      { x: 28, y: 51 },
+      { x: 47, y: 50 },
+      { x: 59, y: 69 },
+    ],
+    connections: [
+      ["big-0", "small-0"],
+      ["small-0", "big-2"],
+      ["big-1", "small-1"],
+      ["small-1", "big-3"],
+      ["big-2", "big-3"],
+      ["big-2", "small-2"],
+      ["small-2", "big-4"],
+      ["big-3", "small-3"],
+      ["small-3", "big-5"],
+      ["big-5", "small-4"],
+      ["small-4", "big-6"],
+    ],
+  },
+  CREDIT_SHIELD: {
+    name: "Весы",
+    bigStars: [
+      { x: 24, y: 18 },
+      { x: 48, y: 18 },
+      { x: 68, y: 34 },
+      { x: 28, y: 46 },
+      { x: 50, y: 58 },
+      { x: 56, y: 76 },
+    ],
+    smallStars: [
+      { x: 23, y: 31 },
+      { x: 58, y: 26 },
+      { x: 52, y: 67 },
+    ],
+    connections: [
+      ["big-0", "big-1"],
+      ["big-1", "small-1"],
+      ["small-1", "big-2"],
+      ["big-0", "small-0"],
+      ["small-0", "big-3"],
+      ["big-3", "big-2"],
+      ["big-3", "big-4"],
+      ["big-4", "small-2"],
+      ["small-2", "big-5"],
+    ],
+  },
+  SOCIAL_RING: {
+    name: "Водолей",
+    bigStars: [
+      { x: 70, y: 16 },
+      { x: 50, y: 24 },
+      { x: 30, y: 38 },
+      { x: 38, y: 58 },
+      { x: 52, y: 72 },
+      { x: 58, y: 88 },
+    ],
+    smallStars: [
+      { x: 61, y: 18 },
+      { x: 40, y: 30 },
+      { x: 27, y: 49 },
+      { x: 45, y: 65 },
+    ],
+    connections: [
+      ["big-0", "small-0"],
+      ["small-0", "big-1"],
+      ["big-1", "small-1"],
+      ["small-1", "big-2"],
+      ["big-2", "small-2"],
+      ["small-2", "big-3"],
+      ["big-3", "small-3"],
+      ["small-3", "big-4"],
+      ["big-4", "big-5"],
+    ],
+  },
+};
+
+const PLANET_BASE: Record<PlanetCode, { cashback: number; gameCode: GameCode }> = {
   ORBIT_COMMERCE: {
     cashback: 2.5,
-    constellation: "Контур Андромеды",
     gameCode: "halva_snake",
   },
   CREDIT_SHIELD: {
     cashback: 1.5,
-    constellation: "Щит Кассиопеи",
     gameCode: "credit_shield_reactor",
   },
   SOCIAL_RING: {
     cashback: 2,
-    constellation: "Кольцо Лиры",
     gameCode: "social_ring_signal",
   },
 };
-
-const BIG_STAR_COORDS = [
-  { x: 14, y: 72 },
-  { x: 30, y: 34 },
-  { x: 52, y: 58 },
-  { x: 68, y: 20 },
-  { x: 86, y: 48 },
-];
-
-const SMALL_STAR_COORDS = [
-  { x: 18, y: 58 },
-  { x: 24, y: 46 },
-  { x: 36, y: 42 },
-  { x: 43, y: 52 },
-  { x: 58, y: 48 },
-  { x: 64, y: 34 },
-];
 
 function stablePlanetIndex(planetId: PlanetCode) {
   return PLANET_ORDER.indexOf(planetId) + 1;
@@ -151,9 +231,11 @@ async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T)
 export function buildMockPlanetsList(): Fe2PlanetListItem[] {
   return PLANET_ORDER.map((planetId) => {
     const index = stablePlanetIndex(planetId);
-    const currentBigStar = Math.min(BIG_STARS_TOTAL - 1, index + 1);
-    const smallStars = index + 2;
-    const progress = Math.round(((currentBigStar * SMALL_STARS_PER_SEGMENT + smallStars) / (BIG_STARS_TOTAL * SMALL_STARS_PER_SEGMENT)) * 100);
+    const template = CONSTELLATION_TEMPLATES[planetId];
+    const currentBigStar = Math.min(template.bigStars.length, index + 2);
+    const smallStars = Math.min(template.smallStars.length, index + 2);
+    const totalStars = template.bigStars.length + template.smallStars.length;
+    const progress = Math.round(((currentBigStar + smallStars) / totalStars) * 100);
 
     return {
       id: planetId,
@@ -166,9 +248,10 @@ export function buildMockPlanetsList(): Fe2PlanetListItem[] {
 
 export function buildMockPlanetProgress(planetId: PlanetCode): Fe2PlanetProgress {
   const base = PLANET_BASE[planetId];
+  const template = CONSTELLATION_TEMPLATES[planetId];
   const planetIndex = stablePlanetIndex(planetId);
-  const currentBigStar = Math.min(BIG_STARS_TOTAL - 1, planetIndex + 1);
-  const smallStarsCurrent = Math.min(SMALL_STARS_PER_SEGMENT - 1, planetIndex + 2);
+  const currentBigStar = Math.min(template.bigStars.length, planetIndex + 2);
+  const smallStarsCurrent = Math.min(template.smallStars.length, planetIndex + 2);
   const dailyAttemptsUsed = Math.min(DAILY_ATTEMPT_LIMIT - 1, planetIndex);
   const game = MINI_GAME_BY_CODE[base.gameCode];
 
@@ -178,24 +261,25 @@ export function buildMockPlanetProgress(planetId: PlanetCode): Fe2PlanetProgress
     cashback_percent: base.cashback,
     max_cashback_reached: base.cashback >= 5,
     constellation: {
-      name: base.constellation,
+      name: template.name,
       index: planetIndex,
-      big_stars_total: BIG_STARS_TOTAL,
+      big_stars_total: template.bigStars.length,
       current_big_star: currentBigStar,
-      small_stars_per_segment: SMALL_STARS_PER_SEGMENT,
-      big_stars: BIG_STAR_COORDS.map((coords, index) => ({
+      small_stars_per_segment: template.smallStars.length,
+      big_stars: template.bigStars.map((coords, index) => ({
         id: `big-${index}`,
         ...coords,
         lit: index < currentBigStar,
       })),
-      small_stars: SMALL_STAR_COORDS.map((coords, index) => ({
+      small_stars: template.smallStars.map((coords, index) => ({
         id: `small-${index}`,
         ...coords,
         lit: index < smallStarsCurrent,
       })),
+      connections: template.connections,
     },
     period_small_stars: 18 + planetIndex * 7,
-    big_stars_until_increase: Math.max(0, BIG_STARS_TOTAL - currentBigStar),
+    big_stars_until_increase: Math.max(0, template.bigStars.length - currentBigStar),
     game: {
       code: base.gameCode,
       name: game.title,

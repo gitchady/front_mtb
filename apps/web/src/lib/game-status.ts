@@ -9,5 +9,5 @@ export function formatGameRewardStatus({
 }) {
   return `Забег завершен: +${totalReward} звездной пыли${
     cratesEarned ? ` и ${cratesEarned} контейнер хранилища` : ""
-  }. Прогресс синхронизирован с ${syncLabel}.`;
+  } Прогресс синхронизирован с ${syncLabel}`;
 }

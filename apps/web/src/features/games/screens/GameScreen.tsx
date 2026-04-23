@@ -71,7 +71,7 @@ function GamePlaySurface({
         {["Нова", "Пульс", "Мята", "Глоу"].map((label, index) => (
           <button key={label} className="fe2-signal-pad" type="button" disabled={disabled} onClick={onScore}>
             <span>{label}</span>
-            <strong>{score > index * 4 ? "активен" : "ждет"}</strong>
+            <strong>{score > index * 4 ? "Активен" : "Ждет"}</strong>
           </button>
         ))}
         <button className="primary-button fe2-game-surface__wide" type="button" disabled={disabled || score === 0} onClick={onFinish}>
@@ -108,7 +108,7 @@ export function GameScreen() {
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [starAwarded, setStarAwarded] = useState(false);
-  const [status, setStatus] = useState("Раунд готов к запуску.");
+  const [status, setStatus] = useState("Раунд готов к запуску");
   const planetId = isPlanetCode(params.planetId) ? params.planetId : undefined;
   const gameCode = isGameCode(params.gameCode) ? params.gameCode : undefined;
   const game = gameCode ? MINI_GAME_BY_CODE[gameCode] : undefined;
@@ -138,20 +138,20 @@ export function GameScreen() {
         score,
         baseReward,
         title: `Получена малая звезда: ${game!.title}`,
-        detail: `${PLANET_META[planetId!].title}: счет ${score}.`,
+        detail: `${PLANET_META[planetId!].title}: счет ${score}`,
       });
       setStarAwarded(result.small_star_awarded);
       setStatus(
         result.small_star_awarded
-          ? `Малая звезда начислена. Осталось попыток: ${result.remaining_attempts_today}.`
-          : `Раунд сохранен. Осталось попыток: ${result.remaining_attempts_today}.`,
+          ? `Малая звезда начислена Осталось попыток: ${result.remaining_attempts_today}`
+          : `Раунд сохранен Осталось попыток: ${result.remaining_attempts_today}`,
       );
       queryClient.setQueryData(["fe2-planet-progress", planetId], result.planet_progress);
       queryClient.invalidateQueries({ queryKey: ["fe2-planets-list"] });
       queryClient.invalidateQueries({ queryKey: ["fe2-leaderboard", planetId] });
     },
     onError: () => {
-      setStatus("Не удалось сохранить раунд. Попробуйте отправить результат еще раз.");
+      setStatus("Не удалось сохранить раунд Попробуйте отправить результат еще раз");
     },
   });
 
@@ -173,12 +173,12 @@ export function GameScreen() {
 
   function addScore() {
     setScore((value) => value + scoreStep(activeGameCode));
-    setStatus("Счет растет. Завершите раунд, когда результат готов.");
+    setStatus("Счет растет Завершите раунд, когда результат готов");
   }
 
   function finishRound() {
     setIsComplete(true);
-    setStatus("Раунд завершен. Отправьте результат в прогресс планеты.");
+    setStatus("Раунд завершен Отправьте результат в прогресс планеты");
   }
 
   return (
@@ -198,7 +198,7 @@ export function GameScreen() {
             </div>
             <div className="metric-chip">
               <span>Попытки</span>
-              <strong>{progressQuery.isLoading ? "..." : remainingAttempts}</strong>
+              <strong>{progressQuery.isLoading ? "Загрузка" : remainingAttempts}</strong>
             </div>
             <div className="metric-chip">
               <span>Награда</span>
@@ -213,7 +213,7 @@ export function GameScreen() {
           <div className="list-row">
             <div>
               <p className="text-lg font-medium">Лимит попыток исчерпан</p>
-              <p className="text-sm text-white/55">Раунд можно будет запустить после обновления дневного лимита.</p>
+              <p className="text-sm text-white/55">Раунд можно будет запустить после обновления дневного лимита</p>
             </div>
             <Link className="secondary-button" to={`/app/planets/${planetId}`}>
               Назад к планете
@@ -229,7 +229,7 @@ export function GameScreen() {
                 disabled={!isComplete || score === 0 || runMutation.isPending || starAwarded}
                 onClick={() => runMutation.mutate()}
               >
-                {runMutation.isPending ? "Отправляем..." : starAwarded ? "Малая звезда начислена" : "Отправить результат"}
+                {runMutation.isPending ? "Отправляем" : starAwarded ? "Малая звезда начислена" : "Отправить результат"}
               </button>
               <button
                 className="secondary-button"
