@@ -98,4 +98,14 @@ describe("AiPage", () => {
     expect(html).not.toContain("Student profile");
     expect(html).not.toContain("PROFILE");
   });
+
+  it("does not render the removed friends shortcut and helper cards", () => {
+    const html = renderAiPage();
+
+    expect(html).not.toContain("Открыть друзей");
+    expect(html).not.toContain("Активный ответ");
+    expect(html).not.toContain("Что сейчас держать в фокусе");
+    expect(html).not.toContain("Ответ возвращает текст");
+    expect(html).not.toContain("Спросите ассистента о следующем действии");
+  });
 });

@@ -33,6 +33,7 @@ describe("router", () => {
   it("registers the contacts hub and keeps legacy friends and qr paths", () => {
     const paths = collectPaths(appRoutes);
 
+    expect(paths).toContain("/app/live-links");
     expect(paths).toContain("/app/contacts");
     expect(paths).toContain("/app/friends");
     expect(paths).toContain("/app/qr");
@@ -56,6 +57,7 @@ describe("router", () => {
       "Лидерборд",
       "Квесты",
       "Награды",
+      "Живые связи",
       "Социальное кольцо",
     ]);
   });
@@ -84,7 +86,9 @@ describe("router", () => {
     expect(html).toContain("mobile-shell-header");
     expect(html).toContain('aria-label="Мобильная навигация"');
     expect(html).toContain("mobile-overflow-panel");
+    expect(html).toContain('aria-label="Закрыть разделы Еще"');
     expect(html).toContain("Планеты");
+    expect(html).toContain("Живые связи");
     expect(html).toContain("Социальное кольцо");
     expect(html).toContain('data-mobile-overflow-active="true"');
   });

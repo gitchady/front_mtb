@@ -32,20 +32,20 @@ export function GamesPage() {
               Запускайте аркады, головоломки и платформеры из каталога, а результаты будут попадать в общие награды и историю забегов.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="metric-chip metric-chip--compact">
               <span>Игр в каталоге</span>
               <strong>{MINI_GAMES.length}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact">
               <span>Всего забегов</span>
               <strong>{totalRuns}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact">
               <span>Звездная пыль</span>
               <strong>{stardust}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact">
               <span>Планет</span>
               <strong>3</strong>
             </div>

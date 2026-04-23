@@ -15,16 +15,21 @@ vi.mock("@tanstack/react-query", () => ({
             { planet_code: "SOCIAL_RING", xp: 0, level: 1 },
           ],
           active_boosters: [],
-          quests: [],
+          quests: [
+            {
+              quest_id: "quest_orbit_001",
+              title: "Партнерский импульс",
+              description: "Сделайте первую партнерскую покупку",
+              planet_code: "ORBIT_COMMERCE",
+              condition_type: "partner",
+              threshold: 3,
+              reward_kind: "stardust",
+              reward_value: 12,
+              status: "active",
+              current_value: 1,
+            },
+          ],
         },
-        isLoading: false,
-        isFetching: false,
-      };
-    }
-
-    if (queryKey[0] === "ledger") {
-      return {
-        data: [],
         isLoading: false,
         isFetching: false,
       };
@@ -125,10 +130,14 @@ function renderGalaxyPage() {
 }
 
 describe("GalaxyPage", () => {
-  it("renders a shorter live-links heading", () => {
+  it("renders quest-driven missions and removes old activity blocks", () => {
     const html = renderGalaxyPage();
 
-    expect(html).toContain("Бустеры и активность");
-    expect(html).not.toContain("Бустеры и журнал активности");
+    expect(html).toContain("Актуальные миссии");
+    expect(html).toContain("Партнерский импульс");
+    expect(html).not.toContain("Лента миссий");
+    expect(html).not.toContain("Последние действия пилота");
+    expect(html).not.toContain("Бустеры и активность");
+    expect(html).not.toContain("Подтвердить событие");
   });
 });

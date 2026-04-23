@@ -12,6 +12,7 @@ const GamesPage = lazy(() => import("@/pages/GamesPage").then((module) => ({ def
 const QuestsPage = lazy(() => import("@/pages/QuestsPage").then((module) => ({ default: module.QuestsPage })));
 const RewardsPage = lazy(() => import("@/pages/RewardsPage").then((module) => ({ default: module.RewardsPage })));
 const ReferralsPage = lazy(() => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+const LiveLinksPage = lazy(() => import("@/pages/LiveLinksPage").then((module) => ({ default: module.LiveLinksPage })));
 const ContactsPage = lazy(() => import("@/pages/ContactsPage").then((module) => ({ default: module.ContactsPage })));
 const AiPage = lazy(() => import("@/pages/AiPage").then((module) => ({ default: module.AiPage })));
 const PlanetsMapScreen = lazy(() =>
@@ -72,6 +73,7 @@ export const appLinks: ShellNavLink[] = [
   { to: "/app/leaderboard", label: "Лидерборд" },
   { to: "/app/quests", label: "Квесты" },
   { to: "/app/rewards", label: "Награды" },
+  { to: "/app/live-links", label: "Живые связи" },
   { to: "/app/contacts", label: "Контакты", activePrefixes: ["/app/friends", "/app/qr"] },
   { to: "/app/ai", label: "AI" },
   { to: "/app/referrals", label: "Социальное кольцо" },
@@ -193,8 +195,20 @@ export function ShellLayout() {
             aria-hidden={isMorePanelOpen ? "false" : "true"}
             data-open={isMorePanelOpen ? "true" : "false"}
             hidden={!isMorePanelOpen}
+            onClick={() => setIsMorePanelOpen(false)}
           >
-            <div className="surface-panel mobile-overflow-panel__content">
+            <div className="surface-panel mobile-overflow-panel__content" onClick={(event) => event.stopPropagation()}>
+              <div className="mobile-overflow-panel__header">
+                <p className="eyebrow">Разделы</p>
+                <button
+                  type="button"
+                  className="mobile-overflow-panel__close"
+                  aria-label="Закрыть разделы Еще"
+                  onClick={() => setIsMorePanelOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
               {mobileOverflowLinks.map((link) => (
                 <NavLink
                   key={link.to}
@@ -302,6 +316,7 @@ export const appRoutes: RouteObject[] = [
       { path: "/app/leaderboard", element: renderLazy(<LeaderboardScreen />) },
       { path: "/app/quests", element: renderLazy(<QuestsPage />) },
       { path: "/app/rewards", element: renderLazy(<RewardsPage />) },
+      { path: "/app/live-links", element: renderLazy(<LiveLinksPage />) },
       { path: "/app/contacts", element: renderLazy(<ContactsPage />) },
       { path: "/app/friends", element: <Navigate to="/app/contacts" replace /> },
       { path: "/app/qr", element: <Navigate to="/app/contacts" replace /> },

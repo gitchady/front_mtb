@@ -300,21 +300,15 @@ export function AiPage() {
   }
 
   const pendingAssistantState = chatMutation.isPending ? chatMutation.variables : null;
-  const latestAssistantMessage = [...history].reverse().find((entry) => entry.role === "assistant") ?? null;
 
   return (
     <div className="space-y-6">
       <section className="hero-panel">
         <div className="space-y-3 md:space-y-4">
-            <p className="eyebrow">AI-навигатор</p>
-            <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
-              {displayName}, AI собирает следующий лучший шаг из контекста, друзей и QR-сценариев.
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              <Link className="primary-button inline-flex" to="/app/friends">
-                Открыть друзей
-              </Link>
-            </div>
+          <p className="eyebrow">AI-навигатор</p>
+          <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
+            {displayName}, AI собирает следующий лучший шаг из контекста, друзей и QR-сценариев.
+          </h2>
         </div>
       </section>
 
@@ -360,10 +354,7 @@ export function AiPage() {
               </div>
             ) : null}
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-white/56">
-                Ответ возвращает текст, suggested actions, related modules и context chips
-              </p>
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <button className="primary-button" disabled={chatMutation.isPending || prompt.trim().length === 0} type="submit">
                 {chatMutation.isPending ? "Отправляем" : "Спросить AI"}
               </button>
@@ -383,17 +374,6 @@ export function AiPage() {
             {assistantContextQuery.isError ? (
               <div className="rounded-[22px] border border-rose-400/25 bg-rose-500/10 px-4 py-4 text-sm text-rose-100">
                 Не удалось загрузить контекст ассистента Чат все еще доступен, но ответы будут беднее без сводки
-              </div>
-            ) : null}
-
-            {history.length === 0 ? (
-              <div className="rounded-[26px] border border-white/10 bg-white/[0.035] p-5">
-                <p className="eyebrow">Старт</p>
-                <h4 className="mt-2 text-xl font-semibold">Спросите ассистента о следующем действии</h4>
-                <p className="mt-3 max-w-2xl text-sm text-white/65">
-                  История хранится локально в браузере только для этого пользователя Ассистент может использовать QR payload,
-                  друзья и текущий фокус из контекста.
-                </p>
               </div>
             ) : null}
 
@@ -526,34 +506,6 @@ export function AiPage() {
               ))}
             </div>
           </article>
-
-          <article className="surface-panel">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="eyebrow">Активный ответ</p>
-                <h3 className="mt-2 text-2xl font-semibold">Что сейчас держать в фокусе</h3>
-              </div>
-              <span className="text-xs uppercase tracking-[0.18em] text-white/45">
-                {pendingAssistantState ? "В обработке" : latestAssistantMessage ? "Готово" : "Ожидает"}
-              </span>
-            </div>
-            <div className="mt-5 rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
-              {pendingAssistantState ? (
-                <p className="text-sm leading-6 text-white/72">
-                  Анализируем запрос
-                  {pendingAssistantState.qr ? " вместе с QR payload" : ""}
-                  
-                </p>
-              ) : latestAssistantMessage ? (
-                <p className="break-words text-sm leading-6 text-white/78">{latestAssistantMessage.message}</p>
-              ) : (
-                <p className="text-sm leading-6 text-white/60">
-                  Отправьте первый запрос или выберите quick prompt, чтобы получить актуальный ответ ассистента
-                </p>
-              )}
-            </div>
-          </article>
-
         </div>
       </section>
     </div>

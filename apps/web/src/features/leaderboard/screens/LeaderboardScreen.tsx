@@ -52,11 +52,7 @@ export function LeaderboardScreen() {
               Недельный период собирает лучших пилотов планеты и открывает призовые позиции
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
-              <span>Планета</span>
-              <strong>{PLANET_META[selectedPlanet].title}</strong>
-            </div>
+          <div className="grid gap-3 sm:grid-cols-1">
             <div className="metric-chip">
               <span>Мой ранг</span>
               <strong>{leaderboardQuery.data?.current_user_rank ?? "Загрузка"}</strong>

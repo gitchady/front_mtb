@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PLANET_META, type PlanetCode, type PlanetProgress } from "@mtb/contracts";
-import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { GalaxyStage } from "@/components/GalaxyStage";
@@ -9,7 +8,7 @@ import { PlanetInspector } from "@/components/PlanetInspector";
 import { api } from "@/lib/api";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
 import { useGameStore } from "@/lib/game-store";
-import { formatCategory, formatEventKind, formatRewardType, formatStatus, SEGMENT_LABELS } from "@/lib/labels";
+import { formatStatus, SEGMENT_LABELS } from "@/lib/labels";
 import { isPlanetUnlocked, PLANET_UNLOCK_REQUIREMENTS } from "@/lib/planet-unlocks";
 import { useSessionStore } from "@/lib/session-store";
 
@@ -25,11 +24,14 @@ const SPEND_EVENT_KIND: Record<PlanetCode, "partner" | "credit" | "referral"> = 
   SOCIAL_RING: "referral",
 };
 
-function formatWindowEnd(value: string) {
-  return new Intl.DateTimeFormat("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+function getMissionHeadline(status: string) {
+  if (status === "completed") {
+    return "Готова к выдаче";
+  }
+  if (status === "claimed") {
+    return "Завершена";
+  }
+  return "В работе";
 }
 
 export function GalaxyPage() {
@@ -44,7 +46,6 @@ export function GalaxyPage() {
   const selectedPlanet = useGameStore((state) => state.selectedPlanet);
   const stardust = useGameStore((state) => state.stardust);
   const structures = useGameStore((state) => state.structures);
-  const actionLog = useGameStore((state) => state.actionLog);
   const totalRuns = useGameStore((state) => state.totalRuns);
   const bestShieldScore = useGameStore((state) => state.bestShieldScore);
   const bestSocialScore = useGameStore((state) => state.bestSocialScore);
@@ -63,52 +64,34 @@ export function GalaxyPage() {
     queryKey: ["profile", userId],
     queryFn: () => api.getProfile(userId),
   });
-  const ledgerQuery = useQuery({
-    queryKey: ["ledger", userId],
-    queryFn: () => api.getRewardLedger(userId),
-  });
   const deferredProfile = useDeferredValue(profileQuery.data);
   const planets = deferredProfile?.planets ?? EMPTY_PLANETS;
-  const liveBoosters = deferredProfile?.active_boosters ?? [];
-  const liveLedger = ledgerQuery.data ?? [];
   const selectedPlanetState = useMemo(
     () => planets.find((planet) => planet.planet_code === selectedPlanet) ?? planets[0],
     [planets, selectedPlanet],
   );
+  const selectedPlanetQuests = useMemo(
+    () =>
+      (deferredProfile?.quests ?? [])
+        .filter((quest) => quest.planet_code === selectedPlanet)
+        .sort((left, right) => {
+          const statusWeight = (status: string) => {
+            if (status === "completed") {
+              return 0;
+            }
+            if (status === "active") {
+              return 1;
+            }
+            if (status === "claimed") {
+              return 2;
+            }
+            return 3;
+          };
 
-  const playerActionMutation = useMutation({
-    mutationFn: ({ planetCode, actionId }: { planetCode: PlanetCode; actionId: string }) => {
-      const action = PLANET_ACTIONS[planetCode].find((item) => item.id === actionId);
-      if (!action) {
-        throw new Error("Неизвестное действие");
-      }
-      return api.ingest(api.buildEvent(userId, action.eventKind)).then((result) => ({ result, action, planetCode }));
-    },
-    onSuccess: ({ result, action, planetCode }) => {
-      const outcome = claimPlanetAction({
-        title: action.title,
-        detail: action.detail,
-        baseReward: action.stardustReward,
-        planetCode,
-      });
-      setFeedback(
-        `${action.title}: +${outcome.totalReward} звездной пыли${
-          outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${result.event_id} синхронизировано.`,
-      );
-      startTransition(() => {
-        queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-        queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
-        queryClient.invalidateQueries({ queryKey: ["quests", userId] });
-        queryClient.invalidateQueries({ queryKey: ["ledger", userId] });
-        queryClient.invalidateQueries({ queryKey: ["admin-kpi"] });
-        queryClient.invalidateQueries({ queryKey: ["admin-risk"] });
-      });
-    },
-    onError: () => {
-      setFeedback("Команду не удалось синхронизировать Попробуйте еще раз, локальный прогресс сохранен");
-    },
-  });
+          return statusWeight(left.status) - statusWeight(right.status);
+        }),
+    [deferredProfile?.quests, selectedPlanet],
+  );
 
   const planetSpendMutation = useMutation({
     mutationFn: ({ planetCode, amount }: { planetCode: PlanetCode; amount: number }) =>
@@ -140,11 +123,6 @@ export function GalaxyPage() {
 
   const builtStructures = structures[selectedPlanet];
   const selectedPlanetLocked = !isPlanetUnlocked(unlockedPlanets, selectedPlanet);
-  const selectedActions = PLANET_ACTIONS[selectedPlanet];
-  const selectedAction = useMemo(
-    () => selectedActions.find((action) => action.id === selectedActionId) ?? selectedActions[0],
-    [selectedActions, selectedActionId],
-  );
 
   useEffect(() => {
     setSelectedActionId(PLANET_ACTIONS[selectedPlanet][0]?.id);
@@ -261,31 +239,65 @@ export function GalaxyPage() {
               </div>
             ))}
           </div>
-            <div className="mission-confirm mission-confirm--left">
-            <p className="eyebrow">Подготовка события</p>
-            <h4 className="mt-2 text-xl font-semibold">{selectedAction?.title}</h4>
+
+          <div className="mission-confirm mission-confirm--left">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Актуальные миссии</p>
+                <h4 className="mt-2 text-xl font-semibold">
+                  {selectedPlanetLocked ? "Сначала откройте планету" : `Миссии ${PLANET_META[selectedPlanet].title}`}
+                </h4>
+              </div>
+              {!selectedPlanetLocked ? (
+                <Link className="secondary-button" to="/app/quests">
+                  Квесты
+                </Link>
+              ) : null}
+            </div>
             <p className="mt-2 text-sm text-white/58">
               {selectedPlanetLocked
                 ? PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]
-                : `Будет отправлено синхронизируемое событие: ${
-                    selectedAction ? formatEventKind(selectedAction.eventKind) : "Не выбрано"
-                  } Результат появится после синхронизации`}
+                : "Эти миссии берутся из списка квестов и обновляются вместе с прогрессом планеты."}
             </p>
-            <button
-              className="primary-button mt-4"
-              disabled={selectedPlanetLocked || !selectedAction || playerActionMutation.isPending}
-              onClick={() =>
-                selectedAction &&
-                (isPlanetUnlocked(unlockedPlanets, selectedPlanet)
-                  ? playerActionMutation.mutate({ planetCode: selectedPlanet, actionId: selectedAction.id })
-                  : showLockedFeedback(selectedPlanet))
-              }
-              type="button"
-            >
-              {playerActionMutation.isPending ? "Синхронизация" : "Подтвердить событие"}
-            </button>
+            <div className="mt-4 space-y-3">
+              {selectedPlanetLocked ? null : selectedPlanetQuests.length ? (
+                selectedPlanetQuests.slice(0, 3).map((quest) => {
+                  const progressPercent = quest.threshold > 0 ? Math.min(100, (quest.current_value / quest.threshold) * 100) : 0;
+
+                  return (
+                    <div key={quest.quest_id} className="list-row">
+                      <div className="min-w-0">
+                        <p className="text-lg font-medium">{quest.title}</p>
+                        <p className="mt-1 text-sm text-white/55">{quest.description}</p>
+                        <div className="mt-3 h-2 rounded-full bg-white/8">
+                          <div
+                            className="h-2 rounded-full bg-[linear-gradient(90deg,#ff4da0,#526bff)]"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-white/42">
+                          {quest.current_value}/{quest.threshold} • {formatStatus(quest.status)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs uppercase tracking-[0.18em] text-white/42">{getMissionHeadline(quest.status)}</p>
+                        <strong className="status-pill">{quest.reward_value}</strong>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="list-row list-row--empty">
+                  <div>
+                    <p className="text-lg font-medium">Миссии скоро появятся</p>
+                    <p className="text-sm text-white/55">Для этой планеты пока нет активных квестов.</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </article>
+
         <div className="order-1 xl:order-2">
           <PlanetInspector
             planet={selectedPlanetState}
@@ -314,102 +326,6 @@ export function GalaxyPage() {
             }}
           />
         </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <article className="surface-panel">
-          <div className="mb-5 flex min-h-[3.25rem] items-center">
-            <div>
-              <p className="eyebrow">Лента миссий</p>
-              <h3 className="text-2xl font-semibold">Последние действия пилота</h3>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {actionLog.length ? (
-              actionLog.slice(0, 6).map((item) => (
-                <motion.div key={item.id} layout className="list-row">
-                  <div>
-                    <p className="text-lg font-medium">{item.title}</p>
-                    <p className="text-sm text-white/55">{item.detail}</p>
-                  </div>
-                  <div className="text-right">
-                    {item.planetCode ? (
-                      <p className="text-xs uppercase tracking-[0.2em] text-white/42">{PLANET_META[item.planetCode].title}</p>
-                    ) : null}
-                    <strong className={item.reward >= 0 ? "text-2xl text-[var(--accent-cyan)]" : "text-2xl text-white/85"}>
-                      {item.reward >= 0 ? `+${item.reward}` : item.reward}
-                    </strong>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <p className="text-sm text-white/60">Запустите первое действие на сцене, чтобы заполнить ленту миссий</p>
-            )}
-          </div>
-        </article>
-
-        <article className="surface-panel">
-          <div className="mb-5 flex min-h-[3.25rem] items-center">
-            <div>
-              <p className="eyebrow">Живые связи</p>
-              <h3 className="text-2xl font-semibold">Бустеры и активность</h3>
-            </div>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <div>
-              <div className="space-y-3">
-                <p className="eyebrow">Активные окна бустеров</p>
-                {liveBoosters.slice(0, 3).map((booster) => (
-                  <div key={booster.booster_id} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{formatCategory(booster.category)}</p>
-                      <p className="text-sm text-white/55">До {formatWindowEnd(booster.end_at)}</p>
-                    </div>
-                    <strong className="text-2xl text-[var(--accent-cyan)]">+{booster.boost_rate}%</strong>
-                  </div>
-                ))}
-                {!liveBoosters.length ? (
-                  <div className="list-row list-row--empty">
-                    <div>
-                      <p className="text-lg font-medium">Окно бустера</p>
-                      <p className="text-sm text-white/55">Запустите партнерский сигнал, чтобы открыть первое окно</p>
-                    </div>
-                    <strong className="status-pill">Ожидает</strong>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div>
-              <div className="space-y-3">
-                <p className="eyebrow">Последние записи</p>
-                {liveLedger.slice(0, 4).map((entry) => (
-                  <div key={entry.ledger_id} className="list-row">
-                    <div>
-                      <p className="text-lg font-medium">{formatRewardType(entry.reward_type)}</p>
-                      <p className="text-sm text-white/55">{new Date(entry.created_at).toLocaleString("ru-RU")}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-xs uppercase tracking-[0.18em] ${entry.status === "pending" ? "text-amber-300" : "text-emerald-300"}`}>
-                        {formatStatus(entry.status)}
-                      </p>
-                      <strong className="text-2xl">1 запись</strong>
-                    </div>
-                  </div>
-                ))}
-                {!liveLedger.length ? (
-                  <div className="list-row list-row--empty">
-                    <div>
-                      <p className="text-lg font-medium">Журнал активности</p>
-                      <p className="text-sm text-white/55">Обновится после первого синхронизированного события</p>
-                    </div>
-                    <strong className="status-pill">Ожидает</strong>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </article>
       </section>
 
       {!onboardingComplete ? (
