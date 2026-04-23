@@ -144,17 +144,17 @@ export function SuperMobyBrosPage() {
             <p className="eyebrow">Маршрут</p>
             <h3 className="text-4xl font-semibold">{isRunning ? "Забег идет" : isComplete ? "Маршрут завершен" : "Готов к старту"}</h3>
             <div className="flex flex-wrap gap-3">
-              <button className="primary-button" onClick={() => setIsRunning(true)} disabled={isRunning || isComplete}>
+              <button className="hidden md:inline-flex primary-button" onClick={() => setIsRunning(true)} disabled={isRunning || isComplete}>
                 Старт
               </button>
               <button className="secondary-button" onClick={resetRun}>
                 Сбросить
               </button>
-              <button className="secondary-button" onClick={jump} disabled={!isRunning}>
+              <button className="hidden md:inline-flex secondary-button" onClick={jump} disabled={!isRunning}>
                 Прыжок
               </button>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="super-bros-desktop-controls hidden md:flex gap-3">
               <button className="control-button h-[72px] w-[72px]" onPointerDown={() => move(-1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
                 ←
               </button>
@@ -165,6 +165,11 @@ export function SuperMobyBrosPage() {
           </div>
         </article>
         <article className="surface-panel">
+          <div className="super-bros-mobile-actions md:hidden space-y-3 mb-4">
+            <button className="primary-button" onClick={() => setIsRunning(true)} disabled={isRunning || isComplete}>
+              Старт
+            </button>
+          </div>
           <div className="bros-stage">
             <div className="bros-player" style={{ left: `${player.x}%`, top: player.y }}>
               M
@@ -176,6 +181,19 @@ export function SuperMobyBrosPage() {
               <span key={obstacle.x} className="bros-obstacle" style={{ left: `${obstacle.x}%`, top: obstacle.y }} />
             ))}
             <span className="bros-finish" />
+          </div>
+          <div className="super-bros-mobile-directions md:hidden mt-4 grid grid-cols-2 gap-3">
+            <button className="secondary-button" onPointerDown={() => move(-1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
+              Влево
+            </button>
+            <button className="secondary-button" onPointerDown={() => move(1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
+              Вправо
+            </button>
+          </div>
+          <div className="super-bros-mobile-jump md:hidden mt-3">
+            <button className="secondary-button" onClick={jump} disabled={!isRunning}>
+              Прыжок
+            </button>
           </div>
         </article>
       </section>

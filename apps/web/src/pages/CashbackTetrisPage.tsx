@@ -245,13 +245,15 @@ export function CashbackTetrisPage() {
                 </button>
               ) : null}
             </div>
-            <div className="snake-controls">
+            <div className="tetris-desktop-controls hidden md:grid snake-controls">
               <button className="control-button control-button-left" onClick={() => movePiece(-1)}>←</button>
               <button className="control-button control-button-up" onClick={rotatePiece}>↻</button>
               <button className="control-button control-button-right" onClick={() => movePiece(1)}>→</button>
               <button className="control-button control-button-down" onClick={stepDown}>↓</button>
             </div>
-            <p className="text-sm text-white/58">W - поворот, A/D - движение, S - вниз, Space - быстро вниз Стрелки тоже работают</p>
+            <p className="tetris-desktop-hint hidden md:block text-sm text-white/58">
+              W - поворот, A/D - движение, S - вниз, Space - быстро вниз Стрелки тоже работают
+            </p>
           </div>
         </article>
         <article className="surface-panel">
@@ -260,6 +262,15 @@ export function CashbackTetrisPage() {
               <span key={index} className="tetris-cell" style={{ background: cell ?? undefined }} />
             ))}
           </div>
+          <div className="tetris-mobile-controls md:hidden mt-4">
+            <div className="snake-controls">
+              <button className="control-button control-button-left" onClick={() => movePiece(-1)}>←</button>
+              <button className="control-button control-button-up" onClick={rotatePiece}>↻</button>
+              <button className="control-button control-button-right" onClick={() => movePiece(1)}>→</button>
+              <button className="control-button control-button-down" onClick={stepDown}>↓</button>
+            </div>
+          </div>
+          <p className="tetris-mobile-hint text-sm text-white/58 md:hidden">Собирайте линии кнопками под полем</p>
         </article>
       </section>
     </div>

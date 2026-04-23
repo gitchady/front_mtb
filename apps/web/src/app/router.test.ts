@@ -49,6 +49,14 @@ describe("router", () => {
     expect(labels).toContain("AI");
   });
 
+  it("keeps quests reachable through overflow instead of the top navigation rail", () => {
+    const html = renderShell("/app/quests");
+
+    expect(html).toContain('aria-label="Основная навигация"');
+    expect(html).toContain(">Еще<");
+    expect(html).not.toContain('href="/app/quests" aria-current="page" class="nav-link nav-link-active"');
+  });
+
   it("exposes a compact mobile bottom nav with overflow destinations", () => {
     expect(mobileBottomNavItems.map((item) => item.label)).toEqual(["Обзор", "Контакты", "AI", "Еще"]);
     expect(mobileOverflowLinks.map((item) => item.label)).toEqual([

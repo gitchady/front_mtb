@@ -148,7 +148,7 @@ export function MobyJumpPage() {
                 Сбросить
               </button>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="moby-jump-desktop-controls hidden md:flex flex-wrap gap-3">
               <button className="control-button h-[72px] w-[72px]" onPointerDown={() => move(-1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
                 ←
               </button>
@@ -170,6 +170,14 @@ export function MobyJumpPage() {
                 style={{ left: `${platform.x}%`, top: platform.y }}
               />
             ))}
+          </div>
+          <div className="moby-jump-mobile-controls md:hidden mt-4 grid grid-cols-2 gap-3">
+            <button className="secondary-button" onPointerDown={() => move(-1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
+              Влево
+            </button>
+            <button className="secondary-button" onPointerDown={() => move(1)} onPointerLeave={() => move(0)} onPointerUp={() => move(0)}>
+              Вправо
+            </button>
           </div>
         </article>
       </section>

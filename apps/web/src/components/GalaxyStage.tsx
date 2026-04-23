@@ -3,14 +3,19 @@ import { PLANET_META } from "@mtb/contracts";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { PlanetVisual } from "@/components/PlanetVisual";
-import { PLANET_STAGE } from "@/lib/game-config";
+import { PLANET_ACTIONS, type PlanetAction, PLANET_STAGE } from "@/lib/game-config";
 import { MINI_GAMES, type MiniGameMeta } from "@/lib/mini-games";
 import { isPlanetUnlocked, PLANET_UNLOCK_REQUIREMENTS, type PlanetUnlockMap } from "@/lib/planet-unlocks";
 
 type PlanetMasteryMap = Record<PlanetCode, number>;
 type Position = { left: number; top: number };
-type HubKind = "spend" | "quests" | "games";
-type GalaxyNodeId = `planet:${PlanetCode}` | `hub:${PlanetCode}:${HubKind}` | `quest:${string}` | `game:${GameCode}`;
+type HubKind = "spend" | "missions" | "quests" | "games";
+type GalaxyNodeId =
+  | `planet:${PlanetCode}`
+  | `hub:${PlanetCode}:${HubKind}`
+  | `mission:${string}`
+  | `quest:${string}`
+  | `game:${GameCode}`;
 type GalaxyLayout = Partial<Record<GalaxyNodeId, Position>>;
 
 const HUB_META: Record<HubKind, { title: string; detail: string; short: string }> = {
@@ -18,6 +23,11 @@ const HUB_META: Record<HubKind, { title: string; detail: string; short: string }
     title: "Импульс",
     detail: "Запишите уровень сигнала, чтобы усилить большую планету категории",
     short: "IMP",
+  },
+  missions: {
+    title: "Миссии",
+    detail: "Выберите миссионный спутник, чтобы открыть действие этой планеты",
+    short: "MIS",
   },
   quests: {
     title: "Квесты",
@@ -32,10 +42,17 @@ const HUB_META: Record<HubKind, { title: string; detail: string; short: string }
 };
 
 const HUB_OFFSETS: Record<HubKind, Position> = {
-  spend: { left: -22, top: 14 },
-  quests: { left: 0, top: -23 },
-  games: { left: 22, top: 14 },
+  spend: { left: -24, top: 15 },
+  missions: { left: -10, top: -25 },
+  quests: { left: 10, top: -25 },
+  games: { left: 24, top: 15 },
 };
+
+const MISSION_OFFSETS: Position[] = [
+  { left: -14, top: -11 },
+  { left: 16, top: -8 },
+  { left: 0, top: 18 },
+];
 
 const QUEST_OFFSETS: Position[] = [
   { left: -15, top: -13 },
@@ -59,6 +76,7 @@ const PLANET_DRAG_CLICK_THRESHOLD = 5;
 const PLANET_LAYOUT_STORAGE_KEY = "mtb-galaxy-node-layout-v3";
 const HUB_ORBIT_SPEEDS: Record<HubKind, number> = {
   spend: 0.1,
+  missions: 0.09,
   quests: 0.08,
   games: 0.12,
 };
@@ -75,6 +93,10 @@ function hubNodeId(planetCode: PlanetCode, kind: HubKind): GalaxyNodeId {
 
 function questNodeId(questId: string): GalaxyNodeId {
   return `quest:${questId}`;
+}
+
+function missionNodeId(actionId: string): GalaxyNodeId {
+  return `mission:${actionId}`;
 }
 
 function gameNodeId(gameCode: GameCode): GalaxyNodeId {
@@ -94,6 +116,7 @@ function isGalaxyNodeId(value: string): value is GalaxyNodeId {
   return (
     value.startsWith("planet:") ||
     value.startsWith("hub:") ||
+    value.startsWith("mission:") ||
     value.startsWith("quest:") ||
     value.startsWith("game:")
   );
@@ -228,6 +251,9 @@ function parseSelectedHub(selectedNode: GalaxyNodeId, selectedPlanet: PlanetCode
   if (selectedNode.startsWith(`hub:${selectedPlanet}:`)) {
     return selectedNode.split(":")[2] as HubKind;
   }
+  if (selectedNode.startsWith("mission:")) {
+    return "missions";
+  }
   if (selectedNode.startsWith("quest:")) {
     return "quests";
   }
@@ -259,6 +285,10 @@ function shouldLightNode(nodeId: GalaxyNodeId, selectedNode: GalaxyNodeId, selec
     return nodeId.startsWith("quest:");
   }
 
+  if (selectedHub === "missions" && selectedNode === hubNodeId(selectedPlanet, "missions")) {
+    return nodeId.startsWith("mission:");
+  }
+
   if (selectedHub === "games" && selectedNode === hubNodeId(selectedPlanet, "games")) {
     return nodeId.startsWith("game:");
   }
@@ -286,24 +316,28 @@ export function GalaxyStage({
   selectedPlanet,
   planetMastery,
   unlockedPlanets,
+  showQuests = true,
   quests = [],
   spendPending = false,
   onSelect,
   onLockedSelect,
   onRunSpend,
   onOpenQuest,
+  onOpenMission,
   onOpenGame,
 }: {
   planets: PlanetProgress[];
   selectedPlanet: PlanetCode;
   planetMastery: PlanetMasteryMap;
   unlockedPlanets: PlanetUnlockMap;
+  showQuests?: boolean;
   quests?: QuestItem[];
   spendPending?: boolean;
   onSelect: (planetCode: PlanetCode) => void;
   onLockedSelect?: (planetCode: PlanetCode) => void;
   onRunSpend: (planetCode: PlanetCode, amount: number) => void;
   onOpenQuest: (questId: string) => void;
+  onOpenMission: (actionId: string) => void;
   onOpenGame: (route: string) => void;
 }) {
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -342,6 +376,13 @@ export function GalaxyStage({
   }, [selectedPlanet]);
 
   useEffect(() => {
+    if (!showQuests && (selectedNode.startsWith("quest:") || selectedNode === hubNodeId(selectedPlanet, "quests"))) {
+      setSelectedNode(planetNodeId(selectedPlanet));
+      resetPan();
+    }
+  }, [selectedNode, selectedPlanet, showQuests]);
+
+  useEffect(() => {
     nodeLayoutRef.current = nodeLayout;
   }, [nodeLayout]);
 
@@ -365,7 +406,12 @@ export function GalaxyStage({
   );
   const selectedPlanetPosition = getOrbitPosition(selectedPlanetBasePosition, orbitAngle);
   const isPlanetExpanded = expandedPlanet === selectedPlanet;
+  const visibleHubs = useMemo(
+    () => (showQuests ? (["spend", "missions", "quests", "games"] as HubKind[]) : (["spend", "missions", "games"] as HubKind[])),
+    [showQuests],
+  );
   const selectedHub = isPlanetExpanded ? parseSelectedHub(selectedNode, selectedPlanet) : null;
+  const activeHub = selectedHub && visibleHubs.includes(selectedHub) ? selectedHub : null;
 
   useEffect(() => {
     if (!isPlanetExpanded) {
@@ -392,6 +438,11 @@ export function GalaxyStage({
           baseAngle: getOrbitAngle(HUB_OFFSETS.spend),
           speed: HUB_ORBIT_SPEEDS.spend,
         },
+        missions: {
+          radius: getOrbitRadius(HUB_OFFSETS.missions),
+          baseAngle: getOrbitAngle(HUB_OFFSETS.missions),
+          speed: HUB_ORBIT_SPEEDS.missions,
+        },
         quests: {
           radius: getOrbitRadius(HUB_OFFSETS.quests),
           baseAngle: getOrbitAngle(HUB_OFFSETS.quests),
@@ -413,6 +464,11 @@ export function GalaxyStage({
           hubOrbitSpecs.spend.radius,
           hubOrbitSpecs.spend.baseAngle + orbitTime * hubOrbitSpecs.spend.speed,
         ),
+        missions: getOrbitalPosition(
+          selectedPlanetPosition,
+          hubOrbitSpecs.missions.radius,
+          hubOrbitSpecs.missions.baseAngle + orbitTime * hubOrbitSpecs.missions.speed,
+        ),
         quests: getOrbitalPosition(
           selectedPlanetPosition,
           hubOrbitSpecs.quests.radius,
@@ -426,6 +482,10 @@ export function GalaxyStage({
       }) satisfies Record<HubKind, Position>,
     [hubOrbitSpecs, orbitTime, selectedPlanetPosition.left, selectedPlanetPosition.top],
   );
+  const selectedMissions = useMemo(
+    () => PLANET_ACTIONS[selectedPlanet].slice(0, 3),
+    [selectedPlanet],
+  );
   const selectedQuests = useMemo(
     () => quests.filter((quest) => quest.planet_code === selectedPlanet).slice(0, 3),
     [quests, selectedPlanet],
@@ -433,6 +493,18 @@ export function GalaxyStage({
   const selectedGames = useMemo(
     () => MINI_GAMES.filter((game) => game.planetCode === selectedPlanet).slice(0, 3),
     [selectedPlanet],
+  );
+  const missionOrbitSpecs = useMemo(
+    () =>
+      selectedMissions.map((_, index) => {
+        const offset = MISSION_OFFSETS[index] ?? MISSION_OFFSETS[0];
+        return {
+          radius: getOrbitRadius(offset),
+          baseAngle: getOrbitAngle(offset),
+          speed: DETAIL_ORBIT_BASE_SPEED + index * DETAIL_ORBIT_SPEED_STEP,
+        };
+      }),
+    [selectedMissions],
   );
   const questOrbitSpecs = useMemo(
     () =>
@@ -457,6 +529,19 @@ export function GalaxyStage({
         };
       }),
     [selectedGames],
+  );
+  const missionPositions = useMemo(
+    () =>
+      selectedMissions.map((mission, index) => ({
+        mission,
+        position: getOrbitalPosition(
+          hubPositions.missions,
+          missionOrbitSpecs[index]?.radius ?? getOrbitRadius(MISSION_OFFSETS[0]),
+          (missionOrbitSpecs[index]?.baseAngle ?? getOrbitAngle(MISSION_OFFSETS[0])) +
+            orbitTime * (missionOrbitSpecs[index]?.speed ?? DETAIL_ORBIT_BASE_SPEED),
+        ),
+      })),
+    [hubPositions.missions, missionOrbitSpecs, orbitTime, selectedMissions],
   );
   const questPositions = useMemo(
     () =>
@@ -484,6 +569,9 @@ export function GalaxyStage({
       })),
     [gameOrbitSpecs, hubPositions.games, orbitTime, selectedGames],
   );
+  const selectedMission = isPlanetExpanded && selectedNode.startsWith("mission:")
+    ? selectedMissions.find((mission) => missionNodeId(mission.id) === selectedNode)
+    : undefined;
   const selectedQuest = isPlanetExpanded && selectedNode.startsWith("quest:")
     ? selectedQuests.find((quest) => questNodeId(quest.quest_id) === selectedNode)
     : undefined;
@@ -491,21 +579,23 @@ export function GalaxyStage({
     ? selectedGames.find((game) => gameNodeId(game.code) === selectedNode)
     : undefined;
   const selectedDetailPosition =
-    selectedQuest
+    selectedMission
+      ? missionPositions.find((item) => item.mission.id === selectedMission.id)?.position
+      : selectedQuest
       ? questPositions.find((item) => item.quest.quest_id === selectedQuest.quest_id)?.position
       : selectedGame
         ? gamePositions.find((item) => item.game.code === selectedGame.code)?.position
-        : selectedHub
-          ? hubPositions[selectedHub]
+        : activeHub
+          ? hubPositions[activeHub]
           : undefined;
   const focusPosition = selectedDetailPosition ?? selectedPlanetPosition;
-  const hasFocusedNode = Boolean(selectedHub || selectedQuest || selectedGame);
+  const hasFocusedNode = Boolean(activeHub || selectedMission || selectedQuest || selectedGame);
   const shouldFocusSelectedNode = isPlanetExpanded && !manualLayoutMode && hasFocusedNode;
   const zoom = manualLayoutMode
     ? 1
-    : selectedQuest || selectedGame
+    : selectedMission || selectedQuest || selectedGame
       ? 1.48
-      : selectedHub
+      : activeHub
         ? 1.3
         : isPlanetExpanded
           ? 1.08
@@ -742,7 +832,7 @@ export function GalaxyStage({
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         {isPlanetExpanded ? (
-          (["spend", "quests", "games"] as HubKind[]).map((kind) => (
+          visibleHubs.map((kind) => (
             <div
               key={`orbit:${kind}`}
               className="galaxy-stage__satellite-orbit galaxy-stage__satellite-orbit--planet"
@@ -756,7 +846,7 @@ export function GalaxyStage({
             />
           ))
         ) : null}
-        {isPlanetExpanded && selectedHub === "quests" ? (
+        {showQuests && isPlanetExpanded && activeHub === "quests" ? (
           questOrbitSpecs.map((spec, index) => (
             <div
               key={`quest-orbit:${selectedQuests[index]?.quest_id ?? index}`}
@@ -764,6 +854,21 @@ export function GalaxyStage({
               style={{
                 top: `${hubPositions.quests.top}%`,
                 left: `${hubPositions.quests.left}%`,
+                width: `${spec.radius * 2}%`,
+                height: `${spec.radius * 2}%`,
+              }}
+              aria-hidden="true"
+            />
+          ))
+        ) : null}
+        {isPlanetExpanded && activeHub === "missions" ? (
+          missionOrbitSpecs.map((spec, index) => (
+            <div
+              key={`mission-orbit:${selectedMissions[index]?.id ?? index}`}
+              className="galaxy-stage__satellite-orbit galaxy-stage__satellite-orbit--detail"
+              style={{
+                top: `${hubPositions.missions.top}%`,
+                left: `${hubPositions.missions.left}%`,
                 width: `${spec.radius * 2}%`,
                 height: `${spec.radius * 2}%`,
               }}
@@ -789,7 +894,7 @@ export function GalaxyStage({
 
         {isPlanetExpanded ? (
           <svg className="galaxy-stage__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            {(["spend", "quests", "games"] as HubKind[]).map((kind) => (
+            {visibleHubs.map((kind) => (
               <line
                 key={kind}
                 className="galaxy-stage__link"
@@ -799,13 +904,25 @@ export function GalaxyStage({
                 y2={hubPositions[kind].top}
               />
             ))}
-            {selectedHub === "quests"
+            {showQuests && activeHub === "quests"
               ? questPositions.map(({ quest, position }) => (
                   <line
                     key={quest.quest_id}
                     className="galaxy-stage__link galaxy-stage__link--branch"
                     x1={hubPositions.quests.left}
                     y1={hubPositions.quests.top}
+                    x2={position.left}
+                    y2={position.top}
+                  />
+                ))
+              : null}
+            {activeHub === "missions"
+              ? missionPositions.map(({ mission, position }) => (
+                  <line
+                    key={mission.id}
+                    className="galaxy-stage__link galaxy-stage__link--branch"
+                    x1={hubPositions.missions.left}
+                    y1={hubPositions.missions.top}
                     x2={position.left}
                     y2={position.top}
                   />
@@ -881,7 +998,7 @@ export function GalaxyStage({
 
         <AnimatePresence>
           {isPlanetExpanded
-            ? (["spend", "quests", "games"] as HubKind[]).map((kind) => {
+            ? visibleHubs.map((kind) => {
                 const nodeId = hubNodeId(selectedPlanet, kind);
                 const position = hubPositions[kind];
                 const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
@@ -913,7 +1030,37 @@ export function GalaxyStage({
         </AnimatePresence>
 
         <AnimatePresence>
-          {isPlanetExpanded && selectedHub === "quests"
+          {isPlanetExpanded && activeHub === "missions"
+            ? missionPositions.map(({ mission, position }) => {
+                const nodeId = missionNodeId(mission.id);
+                const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
+                const active = selectedNode === nodeId;
+
+                return (
+                  <motion.button
+                    key={mission.id}
+                    initial={{ opacity: 0, scale: 0.56 }}
+                    animate={{ opacity: getFocusedNodeOpacity(lit, active), scale: active ? 1.08 : 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => selectDetailNode(nodeId)}
+                    className={`galaxy-stage__micro galaxy-stage__micro--mission ${active ? "galaxy-stage__micro--active" : ""} ${
+                      active ? "galaxy-stage__node--active" : ""
+                    } ${
+                      lit ? "galaxy-stage__node--lit" : "galaxy-stage__node--muted"
+                    }`}
+                    style={{ top: `${position.top}%`, left: `${position.left}%` }}
+                    type="button"
+                  >
+                    <span>Миссия</span>
+                    <strong>{mission.title}</strong>
+                  </motion.button>
+                );
+              })
+            : null}
+
+          {showQuests && isPlanetExpanded && activeHub === "quests"
             ? questPositions.map(({ quest, position }) => {
                 const nodeId = questNodeId(quest.quest_id);
                 const lit = shouldLightNode(nodeId, selectedNode, selectedPlanet);
@@ -977,7 +1124,7 @@ export function GalaxyStage({
       </motion.div>
 
       <AnimatePresence mode="wait">
-        {selectedHub || selectedQuest || selectedGame ? (
+        {activeHub || selectedMission || selectedQuest || selectedGame ? (
           <motion.div
             key={selectedNode}
             initial={{ opacity: 0, y: 12, scale: 0.96 }}
@@ -985,7 +1132,7 @@ export function GalaxyStage({
             exit={{ opacity: 0, y: 10, scale: 0.96 }}
             className="galaxy-stage__node-panel"
           >
-            {selectedHub === "spend" && !selectedQuest && !selectedGame ? (
+            {activeHub === "spend" && !selectedMission && !selectedQuest && !selectedGame ? (
               <form onSubmit={submitSpend}>
                 <p className="eyebrow">Параметр {PLANET_ACTION_KIND[selectedPlanet]}</p>
                 <h4>{HUB_META.spend.title}</h4>
@@ -1006,7 +1153,23 @@ export function GalaxyStage({
               </form>
             ) : null}
 
-            {selectedHub === "quests" && !selectedQuest ? (
+            {activeHub === "missions" && !selectedMission ? (
+              <>
+                <p className="eyebrow">Миссионные спутники</p>
+                <h4>{HUB_META.missions.title}</h4>
+                <p>
+                  {selectedMissions.length
+                    ? "Выберите маленькую миссию, чтобы приблизиться к действию и открыть его в инспекторе планеты"
+                    : "Для этой планеты пока нет активных миссий"}
+                </p>
+              </>
+            ) : null}
+
+            {selectedMission ? (
+              <MissionPanel mission={selectedMission} onOpenMission={onOpenMission} />
+            ) : null}
+
+            {showQuests && activeHub === "quests" && !selectedQuest ? (
               <>
                 <p className="eyebrow">Квестовые спутники</p>
                 <h4>{HUB_META.quests.title}</h4>
@@ -1029,7 +1192,7 @@ export function GalaxyStage({
               </>
             ) : null}
 
-            {selectedHub === "games" && !selectedGame ? (
+            {activeHub === "games" && !selectedGame ? (
               <>
                 <p className="eyebrow">Игровые спутники</p>
                 <h4>{HUB_META.games.title}</h4>
@@ -1055,6 +1218,19 @@ function GamePanel({ game, onOpenGame }: { game: MiniGameMeta; onOpenGame: (rout
       <p>{game.detail}</p>
       <button className="primary-button" onClick={() => onOpenGame(game.route)} type="button">
         Начать игру
+      </button>
+    </>
+  );
+}
+
+function MissionPanel({ mission, onOpenMission }: { mission: PlanetAction; onOpenMission: (actionId: string) => void }) {
+  return (
+    <>
+      <p className="eyebrow">Миссия</p>
+      <h4>{mission.title}</h4>
+      <p>{mission.detail}</p>
+      <button className="primary-button" onClick={() => onOpenMission(mission.id)} type="button">
+        Открыть в инспекторе
       </button>
     </>
   );

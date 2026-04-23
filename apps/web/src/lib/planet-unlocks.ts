@@ -12,9 +12,9 @@ export const INITIAL_UNLOCKED_PLANETS: PlanetUnlockMap = {
 export const PLANET_UNLOCK_REQUIREMENTS: Record<PlanetCode, string> = {
   ORBIT_COMMERCE: "Открыта с начала",
   CREDIT_SHIELD:
-    "Заберите награду квеста «Спринт Орбиты покупок» или завершите любую игру Орбиты покупок со счетом больше 0",
+    "Наберите первый прогресс в Орбите покупок или завершите любую игру Орбиты покупок со счетом больше 0",
   SOCIAL_RING:
-    "Заберите награду квеста «Дисциплина щита» или завершите любую игру Кредитного щита со счетом больше 0",
+    "Наберите первый прогресс в Кредитном щите или завершите любую игру Кредитного щита со счетом больше 0",
 };
 
 const QUEST_UNLOCKS: Partial<Record<string, PlanetCode>> = {

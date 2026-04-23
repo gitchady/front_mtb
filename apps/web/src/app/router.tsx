@@ -98,6 +98,8 @@ function findAppLink(to: string) {
 }
 
 export const mobileOverflowLinks = appLinks.filter((link) => !mobilePrimaryNavPaths.has(link.to));
+const desktopTopNavLinks = appLinks.filter((link) => link.to !== "/app/quests");
+const desktopOverflowLinks = [findAppLink("/app/quests")];
 
 export const mobileBottomNavItems: MobileBottomNavItem[] = [
   { kind: "link", ...findAppLink("/app/galaxy") },
@@ -137,12 +139,15 @@ function getCurrentSectionLabel(pathname: string) {
 export function ShellLayout() {
   const location = useLocation();
   const [isMorePanelOpen, setIsMorePanelOpen] = useState(false);
+  const [isDesktopMoreMenuOpen, setIsDesktopMoreMenuOpen] = useState(false);
   const isAppRoute = location.pathname.startsWith("/app/");
   const currentSectionLabel = getCurrentSectionLabel(location.pathname);
   const isMobileOverflowActive = mobileOverflowLinks.some((link) => isShellLinkActive(location.pathname, link));
+  const isDesktopOverflowActive = desktopOverflowLinks.some((link) => isShellLinkActive(location.pathname, link));
 
   useEffect(() => {
     setIsMorePanelOpen(false);
+    setIsDesktopMoreMenuOpen(false);
   }, [location.pathname]);
 
   return (
@@ -164,7 +169,7 @@ export function ShellLayout() {
           </div>
           <div className="top-shell__nav-stack">
             <nav className="top-nav" aria-label="Основная навигация">
-              {appLinks.map((link) => (
+              {desktopTopNavLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
@@ -174,6 +179,36 @@ export function ShellLayout() {
                   {link.label}
                 </NavLink>
               ))}
+              <div className="top-nav__overflow">
+                <button
+                  type="button"
+                  className={`nav-link top-nav__overflow-trigger ${
+                    isDesktopOverflowActive || isDesktopMoreMenuOpen ? "nav-link-active" : ""
+                  }`}
+                  aria-expanded={isDesktopMoreMenuOpen || isDesktopOverflowActive}
+                  aria-controls="desktop-overflow-menu"
+                  onClick={() => setIsDesktopMoreMenuOpen((value) => !value)}
+                >
+                  Еще
+                </button>
+                {isDesktopMoreMenuOpen || isDesktopOverflowActive ? (
+                  <div id="desktop-overflow-menu" className="top-nav__overflow-menu" aria-label="Дополнительные разделы">
+                    {desktopOverflowLinks.map((link) => (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        aria-current={isShellLinkActive(location.pathname, link) ? "page" : undefined}
+                        className={`mobile-overflow-link top-nav__overflow-link ${
+                          isShellLinkActive(location.pathname, link) ? "mobile-overflow-link-active" : ""
+                        }`}
+                        onClick={() => setIsDesktopMoreMenuOpen(false)}
+                      >
+                        {link.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </nav>
             <div className="top-shell__subnav">
               <p className="top-shell__meta">MTB Bank</p>

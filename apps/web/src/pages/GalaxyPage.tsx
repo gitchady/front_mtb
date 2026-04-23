@@ -8,7 +8,7 @@ import { PlanetInspector } from "@/components/PlanetInspector";
 import { api } from "@/lib/api";
 import { PLANET_ACTIONS, PLANET_STRUCTURES } from "@/lib/game-config";
 import { useGameStore } from "@/lib/game-store";
-import { formatStatus, SEGMENT_LABELS } from "@/lib/labels";
+import { SEGMENT_LABELS } from "@/lib/labels";
 import { isPlanetUnlocked, PLANET_UNLOCK_REQUIREMENTS } from "@/lib/planet-unlocks";
 import { useSessionStore } from "@/lib/session-store";
 
@@ -23,16 +23,6 @@ const SPEND_EVENT_KIND: Record<PlanetCode, "partner" | "credit" | "referral"> = 
   CREDIT_SHIELD: "credit",
   SOCIAL_RING: "referral",
 };
-
-function getMissionHeadline(status: string) {
-  if (status === "completed") {
-    return "Готова к выдаче";
-  }
-  if (status === "claimed") {
-    return "Завершена";
-  }
-  return "В работе";
-}
 
 export function GalaxyPage() {
   const { userId, syncProfile } = useSessionStore();
@@ -64,35 +54,16 @@ export function GalaxyPage() {
     queryKey: ["profile", userId],
     queryFn: () => api.getProfile(userId),
   });
+  const questsQuery = useQuery({
+    queryKey: ["quests", userId],
+    queryFn: () => api.getQuests(userId),
+  });
   const deferredProfile = useDeferredValue(profileQuery.data);
   const planets = deferredProfile?.planets ?? EMPTY_PLANETS;
   const selectedPlanetState = useMemo(
     () => planets.find((planet) => planet.planet_code === selectedPlanet) ?? planets[0],
     [planets, selectedPlanet],
   );
-  const selectedPlanetQuests = useMemo(
-    () =>
-      (deferredProfile?.quests ?? [])
-        .filter((quest) => quest.planet_code === selectedPlanet)
-        .sort((left, right) => {
-          const statusWeight = (status: string) => {
-            if (status === "completed") {
-              return 0;
-            }
-            if (status === "active") {
-              return 1;
-            }
-            if (status === "claimed") {
-              return 2;
-            }
-            return 3;
-          };
-
-          return statusWeight(left.status) - statusWeight(right.status);
-        }),
-    [deferredProfile?.quests, selectedPlanet],
-  );
-
   const planetSpendMutation = useMutation({
     mutationFn: ({ planetCode, amount }: { planetCode: PlanetCode; amount: number }) =>
       api.ingest(api.buildEvent(userId, SPEND_EVENT_KIND[planetCode])).then((result) => ({ result, planetCode, amount })),
@@ -139,14 +110,11 @@ export function GalaxyPage() {
           <div className="space-y-4 md:space-y-6">
             <p className="eyebrow">Игровой клиент</p>
             <h2 className="max-w-3xl text-3xl font-semibold leading-[0.96] sm:text-4xl md:text-6xl">
-              Выбирайте планеты, запускайте миссии и прокачивайте игровой прогресс.
+              Исследуйте планеты, усиливайте системы и держите под рукой живой обзор галактики.
             </h2>
             <div className="flex flex-wrap gap-3">
               <Link className="primary-button primary-button--hero" to="/app/games">
                 Перейти к играм
-              </Link>
-              <Link className="secondary-button" to="/app/quests">
-                Перейти к квестам
               </Link>
             </div>
             <div className="inline-flex flex-wrap items-center gap-3 rounded-[28px] border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/72">
@@ -155,7 +123,7 @@ export function GalaxyPage() {
               <span>Фокус: {PLANET_META[selectedPlanet].title}</span>
             </div>
             <p className="max-w-2xl text-sm text-white/72 md:text-lg">
-              Орбита покупок, Кредитный щит и Социальное кольцо имеют свои миссии, постройки, живые события и мини-игры.
+              Орбита покупок, Кредитный щит и Социальное кольцо собирают прогресс планет, построек, живых событий и мини-игр в одном экране.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 self-start lg:grid-cols-3 xl:grid-cols-2">
@@ -205,7 +173,8 @@ export function GalaxyPage() {
           selectedPlanet={selectedPlanet}
           planetMastery={planetMastery}
           unlockedPlanets={unlockedPlanets}
-          quests={deferredProfile?.quests ?? []}
+          showQuests
+          quests={questsQuery.data ?? []}
           spendPending={planetSpendMutation.isPending}
           onSelect={selectPlanet}
           onLockedSelect={showLockedFeedback}
@@ -215,6 +184,7 @@ export function GalaxyPage() {
               : showLockedFeedback(planetCode)
           }
           onOpenQuest={(questId) => navigate(`/app/quests?quest=${questId}`)}
+          onOpenMission={(actionId) => setSelectedActionId(actionId)}
           onOpenGame={(route) => navigate(route)}
         />
       </section>
@@ -238,63 +208,6 @@ export function GalaxyPage() {
                 </strong>
               </div>
             ))}
-          </div>
-
-          <div className="mission-confirm mission-confirm--left">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="eyebrow">Актуальные миссии</p>
-                <h4 className="mt-2 text-xl font-semibold">
-                  {selectedPlanetLocked ? "Сначала откройте планету" : `Миссии ${PLANET_META[selectedPlanet].title}`}
-                </h4>
-              </div>
-              {!selectedPlanetLocked ? (
-                <Link className="secondary-button" to="/app/quests">
-                  Квесты
-                </Link>
-              ) : null}
-            </div>
-            <p className="mt-2 text-sm text-white/58">
-              {selectedPlanetLocked
-                ? PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]
-                : "Эти миссии берутся из списка квестов и обновляются вместе с прогрессом планеты."}
-            </p>
-            <div className="mt-4 space-y-3">
-              {selectedPlanetLocked ? null : selectedPlanetQuests.length ? (
-                selectedPlanetQuests.slice(0, 3).map((quest) => {
-                  const progressPercent = quest.threshold > 0 ? Math.min(100, (quest.current_value / quest.threshold) * 100) : 0;
-
-                  return (
-                    <div key={quest.quest_id} className="list-row">
-                      <div className="min-w-0">
-                        <p className="text-lg font-medium">{quest.title}</p>
-                        <p className="mt-1 text-sm text-white/55">{quest.description}</p>
-                        <div className="mt-3 h-2 rounded-full bg-white/8">
-                          <div
-                            className="h-2 rounded-full bg-[linear-gradient(90deg,#ff4da0,#526bff)]"
-                            style={{ width: `${progressPercent}%` }}
-                          />
-                        </div>
-                        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-white/42">
-                          {quest.current_value}/{quest.threshold} • {formatStatus(quest.status)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs uppercase tracking-[0.18em] text-white/42">{getMissionHeadline(quest.status)}</p>
-                        <strong className="status-pill">{quest.reward_value}</strong>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="list-row list-row--empty">
-                  <div>
-                    <p className="text-lg font-medium">Миссии скоро появятся</p>
-                    <p className="text-sm text-white/55">Для этой планеты пока нет активных квестов.</p>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </article>
 

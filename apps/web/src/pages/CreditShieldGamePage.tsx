@@ -205,24 +205,24 @@ export function CreditShieldGamePage() {
               Стабилизируйте импульс за 12 раундов. Чем точнее тайминг, тем выше счет, больше звездной пыли и сильнее Кредитный щит.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
+          <div className="game-hero-metrics grid grid-cols-2 gap-2 sm:grid-cols-2 xl:gap-3">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Раунд</span>
               <strong>{round}/{ROUNDS}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Счет щита</span>
               <strong>{score}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Лучший счет щита</span>
               <strong>{bestShieldScore}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Награда</span>
               <strong>{bonusPreview.totalReward}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Серия бонусов</span>
               <strong>{bonusStreak}x</strong>
             </div>
@@ -238,16 +238,6 @@ export function CreditShieldGamePage() {
               {!isRunning && !isComplete ? "Готов к стабилизации" : isComplete ? "Забег завершен" : "Щит активен"}
             </h3>
             <p className="min-h-[4.75rem] text-white/62 md:min-h-[3.25rem]">{status}</p>
-            <div className="flex min-h-[3.25rem] flex-wrap gap-3">
-              <button className="primary-button" onClick={launchGame} disabled={isRunning}>
-                {isComplete ? "Запустить снова" : "Старт реактора"}
-              </button>
-              {canResetGame ? (
-                <button className="secondary-button" onClick={resetGame}>
-                  Сбросить
-                </button>
-              ) : null}
-            </div>
             <div className="list-row">
               <div>
                 <p className="text-lg font-medium">Забрать награду</p>
@@ -287,8 +277,18 @@ export function CreditShieldGamePage() {
                 <span>Поздно</span>
               </div>
             </div>
-            <div className="mt-5 flex justify-center">
-              <button className="secondary-button" onClick={lockPulse} disabled={!isRunning || isComplete}>
+            <div className="shield-reactor__actions">
+              <div className="shield-reactor__actions-row">
+                <button className="primary-button" onClick={launchGame} disabled={isRunning}>
+                  {isComplete ? "Запустить снова" : "Старт реактора"}
+                </button>
+                {canResetGame ? (
+                  <button className="secondary-button" onClick={resetGame}>
+                    Сбросить
+                  </button>
+                ) : null}
+              </div>
+              <button className="secondary-button shield-reactor__lock-button" onClick={lockPulse} disabled={!isRunning || isComplete}>
                 Зафиксировать импульс
               </button>
             </div>

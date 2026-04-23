@@ -69,9 +69,9 @@ export function GameHero({
             <p className="max-w-2xl text-base text-white/68 md:text-lg">{description}</p>
             <p className="text-sm uppercase tracking-[0.24em] text-white/45">{meta.title}</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="game-hero-metrics grid grid-cols-2 gap-2 sm:grid-cols-2 xl:gap-3">
             {allMetrics.map((metric) => (
-              <div key={metric.label} className="metric-chip">
+              <div key={metric.label} className="metric-chip metric-chip--compact game-hero-metrics__chip">
                 <span>{metric.label}</span>
                 <strong>{metric.value}</strong>
               </div>

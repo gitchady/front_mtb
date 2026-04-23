@@ -86,7 +86,7 @@ export function PlanetInspector({
 
       <div className="mt-8 grid gap-4 2xl:grid-cols-[1fr_1fr]">
         <div className="space-y-3">
-          <p className="eyebrow">Действия миссии</p>
+          <p className="eyebrow">Действия планеты</p>
           {actions.map((action) => (
             <button
               key={action.id}

@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
+const galaxyStageSpy = vi.fn((_: Record<string, unknown>) => createElement("div", null, "GalaxyStage"));
+
 vi.mock("@tanstack/react-query", () => ({
   useQuery: ({ queryKey }: { queryKey: string[] }) => {
     if (queryKey[0] === "profile") {
@@ -35,6 +37,27 @@ vi.mock("@tanstack/react-query", () => ({
       };
     }
 
+    if (queryKey[0] === "quests") {
+      return {
+        data: [
+          {
+            quest_id: "quest_orbit_001",
+            title: "Партнерский импульс",
+            description: "Сделайте первую партнерскую покупку",
+            planet_code: "ORBIT_COMMERCE",
+            condition_type: "partner",
+            threshold: 3,
+            reward_kind: "stardust",
+            reward_value: 12,
+            status: "active",
+            current_value: 1,
+          },
+        ],
+        isLoading: false,
+        isFetching: false,
+      };
+    }
+
     return {
       data: undefined,
       isLoading: false,
@@ -58,7 +81,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 vi.mock("@/components/GalaxyStage", () => ({
-  GalaxyStage: () => createElement("div", null, "GalaxyStage"),
+  GalaxyStage: (props: Record<string, unknown>) => galaxyStageSpy(props),
 }));
 
 vi.mock("@/components/OnboardingOverlay", () => ({
@@ -130,14 +153,21 @@ function renderGalaxyPage() {
 }
 
 describe("GalaxyPage", () => {
-  it("renders quest-driven missions and removes old activity blocks", () => {
-    const html = renderGalaxyPage();
+  it("passes quests and mission selection handlers into the galaxy stage", () => {
+    galaxyStageSpy.mockClear();
+    renderGalaxyPage();
 
-    expect(html).toContain("Актуальные миссии");
-    expect(html).toContain("Партнерский импульс");
-    expect(html).not.toContain("Лента миссий");
-    expect(html).not.toContain("Последние действия пилота");
-    expect(html).not.toContain("Бустеры и активность");
-    expect(html).not.toContain("Подтвердить событие");
+    expect(galaxyStageSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        showQuests: true,
+        quests: expect.arrayContaining([
+          expect.objectContaining({
+            quest_id: "quest_orbit_001",
+            title: "Партнерский импульс",
+          }),
+        ]),
+        onOpenMission: expect.any(Function),
+      }),
+    );
   });
 });

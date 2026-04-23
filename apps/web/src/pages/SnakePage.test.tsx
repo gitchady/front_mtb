@@ -65,4 +65,30 @@ describe("SnakePage", () => {
 
     expect(html).toContain("snake-controls-panel snake-controls-panel--desktop");
   });
+
+  it("uses compact hero metrics and omits the tick-rate card", () => {
+    const html = renderSnakePage();
+
+    expect(html).toContain("snake-hero-metrics");
+    expect(html).toContain("metric-chip metric-chip--compact");
+    expect(html).not.toContain("Темп обновления");
+  });
+
+  it("keeps the long hero instructions desktop-only", () => {
+    const html = renderSnakePage();
+
+    expect(html).toContain("snake-hero-description");
+    expect(html).toContain("snake-hero-description hidden");
+  });
+
+  it("moves mobile run actions below the reward card", () => {
+    const html = renderSnakePage();
+    const rewardIndex = html.indexOf("Забрать награду");
+    const mobileActionsIndex = html.indexOf("snake-mobile-actions md:hidden");
+
+    expect(mobileActionsIndex).toBeGreaterThan(-1);
+    expect(rewardIndex).toBeGreaterThan(-1);
+    expect(mobileActionsIndex).toBeGreaterThan(rewardIndex);
+    expect(html).toContain("snake-run-actions hidden md:flex");
+  });
 });

@@ -264,34 +264,34 @@ export function SnakePage() {
           <div className="space-y-4">
             <p className="eyebrow">Игровой модуль</p>
             <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
-              Змейка Халва получила сенсорное управление, темп, награды и место в общей прокачке.
+              Змейка Халва получила сенсорное управление, награды и место в общей прокачке.
             </h2>
-            <p className="max-w-2xl text-base text-white/68 md:text-lg">
+            <p className="snake-hero-description hidden max-w-2xl text-base text-white/68 md:block md:text-lg">
               Используйте стрелки, WASD или экранные кнопки, собирайте орбитальные токены и превращайте счет в звездную пыль.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
+          <div className="snake-hero-metrics grid grid-cols-3 gap-2">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Текущий счет</span>
               <strong>{score}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Лучший счет</span>
               <strong>{bestSnakeScore}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Награда</span>
               <strong>{bonusPreview.totalReward}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Звездная пыль</span>
               <strong>{stardust}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Серия бонусов</span>
               <strong>{bonusStreak}x</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact snake-hero-metrics__chip">
               <span>Контейнеры</span>
               <strong>{vaultCrates}</strong>
             </div>
@@ -306,7 +306,7 @@ export function SnakePage() {
               {!isStarted ? "Готов к старту" : isOver ? "Забег завершен" : isPaused ? "Пауза" : "Орбита активна"}
             </h3>
             <p className="text-white/62">{status}</p>
-            <div className="flex flex-wrap gap-3">
+            <div className="snake-run-actions hidden md:flex flex-wrap gap-3">
               <button className="primary-button" onClick={launchRun} disabled={isStarted && !isPaused && !isOver}>
                 {!isStarted || isOver ? "Начать забег" : isPaused ? "Продолжить" : "Забег идет"}
               </button>
@@ -334,13 +334,6 @@ export function SnakePage() {
             <div className="space-y-3">
               <div className="list-row">
                 <div>
-                  <p className="text-lg font-medium">Темп обновления</p>
-                  <p className="text-sm text-white/55">Скорость растет по мере длины забега</p>
-                </div>
-                <strong className="text-2xl">{tickRate}ms</strong>
-              </div>
-              <div className="list-row">
-                <div>
                   <p className="text-lg font-medium">Забрать награду</p>
                   <p className="text-sm text-white/55">
                     База {baseReward}, серия +{bonusPreview.streakBonus}, мастерство +{bonusPreview.masteryBonus}, результат +{bonusPreview.performanceBonus}.
@@ -353,6 +346,21 @@ export function SnakePage() {
                 >
                   {rewardClaimed ? "Получено" : claimMutation.isPending ? "Синхронизация" : `Забрать +${bonusPreview.totalReward}`}
                 </button>
+              </div>
+              <div className="snake-mobile-actions md:hidden space-y-3">
+                <button className="primary-button" onClick={launchRun} disabled={isStarted && !isPaused && !isOver}>
+                  {!isStarted || isOver ? "Начать забег" : isPaused ? "Продолжить" : "Забег идет"}
+                </button>
+                {canPauseRun ? (
+                  <button className="secondary-button" onClick={togglePause}>
+                    Пауза
+                  </button>
+                ) : null}
+                {canResetRun ? (
+                  <button className="secondary-button" onClick={resetRun}>
+                    Сбросить забег
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>

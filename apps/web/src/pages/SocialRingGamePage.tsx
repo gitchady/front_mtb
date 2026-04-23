@@ -239,28 +239,28 @@ export function SocialRingGamePage() {
               Следите за рингом, повторяйте последовательность и завершайте цепочку, чтобы превратить забег в живое событие.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
+          <div className="game-hero-metrics grid grid-cols-2 gap-2 sm:grid-cols-2 xl:gap-3">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Раунд</span>
               <strong>{round}/{TOTAL_ROUNDS}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Счет сигнала</span>
               <strong>{score}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Лучший счет кольца</span>
               <strong>{bestSocialScore}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Награда</span>
               <strong>{rewardPreview.totalReward}</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Серия бонусов</span>
               <strong>{bonusStreak}x</strong>
             </div>
-            <div className="metric-chip">
+            <div className="metric-chip metric-chip--compact game-hero-metrics__chip">
               <span>Контейнеры</span>
               <strong>{vaultCrates}</strong>
             </div>
@@ -285,7 +285,7 @@ export function SocialRingGamePage() {
             </h3>
             <p className="text-white/62">{status}</p>
             <div className="flex flex-wrap gap-3">
-              <button className="primary-button" onClick={launchRun} disabled={phase === "showing" || phase === "input"}>
+              <button className="hidden md:inline-flex primary-button" onClick={launchRun} disabled={phase === "showing" || phase === "input"}>
                 {phase === "complete" ? "Запустить снова" : "Старт ринга"}
               </button>
               {canResetRun ? (
@@ -325,23 +325,8 @@ export function SocialRingGamePage() {
         </article>
 
         <article className="surface-panel">
-          <div className="signal-stage">
-            <div className="signal-stage__ring" />
-            <div className="signal-stage__core">
-              <span>Социальное кольцо</span>
-              <strong>
-                {phase === "showing"
-                  ? "Смотрите"
-                  : phase === "input"
-                    ? "Повтор"
-                    : phase === "transition"
-                      ? "Загрузка"
-                      : phase === "complete"
-                        ? "Награда"
-                        : "Синхр"}
-              </strong>
-            </div>
-            <div className="signal-stage__pads">
+          <div className="signal-stage signal-stage--flat">
+            <div className="signal-stage__pads signal-stage__pads--flat">
               {SIGNAL_PADS.map((pad) => (
                 <button
                   key={pad.id}
@@ -354,6 +339,11 @@ export function SocialRingGamePage() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="social-ring-stage-actions md:hidden mt-4">
+            <button className="primary-button" onClick={launchRun} disabled={phase === "showing" || phase === "input"}>
+              {phase === "complete" ? "Запустить снова" : "Старт ринга"}
+            </button>
           </div>
         </article>
       </section>
