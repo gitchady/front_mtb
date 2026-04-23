@@ -76,7 +76,7 @@ export interface Fe2PlanetLeaderboard {
 const PLANET_BASE: Record<PlanetCode, { cashback: number; constellation: string; gameCode: GameCode }> = {
   ORBIT_COMMERCE: {
     cashback: 2.5,
-    constellation: "Касса Андромеды",
+    constellation: "Контур Андромеды",
     gameCode: "halva_snake",
   },
   CREDIT_SHIELD: {

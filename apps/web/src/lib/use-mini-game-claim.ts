@@ -83,7 +83,7 @@ export function useMiniGameClaim(gameCode: GameCode, score: number, baseReward: 
       });
     },
     onError: () => {
-      setStatus(`${meta.title} завершена локально, но банковская синхронизация не прошла. Попробуйте забрать награду еще раз.`);
+      setStatus(`${meta.title} завершена локально, но синхронизация не прошла. Попробуйте забрать награду еще раз.`);
     },
   });
 

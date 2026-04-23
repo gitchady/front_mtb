@@ -37,7 +37,7 @@ export function QuestsPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Слой миссий</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Ежедневные квесты связывают игровой эффект с измеримым банковским поведением.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Ежедневные квесты связывают игровой эффект с измеримым ритмом действий.</h2>
       </section>
       <section className="grid gap-4 xl:grid-cols-2">
         {questsQuery.data?.map((quest) => {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, type ReactNode, useEffect, useState } from "react";
 import { createBrowserRouter, Link, Navigate, Outlet, NavLink, useLocation, type RouteObject } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PLANET_META, type GameCode } from "@mtb/contracts";
@@ -52,10 +52,24 @@ const FeatureLockedPage = lazy(() =>
   import("@/pages/FeatureLockedPage").then((module) => ({ default: module.FeatureLockedPage })),
 );
 
-export const appLinks = [
+type ShellNavLink = {
+  label: string;
+  to: string;
+  activePrefixes?: string[];
+};
+
+type MobileBottomNavItem =
+  | (ShellNavLink & { kind: "link" })
+  | {
+      kind: "overflow";
+      label: string;
+      destinations: ShellNavLink[];
+    };
+
+export const appLinks: ShellNavLink[] = [
   { to: "/app/galaxy", label: "Обзор" },
   { to: "/app/planets", label: "Планеты" },
-  { to: "/app/games", label: "Игры" },
+  { to: "/app/games", label: "Игры", activePrefixes: ["/app/game/"] },
   { to: "/app/leaderboard", label: "Лидерборд" },
   { to: "/app/quests", label: "Квесты" },
   { to: "/app/rewards", label: "Награды" },
@@ -71,13 +85,80 @@ const adminLinks = [
   { to: "/admin/risk", label: "Риски" },
 ];
 
-function ShellLayout() {
+const mobilePrimaryNavPaths = new Set(["/app/galaxy", "/app/friends", "/app/qr", "/app/ai"]);
+
+function findAppLink(to: string) {
+  const link = appLinks.find((item) => item.to === to);
+
+  if (!link) {
+    throw new Error(`App link ${to} is not configured`);
+  }
+
+  return link;
+}
+
+export const mobileOverflowLinks = appLinks.filter((link) => !mobilePrimaryNavPaths.has(link.to));
+
+export const mobileBottomNavItems: MobileBottomNavItem[] = [
+  { kind: "link", ...findAppLink("/app/galaxy") },
+  { kind: "link", ...findAppLink("/app/friends") },
+  { kind: "link", ...findAppLink("/app/qr") },
+  { kind: "link", ...findAppLink("/app/ai") },
+  { kind: "overflow", label: "Еще", destinations: mobileOverflowLinks },
+];
+
+export function isShellLinkActive(pathname: string, link: Pick<ShellNavLink, "to" | "activePrefixes">) {
+  if (pathname === link.to || pathname.startsWith(`${link.to}/`)) {
+    return true;
+  }
+
+  return (link.activePrefixes ?? []).some((prefix) => pathname.startsWith(prefix));
+}
+
+function isMobileBottomNavItemActive(pathname: string, item: MobileBottomNavItem) {
+  if (item.kind === "link") {
+    return isShellLinkActive(pathname, item);
+  }
+
+  return item.destinations.some((link) => isShellLinkActive(pathname, link));
+}
+
+function getCurrentSectionLabel(pathname: string) {
+  const activeAppLink = appLinks.find((link) => isShellLinkActive(pathname, link));
+
+  if (activeAppLink) {
+    return activeAppLink.label;
+  }
+
+  const activeAdminLink = adminLinks.find((link) => pathname === link.to || pathname.startsWith(`${link.to}/`));
+
+  return activeAdminLink?.label ?? "Галактика";
+}
+
+export function ShellLayout() {
   const location = useLocation();
+  const [isMorePanelOpen, setIsMorePanelOpen] = useState(false);
+  const isAppRoute = location.pathname.startsWith("/app/");
+  const currentSectionLabel = getCurrentSectionLabel(location.pathname);
+  const isMobileOverflowActive = mobileOverflowLinks.some((link) => isShellLinkActive(location.pathname, link));
+
+  useEffect(() => {
+    setIsMorePanelOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[var(--surface)] text-white">
+    <div className="app-shell min-h-screen bg-[var(--surface)] text-white">
       <div className="galaxy-noise" />
-      <div className="mx-auto min-h-screen max-w-[1600px]">
+      <div className="app-shell__frame mx-auto min-h-screen max-w-[1600px]">
+        <header className="mobile-shell-header" aria-label="Мобильная шапка">
+          <div className="mobile-shell-header__brand">
+            <p className="mobile-shell-header__meta">MTB Bank</p>
+            <Link className="mobile-shell-header__title" to="/app/galaxy">
+              Галактика
+            </Link>
+          </div>
+          <p className="mobile-shell-page mobile-shell-header__context">{currentSectionLabel}</p>
+        </header>
         <header className="top-shell">
           <div className="top-shell__brand">
             <h1>Галактика</h1>
@@ -88,40 +169,89 @@ function ShellLayout() {
                 <NavLink
                   key={link.to}
                   to={link.to}
-                  className={({ isActive }) =>
-                    `nav-link ${
-                      isActive ||
-                      (link.to === "/app/games" && location.pathname.startsWith("/app/game/")) ||
-                      (link.to === "/app/planets" && location.pathname.startsWith("/app/planets/"))
-                        ? "nav-link-active"
-                        : ""
-                    }`
-                  }
+                  aria-current={isShellLinkActive(location.pathname, link) ? "page" : undefined}
+                  className={`nav-link ${isShellLinkActive(location.pathname, link) ? "nav-link-active" : ""}`}
                 >
                   {link.label}
                 </NavLink>
               ))}
             </nav>
-            <p className="top-shell__meta">MTB Bank</p>
+            <div className="top-shell__subnav">
+              <p className="top-shell__meta">MTB Bank</p>
+              <nav className="top-nav top-nav--admin" aria-label="Админка">
+                {adminLinks.map((link) => (
+                  <NavLink key={link.to} to={link.to} className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}>
+                    {link.label}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
           </div>
-          <nav className="top-nav top-nav--admin" aria-label="Админка">
-            {adminLinks.map((link) => (
-              <NavLink key={link.to} to={link.to} className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}>
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
         </header>
+        {isAppRoute ? (
+          <section
+            id="mobile-overflow-panel"
+            className="mobile-overflow-panel"
+            aria-label="Разделы Еще"
+            aria-hidden={isMorePanelOpen ? "false" : "true"}
+            data-open={isMorePanelOpen ? "true" : "false"}
+            hidden={!isMorePanelOpen}
+          >
+            <div className="surface-panel mobile-overflow-panel__content">
+              {mobileOverflowLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  aria-current={isShellLinkActive(location.pathname, link) ? "page" : undefined}
+                  className={`mobile-overflow-link ${isShellLinkActive(location.pathname, link) ? "mobile-overflow-link-active" : ""}`}
+                  onClick={() => setIsMorePanelOpen(false)}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <main className="relative overflow-hidden">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
-            className="relative min-h-screen p-5 pt-3 md:p-8 md:pt-4 xl:p-10 xl:pt-5"
+            className="app-shell__content mobile-main relative min-h-screen p-5 pt-3 md:p-8 md:pt-4 xl:p-10 xl:pt-5"
           >
             <Outlet />
           </motion.div>
         </main>
+        {isAppRoute ? (
+          <nav className="mobile-bottom-nav" aria-label="Мобильная навигация">
+            {mobileBottomNavItems.map((item) =>
+              item.kind === "link" ? (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  aria-current={isShellLinkActive(location.pathname, item) ? "page" : undefined}
+                  className={`mobile-bottom-nav__item ${isShellLinkActive(location.pathname, item) ? "mobile-bottom-nav__item--active" : ""}`}
+                >
+                  <span>{item.label}</span>
+                </NavLink>
+              ) : (
+                <button
+                  key={item.label}
+                  type="button"
+                  className={`mobile-bottom-nav__item mobile-bottom-nav__button ${
+                    isMobileBottomNavItemActive(location.pathname, item) ? "mobile-bottom-nav__item--active" : ""
+                  }`}
+                  aria-controls="mobile-overflow-panel"
+                  aria-expanded={isMorePanelOpen}
+                  data-mobile-overflow-active={isMobileOverflowActive ? "true" : "false"}
+                  onClick={() => setIsMorePanelOpen((value) => !value)}
+                >
+                  <span>{item.label}</span>
+                </button>
+              ),
+            )}
+          </nav>
+        ) : null}
       </div>
     </div>
   );
@@ -193,7 +323,7 @@ export const appRoutes: RouteObject[] = [
         ) : (
           renderLazy(<FeatureLockedPage
             title="Змейка Халва временно отключена"
-            description="Мини-игра находится за фича-флагом, поэтому ее можно отключить без влияния на банковский сценарий и админ-демо."
+            description="Мини-игра находится за фича-флагом, поэтому ее можно отключить без влияния на основной игровой сценарий и админ-демо."
           />)
         ),
       },

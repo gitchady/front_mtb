@@ -8,7 +8,7 @@ import {
 } from "@/lib/fe2-api";
 
 describe("fe2-api mock adapter", () => {
-  it("builds the planets map with cashback and progress for every configured planet", () => {
+  it("builds the planets map with progress for every configured planet", () => {
     const planets = buildMockPlanetsList();
 
     expect(planets.map((planet) => planet.id)).toEqual(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"]);

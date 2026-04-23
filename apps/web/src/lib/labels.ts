@@ -18,7 +18,7 @@ export const GAME_CODE_LABELS: Record<GameCode, string> = {
   credit_shield_reactor: "Реактор щита",
   social_ring_signal: "Сигнальный ринг",
   moby_bird: "Moby Bird",
-  cashback_tetris: "Cashback Tetris",
+  cashback_tetris: "Орбитальный тетрис",
   moby_jump: "Moby Jump",
   fintech_match3: "Fintech Match-3",
   super_moby_bros: "Super Moby Bros",
@@ -39,21 +39,21 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const REWARD_TYPE_LABELS: Record<string, string> = {
-  cashback_booster: "кэшбэк-бустер",
+  cashback_booster: "орбитальный бустер",
   credit_shield_xp: "опыт Кредитного щита",
-  education_hook: "образовательный бонус",
+  education_hook: "образовательный импульс",
   mini_game_stardust: "звездная пыль за игру",
   quest_booster: "квестовый бустер",
-  quest_cashback: "кэшбэк за квест",
-  quest_limit_boost: "рост лимита за квест",
+  quest_cashback: "усиление за квест",
+  quest_limit_boost: "рост доступа за квест",
   quest_tournament_pass: "турнирный пропуск",
-  social_ring_reward: "награда Социального кольца",
+  social_ring_reward: "импульс Социального кольца",
 };
 
 const REWARD_KIND_LABELS: Record<string, string> = {
   booster: "бустер",
-  cashback: "кэшбэк",
-  limit_boost: "рост лимита",
+  cashback: "усиление",
+  limit_boost: "рост доступа",
   tournament_pass: "турнирный пропуск",
 };
 
@@ -63,19 +63,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const EVENT_KIND_LABELS: Record<GameActionKind, string> = {
-  partner: "партнерская покупка",
-  nonPartner: "обычная покупка",
-  credit: "платеж рассрочки",
+  partner: "партнерский сигнал",
+  nonPartner: "свободный сигнал",
+  credit: "сигнал щита",
   referral: "активация реферала",
-  education: "финансовый урок",
-  risky: "антифрод-проверка",
+  education: "обучающий модуль",
+  risky: "антифрод-сигнал",
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
   device_mismatch: "смена устройства",
-  large_amount: "крупная операция",
+  large_amount: "высокая интенсивность",
   multi_account: "мультиаккаунт",
-  velocity_excess: "частые операции",
+  velocity_excess: "частый поток",
 };
 
 function fallbackLabel(value: string) {

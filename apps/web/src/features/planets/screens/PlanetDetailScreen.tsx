@@ -43,7 +43,7 @@ export function PlanetDetailScreen() {
     if (!progress) {
       return;
     }
-    const text = `${progress.name}: ${progress.cashback_percent.toFixed(1)}% кэшбэка, созвездие ${progress.constellation.name}.`;
+    const text = `${progress.name}: ${progress.cashback_percent.toFixed(1)}% усиления, созвездие ${progress.constellation.name}.`;
     if (navigator.share) {
       await navigator.share({ title: progress.name, text, url: window.location.href });
       setShareStatus("Карточка отправлена в системный шеринг.");
@@ -94,9 +94,9 @@ export function PlanetDetailScreen() {
           {shareStatus ? <p className="planet-detail-hero__status">{shareStatus}</p> : null}
         </div>
         <div className="planet-detail-hero__cashback">
-          <span>Текущий кэшбэк</span>
+          <span>Текущее усиление</span>
           <strong>{progress.cashback_percent.toFixed(1)}%</strong>
-          {progress.max_cashback_reached ? <em>Максимум достигнут</em> : <em>Созвездие усиливает ставку</em>}
+          {progress.max_cashback_reached ? <em>Максимум достигнут</em> : <em>Созвездие усиливает ритм</em>}
         </div>
       </section>
 

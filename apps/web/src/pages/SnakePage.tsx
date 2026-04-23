@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { calculateBonusOutcome } from "@/lib/bonus-engine";
+import { formatGameRewardStatus } from "@/lib/game-status";
 import { useGameStore } from "@/lib/game-store";
 import { useSessionStore } from "@/lib/session-store";
 
@@ -128,14 +129,10 @@ export function SnakePage() {
       });
       return { event, run };
     },
-    onSuccess: ({ event, run }) => {
+    onSuccess: () => {
       const outcome = recordSnakeRun(score, baseReward);
       setRewardClaimed(true);
-      setStatus(
-        `Забег ${run.run_id}: +${outcome.totalReward} звездной пыли${
-          outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${event.event_id} синхронизировано с Орбитой покупок.`,
-      );
+      setStatus(formatGameRewardStatus({ totalReward: outcome.totalReward, cratesEarned: outcome.cratesEarned, syncLabel: "Орбитой покупок" }));
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
         queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
@@ -325,7 +322,7 @@ export function SnakePage() {
               ) : null}
             </div>
 
-            <div className="mt-5 rounded-[28px] border border-white/8 bg-black/20 p-4">
+            <div className="snake-controls-panel snake-controls-panel--desktop mt-5 rounded-[28px] border border-white/8 bg-black/20 p-4">
               <div className="snake-controls">
                 <button className="control-button control-button-up" onClick={() => queueDirection("up")}>↑</button>
                 <button className="control-button control-button-left" onClick={() => queueDirection("left")}>←</button>

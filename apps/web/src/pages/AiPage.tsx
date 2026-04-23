@@ -300,27 +300,20 @@ export function AiPage() {
   }
 
   const activePromptCount = assistantContext.quick_prompts.length;
-  const historyCount = history.length;
   const pendingAssistantState = chatMutation.isPending ? chatMutation.variables : null;
+  const latestAssistantMessage = [...history].reverse().find((entry) => entry.role === "assistant") ?? null;
 
   return (
     <div className="space-y-6">
       <section className="hero-panel">
-        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-end">
-          <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
             <p className="eyebrow">AI-навигатор</p>
-            <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
+            <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
               {displayName}, AI собирает следующий лучший шаг из контекста, друзей и QR-сценариев.
             </h2>
-            <p className="max-w-3xl text-base text-white/68 md:text-lg">
-              {assistantContext.recommended_focus}
-            </p>
             <div className="flex flex-wrap gap-3">
               <Link className="primary-button inline-flex" to="/app/friends">
                 Открыть друзей
-              </Link>
-              <Link className="secondary-button inline-flex" to="/app/qr">
-                Проверить QR
               </Link>
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
@@ -333,31 +326,12 @@ export function AiPage() {
                 </span>
               ))}
             </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="metric-chip">
-              <span>Быстрые подсказки</span>
-              <strong>{activePromptCount}</strong>
-            </div>
-            <div className="metric-chip">
-              <span>Локальная история</span>
-              <strong>{historyCount}</strong>
-            </div>
-            <div className="metric-chip">
-              <span>Друзья в контексте</span>
-              <strong>{assistantContext.friend_count}</strong>
-            </div>
-            <div className="metric-chip">
-              <span>Новые инвайты</span>
-              <strong>{assistantContext.pending_invites_count}</strong>
-            </div>
-          </div>
+            <p className="max-w-3xl text-sm text-white/68 md:text-lg">{assistantContext.recommended_focus}</p>
         </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.12fr_0.88fr]">
-        <article className="surface-panel flex min-h-[720px] flex-col">
+        <article className="order-2 flex min-h-[560px] min-w-0 flex-col surface-panel xl:order-1 xl:min-h-[720px]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Диалог</p>
@@ -368,7 +342,50 @@ export function AiPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
+          <form className="mt-6 space-y-4 border-t border-white/8 pt-5" onSubmit={handleSubmit}>
+            <div className="grid gap-4 xl:grid-cols-[1fr_0.42fr]">
+              <label className="block min-w-0">
+                <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">Запрос для ассистента</span>
+                <textarea
+                  className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
+                  name="assistantPrompt"
+                  placeholder="Например: собери следующий лучший шаг для роста через квесты, друзей и QR."
+                  value={prompt}
+                  onChange={(event) => setPrompt(event.target.value)}
+                />
+              </label>
+
+              <div className="space-y-4">
+                <label className="block min-w-0">
+                  <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">QR payload</span>
+                  <textarea
+                    className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
+                    name="qrPayload"
+                    placeholder="Опционально: вставьте payload из QR-потока."
+                    value={qrPayload}
+                    onChange={(event) => setQrPayload(event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {chatError ? (
+              <div className="rounded-[22px] border border-rose-400/25 bg-rose-500/10 px-4 py-4 text-sm text-rose-100">
+                {chatError}
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-white/56">
+                Ответ возвращает текст, suggested actions, related modules и context chips.
+              </p>
+              <button className="primary-button" disabled={chatMutation.isPending || prompt.trim().length === 0} type="submit">
+                {chatMutation.isPending ? "Отправляем…" : "Спросить AI"}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 flex-1 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
             {assistantContextQuery.isLoading ? (
               <div className="list-row list-row--empty">
                 <div>
@@ -404,7 +421,7 @@ export function AiPage() {
                   className={`rounded-[28px] border px-5 py-4 ${
                     isAssistant
                       ? "border-white/10 bg-white/[0.035]"
-                      : "ml-auto max-w-[92%] border-cyan-400/20 bg-cyan-400/10"
+                      : "ml-auto max-w-full border-cyan-400/20 bg-cyan-400/10 sm:max-w-[92%]"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -413,7 +430,7 @@ export function AiPage() {
                     </p>
                     <span className="text-xs text-white/38">{formatMessageTime(entry.createdAt)}</span>
                   </div>
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-white/80">{entry.message}</p>
+                  <p className="mt-3 break-words whitespace-pre-wrap text-sm leading-6 text-white/80">{entry.message}</p>
 
                   {entry.qrPayload ? (
                     <div className="mt-4 rounded-2xl border border-white/10 bg-black/15 px-3 py-3 text-xs text-white/58">
@@ -442,7 +459,7 @@ export function AiPage() {
                           <button
                             key={`${entry.id}_${action}`}
                             type="button"
-                            className="secondary-button px-4 py-2 text-sm"
+                            className="secondary-button break-words px-4 py-2 text-left text-sm"
                             onClick={() => setPrompt(action)}
                           >
                             {action}
@@ -463,7 +480,7 @@ export function AiPage() {
                             return (
                               <Link
                                 key={`${entry.id}_${moduleName}`}
-                                className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/70 transition hover:border-white/20 hover:bg-white/10"
+                                className="inline-flex break-all rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/70 transition hover:border-white/20 hover:bg-white/10"
                                 to={moduleLink.to}
                               >
                                 {moduleLink.label}
@@ -474,7 +491,7 @@ export function AiPage() {
                           return (
                             <span
                               key={`${entry.id}_${moduleName}`}
-                              className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/55"
+                              className="inline-flex break-all rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/55"
                             >
                               {moduleName}
                             </span>
@@ -500,85 +517,9 @@ export function AiPage() {
 
             <div ref={timelineEndRef} />
           </div>
-
-          <form className="mt-6 space-y-4 border-t border-white/8 pt-5" onSubmit={handleSubmit}>
-            <div className="grid gap-4 lg:grid-cols-[1fr_0.42fr]">
-              <label className="block">
-                <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">Запрос для ассистента</span>
-                <textarea
-                  className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
-                  name="assistantPrompt"
-                  placeholder="Например: собери следующий лучший шаг для роста через квесты, друзей и QR."
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                />
-              </label>
-
-              <div className="space-y-4">
-                <label className="block">
-                  <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">QR payload</span>
-                  <textarea
-                    className="min-h-[132px] w-full resize-y rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm text-white outline-none transition focus:border-white/20"
-                    name="qrPayload"
-                    placeholder="Опционально: вставьте payload из QR-потока."
-                    value={qrPayload}
-                    onChange={(event) => setQrPayload(event.target.value)}
-                  />
-                </label>
-              </div>
-            </div>
-
-            {chatError ? (
-              <div className="rounded-[22px] border border-rose-400/25 bg-rose-500/10 px-4 py-4 text-sm text-rose-100">
-                {chatError}
-              </div>
-            ) : null}
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-white/56">
-                Ответ возвращает текст, suggested actions, related modules и context chips.
-              </p>
-              <button className="primary-button" disabled={chatMutation.isPending || prompt.trim().length === 0} type="submit">
-                {chatMutation.isPending ? "Отправляем…" : "Спросить AI"}
-              </button>
-            </div>
-          </form>
         </article>
 
-        <div className="space-y-4">
-          <article className="surface-panel">
-            <p className="eyebrow">Контекст</p>
-            <h3 className="mt-2 text-2xl font-semibold">Сводка для AI</h3>
-            <div className="mt-5 space-y-3">
-              <div className="list-row">
-                <div>
-                  <p className="text-sm text-white/55">Рекомендуемый фокус</p>
-                  <strong className="mt-2 block text-base text-white/82">{assistantContext.recommended_focus}</strong>
-                </div>
-              </div>
-              <div className="list-row">
-                <div>
-                  <p className="text-sm text-white/55">Социальный слой</p>
-                  <strong className="mt-2 block text-base text-white/82">
-                    {assistantContext.friend_count > 0
-                      ? `${assistantContext.friend_count} друзей в активном контексте`
-                      : "AI пока не видит активных друзей в контексте"}
-                  </strong>
-                </div>
-              </div>
-              <div className="list-row">
-                <div>
-                  <p className="text-sm text-white/55">Ожидают внимания</p>
-                  <strong className="mt-2 block text-base text-white/82">
-                    {assistantContext.pending_invites_count > 0
-                      ? `${assistantContext.pending_invites_count} приглашений ждут ответа`
-                      : "Новых приглашений сейчас нет"}
-                  </strong>
-                </div>
-              </div>
-            </div>
-          </article>
-
+        <div className="order-1 space-y-4 xl:order-2">
           <article className="surface-panel">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -603,20 +544,32 @@ export function AiPage() {
           </article>
 
           <article className="surface-panel">
-            <p className="eyebrow">CTA</p>
-            <h3 className="mt-2 text-2xl font-semibold">Подключить внешние сигналы</h3>
-            <p className="mt-3 text-sm text-white/62">
-              Если хотите усилить ответы ассистента, откройте социальный слой и QR-поток, затем вернитесь в чат с новым контекстом.
-            </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Link className="primary-button justify-center" to="/app/friends">
-                Друзья
-              </Link>
-              <Link className="secondary-button justify-center" to="/app/qr">
-                QR-модуль
-              </Link>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="eyebrow">Активный ответ</p>
+                <h3 className="mt-2 text-2xl font-semibold">Что сейчас держать в фокусе</h3>
+              </div>
+              <span className="text-xs uppercase tracking-[0.18em] text-white/45">
+                {pendingAssistantState ? "в обработке" : latestAssistantMessage ? "готово" : "ожидает"}
+              </span>
+            </div>
+            <div className="mt-5 rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+              {pendingAssistantState ? (
+                <p className="text-sm leading-6 text-white/72">
+                  Анализируем запрос
+                  {pendingAssistantState.qr ? " вместе с QR payload" : ""}
+                  …
+                </p>
+              ) : latestAssistantMessage ? (
+                <p className="break-words text-sm leading-6 text-white/78">{latestAssistantMessage.message}</p>
+              ) : (
+                <p className="text-sm leading-6 text-white/60">
+                  Отправьте первый запрос или выберите quick prompt, чтобы получить актуальный ответ ассистента.
+                </p>
+              )}
             </div>
           </article>
+
         </div>
       </section>
     </div>

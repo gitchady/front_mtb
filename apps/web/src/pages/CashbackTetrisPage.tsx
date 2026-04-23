@@ -88,7 +88,7 @@ export function CashbackTetrisPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Собирайте полные линии категорий кэшбэка. Стрелки или WASD управляют блоком.");
+  const [status, setStatus] = useState("Собирайте полные линии орбитальных категорий. Стрелки или WASD управляют блоком.");
   const boardRef = useRef(board);
   const pieceRef = useRef(piece);
   const baseReward = gameReward(score + lines * 5, 1.4, 7);
@@ -110,7 +110,7 @@ export function CashbackTetrisPage() {
     setIsRunning(false);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Собирайте полные линии категорий кэшбэка. Стрелки или WASD управляют блоком.");
+    setStatus("Собирайте полные линии орбитальных категорий. Стрелки или WASD управляют блоком.");
   }
 
   function spawnAfterLock(nextBoard: Board) {
@@ -137,7 +137,7 @@ export function CashbackTetrisPage() {
     if (result.cleared) {
       setLines((value) => value + result.cleared);
       setScore((value) => value + result.cleared * 12);
-      setStatus(`Линия кэшбэка очищена: +${result.cleared * 12} очков.`);
+      setStatus(`Линия усиления очищена: +${result.cleared * 12} очков.`);
     } else {
       setScore((value) => value + 1);
     }
@@ -219,8 +219,8 @@ export function CashbackTetrisPage() {
       <GameHero
         code="cashback_tetris"
         kicker="Мини-игра из документа"
-        title="Cashback Tetris собирает категории в линии и запускает бонусные окна."
-        description="Укладывайте блоки кэшбэка, очищайте строки и превращайте чистое поле в награды Орбиты покупок."
+        title="Орбитальный тетрис собирает категории в линии и запускает бонусные окна."
+        description="Укладывайте орбитальные блоки, очищайте строки и превращайте чистое поле в награды Орбиты покупок."
         score={score}
         baseReward={baseReward}
         status={status}

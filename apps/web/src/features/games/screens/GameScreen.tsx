@@ -204,10 +204,6 @@ export function GameScreen() {
               <span>Награда</span>
               <strong>{baseReward}</strong>
             </div>
-            <div className="metric-chip">
-              <span>Статус</span>
-              <strong>{starAwarded ? "звезда" : isComplete ? "готов" : "раунд"}</strong>
-            </div>
           </div>
         </div>
       </section>

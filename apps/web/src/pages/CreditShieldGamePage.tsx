@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { calculateBonusOutcome } from "@/lib/bonus-engine";
+import { formatGameRewardStatus } from "@/lib/game-status";
 import { useGameStore } from "@/lib/game-store";
 import { useSessionStore } from "@/lib/session-store";
 
@@ -30,7 +31,6 @@ export function CreditShieldGamePage() {
   const stardust = useGameStore((state) => state.stardust);
   const bonusStreak = useGameStore((state) => state.bonusStreak);
   const vaultCharge = useGameStore((state) => state.vaultCharge);
-  const vaultCrates = useGameStore((state) => state.vaultCrates);
   const selectedPlanet = useGameStore((state) => state.selectedPlanet);
   const structures = useGameStore((state) => state.structures);
   const planetMastery = useGameStore((state) => state.planetMastery);
@@ -77,14 +77,10 @@ export function CreditShieldGamePage() {
       });
       return { event, run };
     },
-    onSuccess: ({ event, run }) => {
+    onSuccess: () => {
       const outcome = recordShieldRun(score, baseReward);
       setRewardClaimed(true);
-      setStatus(
-        `Забег ${run.run_id}: +${outcome.totalReward} звездной пыли${
-          outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${event.event_id} синхронизировано с Кредитным щитом.`,
-      );
+      setStatus(formatGameRewardStatus({ totalReward: outcome.totalReward, cratesEarned: outcome.cratesEarned, syncLabel: "Кредитным щитом" }));
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
         queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
@@ -230,10 +226,6 @@ export function CreditShieldGamePage() {
               <span>Серия бонусов</span>
               <strong>{bonusStreak}x</strong>
             </div>
-            <div className="metric-chip">
-              <span>Контейнеры</span>
-              <strong>{vaultCrates}</strong>
-            </div>
           </div>
         </div>
       </section>
@@ -249,9 +241,6 @@ export function CreditShieldGamePage() {
             <div className="flex min-h-[3.25rem] flex-wrap gap-3">
               <button className="primary-button" onClick={launchGame} disabled={isRunning}>
                 {isComplete ? "Запустить снова" : "Старт реактора"}
-              </button>
-              <button className="secondary-button" onClick={lockPulse} disabled={!isRunning || isComplete}>
-                Зафиксировать импульс
               </button>
               {canResetGame ? (
                 <button className="secondary-button" onClick={resetGame}>
@@ -283,18 +272,25 @@ export function CreditShieldGamePage() {
 
         <article className="surface-panel">
           <div className="shield-reactor">
-            <div className="shield-reactor__track">
-              <div className="shield-reactor__target shield-reactor__target--good" />
-              <div className="shield-reactor__target shield-reactor__target--perfect" />
-              <div
-                className={`shield-reactor__pulse shield-reactor__pulse--${accuracyBand}`}
-                style={{ left: `${position}%` }}
-              />
+            <div className="shield-reactor__meter">
+              <div className="shield-reactor__track">
+                <div className="shield-reactor__target shield-reactor__target--good" />
+                <div className="shield-reactor__target shield-reactor__target--perfect" />
+                <div
+                  className={`shield-reactor__pulse shield-reactor__pulse--${accuracyBand}`}
+                  style={{ left: `${position}%` }}
+                />
+              </div>
+              <div className="shield-reactor__labels">
+                <span>Рано</span>
+                <strong>{accuracyBand === "perfect" ? "ИДЕАЛЬНО" : accuracyBand === "good" ? "ХОРОШО" : "МИМО"}</strong>
+                <span>Поздно</span>
+              </div>
             </div>
-            <div className="shield-reactor__labels">
-              <span>Рано</span>
-              <strong>{accuracyBand === "perfect" ? "ИДЕАЛЬНО" : accuracyBand === "good" ? "ХОРОШО" : "МИМО"}</strong>
-              <span>Поздно</span>
+            <div className="mt-5 flex justify-center">
+              <button className="secondary-button" onClick={lockPulse} disabled={!isRunning || isComplete}>
+                Зафиксировать импульс
+              </button>
             </div>
           </div>
         </article>

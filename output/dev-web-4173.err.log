@@ -1,0 +1,207 @@
+[2m01:49:25[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:50:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+[2m01:50:40[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:50:59[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+[2m01:50:59[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:53:26[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/QrPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:16:33
+[33m  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));
+     |                                          ^
+  39 |  _c12 = QrPage;
+  40 |  const AiPage = lazy(_c13 = () => import("@/pages/AiPage").then((module) => ({ default: module.AiPage })));[39m
+[2m01:53:26[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/QrPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:16:33
+[33m  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));
+     |                                          ^
+  39 |  _c12 = QrPage;
+  40 |  const AiPage = lazy(_c13 = () => import("@/pages/AiPage").then((module) => ({ default: module.AiPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 17)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:54:18[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:54:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+[2m01:54:23[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:54:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+[2m01:54:40[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[2m01:55:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+[2m01:55:17[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "@/pages/FriendsPage" from "src/app/router.tsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/MTB/apps/web/src/app/router.tsx[39m:15:38
+[33m  34 |  const ReferralsPage = lazy(_c9 = () => import("@/pages/ReferralsPage").then((module) => ({ default: module.ReferralsPage })));
+  35 |  _c0 = ReferralsPage;
+  36 |  const FriendsPage = lazy(_c1 = () => import("@/pages/FriendsPage").then((module) => ({ default: module.FriendsPage })));
+     |                                              ^
+  37 |  _c10 = FriendsPage;
+  38 |  const QrPage = lazy(_c11 = () => import("@/pages/QrPage").then((module) => ({ default: module.QrPage })));[39m
+      at TransformPluginContext._formatLog (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 16)
+      at async TransformPluginContext.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///D:/MTB/apps/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+^C^C

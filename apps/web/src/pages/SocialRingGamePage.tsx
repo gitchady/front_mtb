@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { startTransition, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { api } from "@/lib/api";
 import { calculateBonusOutcome } from "@/lib/bonus-engine";
+import { formatGameRewardStatus } from "@/lib/game-status";
 import { useGameStore } from "@/lib/game-store";
 import { useSessionStore } from "@/lib/session-store";
 
@@ -90,14 +91,10 @@ export function SocialRingGamePage() {
       });
       return { event, run };
     },
-    onSuccess: ({ event, run }) => {
+    onSuccess: () => {
       const outcome = recordSocialRun(score, baseReward);
       setRewardClaimed(true);
-      setStatus(
-        `Забег ${run.run_id}: +${outcome.totalReward} звездной пыли${
-          outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${event.event_id} синхронизировано с Социальным кольцом.`,
-      );
+      setStatus(formatGameRewardStatus({ totalReward: outcome.totalReward, cratesEarned: outcome.cratesEarned, syncLabel: "Социальным кольцом" }));
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
         queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
@@ -107,7 +104,7 @@ export function SocialRingGamePage() {
       });
     },
     onError: () => {
-      setStatus("Ринг завершен, но банковская синхронизация не прошла. Попробуйте забрать награду еще раз.");
+      setStatus("Ринг завершен, но синхронизация не прошла. Попробуйте забрать награду еще раз.");
     },
   });
 

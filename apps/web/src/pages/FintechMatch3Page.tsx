@@ -66,7 +66,7 @@ export function FintechMatch3Page() {
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Меняйте соседние продукты местами и собирайте три одинаковых в ряд.");
+  const [status, setStatus] = useState("Меняйте соседние символы местами и собирайте три одинаковых в ряд.");
   const baseReward = gameReward(score, 0.7, 6);
 
   function resetRun() {
@@ -76,7 +76,7 @@ export function FintechMatch3Page() {
     setScore(0);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Меняйте соседние продукты местами и собирайте три одинаковых в ряд.");
+    setStatus("Меняйте соседние символы местами и собирайте три одинаковых в ряд.");
   }
 
   function clickTile(point: Point) {
@@ -100,7 +100,7 @@ export function FintechMatch3Page() {
     if (!matched.size) {
       setSelected(null);
       setMoves(nextMoves);
-      setStatus("Комбо не сложилось. Попробуйте другую связку продуктов.");
+      setStatus("Комбо не сложилось. Попробуйте другую связку символов.");
       if (nextMoves <= 0) setIsComplete(true);
       return;
     }
@@ -108,7 +108,7 @@ export function FintechMatch3Page() {
     setSelected(null);
     setMoves(nextMoves);
     setScore((value) => value + matched.size * 3);
-    setStatus(`Финансовое комбо собрано: ${matched.size} элементов.`);
+    setStatus(`Комбо собрано: ${matched.size} элементов.`);
     if (nextMoves <= 0) setIsComplete(true);
   }
 
@@ -117,8 +117,8 @@ export function FintechMatch3Page() {
       <GameHero
         code="fintech_match3"
         kicker="Мини-игра из документа"
-        title="Fintech Match-3 собирает банковские продукты в ежедневные квестовые комбо."
-        description="Сопоставляйте карты, вклады, страховки и кэшбэк, чтобы закрывать цепочки и питать Орбиту покупок."
+        title="Fintech Match-3 собирает модульные символы в ежедневные квестовые комбо."
+        description="Сопоставляйте элементы сетки, чтобы закрывать цепочки и питать Орбиту покупок."
         score={score}
         baseReward={baseReward}
         status={status}

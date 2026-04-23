@@ -15,9 +15,9 @@ type GalaxyLayout = Partial<Record<GalaxyNodeId, Position>>;
 
 const HUB_META: Record<HubKind, { title: string; detail: string; short: string }> = {
   spend: {
-    title: "Траты",
-    detail: "Запишите статистику операции, чтобы усилить большую планету категории.",
-    short: "BYN",
+    title: "Импульс",
+    detail: "Запишите уровень сигнала, чтобы усилить большую планету категории.",
+    short: "IMP",
   },
   quests: {
     title: "Квесты",
@@ -51,8 +51,8 @@ const GAME_OFFSETS: Position[] = [
 
 const PLANET_CODES: PlanetCode[] = ["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"];
 const PLANET_ACTION_KIND: Record<PlanetCode, string> = {
-  ORBIT_COMMERCE: "покупки",
-  CREDIT_SHIELD: "платежа",
+  ORBIT_COMMERCE: "импульса",
+  CREDIT_SHIELD: "ритма",
   SOCIAL_RING: "социальной активности",
 };
 const PLANET_DRAG_CLICK_THRESHOLD = 5;
@@ -987,11 +987,11 @@ export function GalaxyStage({
           >
             {selectedHub === "spend" && !selectedQuest && !selectedGame ? (
               <form onSubmit={submitSpend}>
-                <p className="eyebrow">Статистика {PLANET_ACTION_KIND[selectedPlanet]}</p>
+                <p className="eyebrow">Параметр {PLANET_ACTION_KIND[selectedPlanet]}</p>
                 <h4>{HUB_META.spend.title}</h4>
                 <p>{HUB_META.spend.detail}</p>
                 <label className="galaxy-stage__field">
-                  Сумма
+                  Уровень сигнала
                   <input
                     inputMode="decimal"
                     min="1"
@@ -1001,7 +1001,7 @@ export function GalaxyStage({
                   />
                 </label>
                 <button className="primary-button" disabled={spendPending} type="submit">
-                  {spendPending ? "Записываем..." : "Записать траты"}
+                  {spendPending ? "Записываем..." : "Записать сигнал"}
                 </button>
               </form>
             ) : null}

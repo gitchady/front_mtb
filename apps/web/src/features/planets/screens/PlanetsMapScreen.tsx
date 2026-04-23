@@ -16,7 +16,7 @@ export function PlanetsMapScreen() {
           <div className="space-y-4">
             <p className="eyebrow">Планетарная карта</p>
             <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
-              Выберите планету и откройте ее созвездие, кэшбэк и недельную гонку.
+              Выберите планету и откройте ее созвездие, усиление и недельную гонку.
             </h2>
             <p className="max-w-2xl text-base text-white/68 md:text-lg">
               Орбиты держат прогресс по большим и малым звездам, а каждая планета ведет к своей игре.
@@ -46,7 +46,7 @@ export function PlanetsMapScreen() {
               <span style={{ width: `${planet.progress_percent}%` }} />
             </div>
             <div className="planet-map-card__footer">
-              <span>Кэшбэк</span>
+              <span>Усиление</span>
               <strong>{planet.cashback_percent.toFixed(1)}%</strong>
             </div>
             <p className="planet-map-card__progress">{planet.progress_percent}% текущего созвездия</p>

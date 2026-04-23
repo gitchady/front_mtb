@@ -27,7 +27,7 @@ export function SuperMobyBrosPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [status, setStatus] = useState("Бегите вправо, прыгайте через барьеры и собирайте бонусные монеты.");
+  const [status, setStatus] = useState("Бегите вправо, прыгайте через барьеры и собирайте световые жетоны.");
   const directionRef = useRef(0);
   const playerRef = useRef(player);
   const baseReward = gameReward(score, 2.2, 7);
@@ -43,7 +43,7 @@ export function SuperMobyBrosPage() {
     setIsRunning(false);
     setIsComplete(false);
     setRewardClaimed(false);
-    setStatus("Бегите вправо, прыгайте через барьеры и собирайте бонусные монеты.");
+    setStatus("Бегите вправо, прыгайте через барьеры и собирайте световые жетоны.");
   }
 
   function jump() {
@@ -95,7 +95,7 @@ export function SuperMobyBrosPage() {
         if (hitObstacle) {
           setIsRunning(false);
           setIsComplete(true);
-          setStatus("Забег завершен. Барьер финансовой неграмотности остановил Moby.");
+          setStatus("Забег завершен. Барьер внимания остановил Moby.");
         }
         if (nextX >= 94) {
           setIsRunning(false);
@@ -111,7 +111,7 @@ export function SuperMobyBrosPage() {
         current.map((coin) => {
           if (!coin.taken && Math.abs(coin.x - nextPlayer.x) < 5 && Math.abs(coin.y - nextPlayer.y) < 34) {
             setScore((value) => value + 5);
-            setStatus("Монета-бонус собрана.");
+            setStatus("Световой жетон собран.");
             return { ...coin, taken: true };
           }
           return coin;
@@ -128,8 +128,8 @@ export function SuperMobyBrosPage() {
       <GameHero
         code="super_moby_bros"
         kicker="Мини-игра из документа"
-        title="Super Moby Bros превращает финансовую грамотность в короткий платформер."
-        description="Пробегите маршрут, соберите монеты-бонусы и перепрыгните барьеры, чтобы усилить социальный игровой слой."
+        title="Super Moby Bros превращает тренировку внимания в короткий платформер."
+        description="Пробегите маршрут, соберите световые жетоны и перепрыгните барьеры, чтобы усилить социальный игровой слой."
         score={score}
         baseReward={baseReward}
         status={status}

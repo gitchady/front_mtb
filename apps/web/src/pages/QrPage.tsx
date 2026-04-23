@@ -146,15 +146,12 @@ export function QrPage() {
   return (
     <div className="space-y-6">
       <section className="hero-panel">
-        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
-          <div className="space-y-4">
+        <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
+          <div className="space-y-3 md:space-y-4">
             <p className="eyebrow">QR MVP</p>
-            <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
+            <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
               Один экран для собственного QR, ручной проверки payload и перехода в следующий пользовательский сценарий.
             </h2>
-            <p className="max-w-2xl text-base text-white/68 md:text-lg">
-              Страница показывает ваш QR-контекст, принимает любой вставленный payload и сразу говорит, валиден ли он, что означает и куда должен вести CTA.
-            </p>
             <div className="flex flex-wrap gap-3">
               <Link className="secondary-button" to="/app/friends">
                 Открыть друзей
@@ -163,9 +160,12 @@ export function QrPage() {
                 Открыть AI
               </Link>
             </div>
+            <p className="max-w-2xl text-sm text-white/68 md:text-lg">
+              Страница показывает ваш QR-контекст, принимает любой вставленный payload и сразу говорит, валиден ли он, что означает и куда должен вести CTA.
+            </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="metric-chip">
               <span>Пользователь</span>
               <strong>{displayName}</strong>
@@ -270,7 +270,7 @@ export function QrPage() {
             <label className="block">
               <span className="mb-2 block text-sm uppercase tracking-[0.2em] text-white/45">Payload</span>
               <textarea
-                className="min-h-[220px] w-full rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm leading-6 text-white outline-none"
+                className="min-h-[180px] w-full rounded-[24px] border border-white/10 bg-black/20 px-4 py-4 text-sm leading-6 text-white outline-none md:min-h-[220px]"
                 name="payload"
                 rows={8}
                 autoComplete="off"
@@ -353,19 +353,19 @@ export function QrPage() {
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <div className="metric-chip">
                 <span>resolved_type</span>
-                <strong>{resolveMutation.data?.resolved_type || "Ожидание"}</strong>
+                <strong className="break-words">{resolveMutation.data?.resolved_type || "Ожидание"}</strong>
               </div>
               <div className="metric-chip">
                 <span>CTA label</span>
-                <strong>{resolveMutation.data ? getQrActionLabel(resolveMutation.data.cta_kind) : "Не определен"}</strong>
+                <strong className="break-words">{resolveMutation.data ? getQrActionLabel(resolveMutation.data.cta_kind) : "Не определен"}</strong>
               </div>
               <div className="metric-chip">
                 <span>CTA route</span>
-                <strong>{primaryRoute ?? "Выберите вручную"}</strong>
+                <strong className="break-all">{primaryRoute ?? "Выберите вручную"}</strong>
               </div>
               <div className="metric-chip">
                 <span>CTA target</span>
-                <strong>{resolveMutation.data?.cta_target || "Не передан"}</strong>
+                <strong className="break-all">{resolveMutation.data?.cta_target || "Не передан"}</strong>
               </div>
             </div>
           </div>
@@ -379,14 +379,14 @@ export function QrPage() {
             return (
               <Link
                 key={route}
-                className={`${isPrimary ? "primary-button" : "secondary-button"} !flex min-h-[84px] items-start justify-between rounded-[24px] !px-5 !py-4`}
+                className={`${isPrimary ? "primary-button" : "secondary-button"} !flex min-h-[84px] min-w-0 items-start justify-between gap-4 rounded-[24px] !px-5 !py-4`}
                 to={route}
               >
-                <span className="text-left">
+                <span className="min-w-0 text-left">
                   <span className="block text-xs uppercase tracking-[0.22em] text-white/55">{copy.eyebrow}</span>
                   <span className="mt-2 block text-lg font-semibold text-white">{copy.label}</span>
                 </span>
-                <span className="text-sm text-white/72">{route}</span>
+                <span className="break-all text-right text-sm text-white/72">{route}</span>
               </Link>
             );
           })}

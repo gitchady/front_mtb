@@ -4,16 +4,16 @@ import { useAdminStream } from "@/lib/use-admin-stream";
 
 const KPI_LABELS: [keyof Awaited<ReturnType<typeof api.getAdminKpi>>, string][] = [
   ["active_users", "Активные пользователи"],
-  ["activation_rate", "Активация карт"],
-  ["partner_share", "Доля партнеров"],
-  ["average_tx_frequency", "Средняя частота операций"],
-  ["on_time_payment_rate", "Платежи в срок"],
+  ["activation_rate", "Активация профилей"],
+  ["partner_share", "Доля партнерских сигналов"],
+  ["average_tx_frequency", "Средняя частота сигналов"],
+  ["on_time_payment_rate", "Ритм щита"],
   ["referral_activation_rate", "Активация рефералов"],
-  ["reward_to_revenue_ratio", "Награды / выручка"],
+  ["reward_to_revenue_ratio", "Награды / активность"],
   ["k_factor", "K-фактор"],
-  ["total_rewards", "Всего наград"],
-  ["total_revenue", "Всего выручки"],
-  ["guardrail_headroom", "Запас бюджетного лимита"],
+  ["total_rewards", "Всего срабатываний"],
+  ["total_revenue", "Всего активности"],
+  ["guardrail_headroom", "Запас защитного порога"],
 ];
 
 export function AdminKpiPage() {
@@ -28,10 +28,10 @@ export function AdminKpiPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Админская витрина</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Демо остается банковским: у каждой награды есть KPI-след и бюджетный лимит.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Витрина отслеживает живую активность, ритм модулей и состояние прогресса без денежного контура.</h2>
         {streamPayload ? (
           <p className="mt-4 text-sm text-white/58">
-            Живой поток: активные пользователи {streamPayload.active_users} | награды / выручка {streamPayload.reward_to_revenue_ratio}
+            Живой поток: активные пользователи {streamPayload.active_users} | награды / активность {streamPayload.reward_to_revenue_ratio}
           </p>
         ) : null}
       </section>

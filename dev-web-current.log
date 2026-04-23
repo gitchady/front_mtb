@@ -1,13 +1,78 @@
 
-> mtb-galaxy@0.1.0 dev:web
-> npm run dev --workspace @mtb/web
-
-
 > @mtb/web@0.1.0 dev
-> vite
+> vite --host 0.0.0.0 --port 5173 --strictPort
 
 
-  [32m[1mVITE[22m v6.4.2[39m  [2mready in [0m[1m356[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v6.4.2[39m  [2mready in [0m[1m322[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
-[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.255.0.1:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.10.113:[1m5173[22m/[39m
+[2m02:16:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css[22m
+[2m02:16:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh ("appLinks" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m02:16:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m02:16:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m02:38:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.test.ts[22m
+[2m02:40:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css[22m
+[2m02:40:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh (new export)
+[2m02:40:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m02:40:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/GalaxyPage.tsx, /src/styles.css[22m
+[2m02:40:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/FriendsPage.tsx, /src/styles.css[22m
+[2m02:40:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/QrPage.tsx, /src/styles.css[22m
+[2m02:40:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AiPage.tsx, /src/styles.css[22m
+[2m02:40:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m02:42:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css[22m
+[2m02:42:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh ("appLinks" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m02:42:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m02:43:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m02:43:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css[22m
+[2m02:43:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh ("appLinks" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m02:43:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m03:00:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/leaderboard/screens/LeaderboardScreen.tsx, /src/styles.css[22m
+[2m03:12:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/lib/fe2-api.test.ts[22m
+[2m03:12:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/lib/fe2-api.test.ts[22m
+[2m03:12:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css, /src/pages/GalaxyPage.tsx, /src/pages/GamesPage.tsx, /src/pages/QuestsPage.tsx, /src/pages/RewardsPage.tsx, /src/pages/ReferralsPage.tsx, /@fs/D:\MTB\apps\web\src\pages\game-page-shared.tsx, /src/pages/AdminRiskPage.tsx, /src/pages/AdminSimulatorPage.tsx[22m
+[2m03:12:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh ("appLinks" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m03:12:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminKpiPage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminRiskPage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/D:\MTB\apps\web\src\components\GalaxyStage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/planets/screens/PlanetDetailScreen.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/QuestsPage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/GalaxyPage.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/D:\MTB\apps\web\src\components\OnboardingOverlay.tsx, /src/styles.css[22m
+[2m03:15:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/planets/screens/PlanetsMapScreen.tsx, /src/styles.css[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css, /src/pages/GalaxyPage.tsx, /@fs/D:\MTB\apps\web\src\components\PlanetInspector.tsx, /@fs/D:\MTB\apps\web\src\components\GalaxyStage.tsx[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css, /src/pages/GalaxyPage.tsx, /src/pages/GamesPage.tsx, /src/pages/QuestsPage.tsx, /src/pages/RewardsPage.tsx, /src/pages/ReferralsPage.tsx, /@fs/D:\MTB\apps\web\src\pages\game-page-shared.tsx, /src/features/games/screens/GameScreen.tsx, /@fs/D:\MTB\apps\web\src\components\OnboardingOverlay.tsx, /@fs/D:\MTB\apps\web\src\components\GalaxyStage.tsx, /src/features/planets/screens/PlanetsMapScreen.tsx, /src/features/leaderboard/screens/LeaderboardScreen.tsx, /src/features/planets/screens/PlanetDetailScreen.tsx[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css, /@fs/D:\MTB\apps\web\src\pages\game-page-shared.tsx[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/router.tsx, /src/styles.css[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminSimulatorPage.tsx, /src/styles.css[22m
+[2m03:16:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css, /src/features/planets/screens/PlanetsMapScreen.tsx, /src/features/leaderboard/screens/LeaderboardScreen.tsx, /src/features/planets/screens/PlanetDetailScreen.tsx, /src/features/games/screens/GameScreen.tsx[22m
+[2m03:16:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/app/router.tsx[22m Could not Fast Refresh ("appLinks" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m03:16:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/app/router.tsx[22m
+[2m03:17:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminRiskPage.tsx, /src/styles.css[22m
+[2m03:20:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/FriendsPage.tsx, /src/styles.css[22m
+[2m03:21:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AiPage.tsx, /src/styles.css[22m
+[2m03:21:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/AiPage.test.tsx[22m
+[2m03:22:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AiPage.tsx, /src/styles.css[22m
+[2m03:23:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/AiPage.test.tsx[22m
+[2m03:23:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AiPage.tsx, /src/styles.css[22m
+[2m03:24:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/AiPage.test.tsx[22m
+[2m03:24:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AiPage.tsx, /src/styles.css[22m
+[2m03:28:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/games/screens/GameScreen.tsx, /src/styles.css[22m
+[2m03:29:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/CreditShieldGamePage.tsx, /src/styles.css[22m
+[2m03:31:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/CreditShieldGamePage.test.tsx[22m
+[2m03:31:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/CreditShieldGamePage.tsx, /src/styles.css[22m
+[2m03:31:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m03:32:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/CreditShieldGamePage.test.tsx[22m
+[2m03:32:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/CreditShieldGamePage.tsx, /src/styles.css[22m
+[2m03:33:46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/CreditShieldGamePage.tsx, /src/styles.css[22m
+[2m03:35:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m03:36:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m
+[2m03:37:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m
+[2m03:37:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m
+[2m03:38:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/RewardsPage.test.tsx[22m
+[2m03:38:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m
+[2m03:39:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/RewardsPage.test.tsx[22m
+[2m03:40:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/RewardsPage.tsx, /src/styles.css[22m

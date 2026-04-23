@@ -157,6 +157,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/friends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Friends */
+        get: operations["get_friends_friends_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invite Friend */
+        post: operations["invite_friend_friends_invite_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Friend */
+        post: operations["accept_friend_friends_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Friend Activity */
+        get: operations["friend_activity_friends_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/qr/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Qr */
+        get: operations["get_my_qr_qr_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/qr/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve Qr */
+        post: operations["resolve_qr_qr_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assistant/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Assistant Context */
+        get: operations["assistant_context_assistant_context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assistant/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assistant Chat */
+        post: operations["assistant_chat_assistant_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leaderboard": {
         parameters: {
             query?: never;
@@ -298,6 +434,41 @@ export interface components {
             /** Pending Rewards */
             pending_rewards: components["schemas"]["RewardLedgerOut"][];
         };
+        /** AssistantChatRequest */
+        AssistantChatRequest: {
+            /** User Id */
+            user_id: string;
+            /** Message */
+            message: string;
+            /** Qr Payload */
+            qr_payload?: string | null;
+        };
+        /** AssistantChatResponse */
+        AssistantChatResponse: {
+            /** Message */
+            message: string;
+            /** Suggested Actions */
+            suggested_actions: string[];
+            /** Related Modules */
+            related_modules: string[];
+            /** Context Chips */
+            context_chips: string[];
+        };
+        /** AssistantContextResponse */
+        AssistantContextResponse: {
+            /** User Id */
+            user_id: string;
+            /** Recommended Focus */
+            recommended_focus: string;
+            /** Quick Prompts */
+            quick_prompts: string[];
+            /** Summary Chips */
+            summary_chips: string[];
+            /** Friend Count */
+            friend_count: number;
+            /** Pending Invites Count */
+            pending_invites_count: number;
+        };
         /** BoosterWindowOut */
         BoosterWindowOut: {
             /** Booster Id */
@@ -365,6 +536,75 @@ export interface components {
              * Format: date-time
              */
             timestamp: string;
+        };
+        /** FriendAcceptRequest */
+        FriendAcceptRequest: {
+            /** User Id */
+            user_id: string;
+            /** Friendship Id */
+            friendship_id: string;
+        };
+        /** FriendActivityEntry */
+        FriendActivityEntry: {
+            /** Activity Id */
+            activity_id: string;
+            /** Actor User Id */
+            actor_user_id: string;
+            /** Actor Display Name */
+            actor_display_name: string;
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** FriendEntry */
+        FriendEntry: {
+            /** Friendship Id */
+            friendship_id: string;
+            /** User Id */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Status */
+            status: string;
+            /** Source */
+            source: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Accepted At */
+            accepted_at: string | null;
+        };
+        /** FriendInviteRequest */
+        FriendInviteRequest: {
+            /** User Id */
+            user_id: string;
+            /** Target User Id */
+            target_user_id: string;
+            /**
+             * Source
+             * @default manual
+             * @enum {string}
+             */
+            source: "manual" | "qr" | "referral";
+        };
+        /** FriendsResponse */
+        FriendsResponse: {
+            /** Accepted */
+            accepted: components["schemas"]["FriendEntry"][];
+            /** Pending Incoming */
+            pending_incoming: components["schemas"]["FriendEntry"][];
+            /** Pending Outgoing */
+            pending_outgoing: components["schemas"]["FriendEntry"][];
         };
         /** GalaxyProfileResponse */
         GalaxyProfileResponse: {
@@ -549,6 +789,30 @@ export interface components {
             xp: number;
             /** Level */
             level: number;
+        };
+        /** QrResolveRequest */
+        QrResolveRequest: {
+            /** User Id */
+            user_id: string;
+            /** Payload */
+            payload: string;
+        };
+        /** QrResolvedPayload */
+        QrResolvedPayload: {
+            /** Valid */
+            valid: boolean;
+            /** Resolved Type */
+            resolved_type: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Cta Kind */
+            cta_kind: string;
+            /** Cta Target */
+            cta_target: string | null;
+            /** Raw Payload */
+            raw_payload: string;
         };
         /** QuestClaimResponse */
         QuestClaimResponse: {
@@ -984,6 +1248,262 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReferralOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_friends_friends_get: {
+        parameters: {
+            query: {
+                user_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invite_friend_friends_invite_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendInviteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_friend_friends_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    friend_activity_friends_activity_get: {
+        parameters: {
+            query: {
+                user_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendActivityEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_qr_qr_me_get: {
+        parameters: {
+            query: {
+                user_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QrResolvedPayload"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_qr_qr_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QrResolveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QrResolvedPayload"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_context_assistant_context_get: {
+        parameters: {
+            query: {
+                user_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantContextResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_chat_assistant_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantChatResponse"];
                 };
             };
             /** @description Validation Error */

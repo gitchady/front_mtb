@@ -82,9 +82,6 @@ export function LeaderboardScreen() {
             ))}
           </div>
           <div className="flex flex-wrap gap-3">
-            <button className="secondary-button" type="button" onClick={() => leaderboardQuery.refetch()}>
-              Обновить
-            </button>
             <button className="primary-button" type="button" onClick={() => setPrizesOpen(true)}>
               Призы периода
             </button>

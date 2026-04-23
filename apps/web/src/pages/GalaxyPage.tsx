@@ -94,7 +94,7 @@ export function GalaxyPage() {
       setFeedback(
         `${action.title}: +${outcome.totalReward} звездной пыли${
           outcome.cratesEarned ? ` и ${outcome.cratesEarned} контейнер хранилища` : ""
-        }. Событие ${result.event_id} обработано живым ядром наград.`,
+        }. Событие ${result.event_id} синхронизировано.`,
       );
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
@@ -116,13 +116,13 @@ export function GalaxyPage() {
     onSuccess: ({ result, planetCode, amount }) => {
       const reward = 4 + Math.min(8, Math.floor(amount / 50));
       const outcome = claimPlanetAction({
-        title: "Статистика трат записана",
-        detail: `Внесено ${amount.toFixed(2)} BYN в сектор ${PLANET_META[planetCode].title}.`,
+        title: "Сигнал записан",
+        detail: `Зафиксирован импульс ${Math.round(amount)} в секторе ${PLANET_META[planetCode].title}.`,
         baseReward: reward,
         planetCode,
       });
       setFeedback(
-        `Статистика ${PLANET_META[planetCode].title}: +${outcome.totalReward} звездной пыли. Событие ${result.event_id} обработано.`,
+        `Активность ${PLANET_META[planetCode].title}: +${outcome.totalReward} звездной пыли. Событие ${result.event_id} синхронизировано.`,
       );
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["profile", userId] });
@@ -157,20 +157,12 @@ export function GalaxyPage() {
   return (
     <div className="space-y-8">
       <section className="hero-panel">
-        <div className="grid gap-8 xl:grid-cols-[1.08fr_0.92fr] xl:items-start">
-          <div className="space-y-6">
+        <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr] xl:items-start">
+          <div className="space-y-4 md:space-y-6">
             <p className="eyebrow">Игровой клиент</p>
-            <h2 className="max-w-3xl text-4xl font-semibold leading-[0.96] md:text-6xl">
-              Выбирайте планеты, запускайте миссии и прокачивайте банковский прогресс.
+            <h2 className="max-w-3xl text-3xl font-semibold leading-[0.96] sm:text-4xl md:text-6xl">
+              Выбирайте планеты, запускайте миссии и прокачивайте игровой прогресс.
             </h2>
-            <p className="max-w-2xl text-base text-white/72 md:text-lg">
-              Орбита покупок, Кредитный щит и Социальное кольцо имеют свои миссии, постройки, живые события и мини-игры.
-            </p>
-            <div className="inline-flex flex-wrap items-center gap-3 rounded-full border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/72">
-              <span className="font-semibold text-white">{playerAlias}</span>
-              <span className="uppercase tracking-[0.24em] text-white/38">{SEGMENT_LABELS[playerSegment]}</span>
-              <span>Фокус: {PLANET_META[selectedPlanet].title}</span>
-            </div>
             <div className="flex flex-wrap gap-3">
               <Link className="primary-button primary-button--hero" to="/app/games">
                 Перейти к играм
@@ -179,8 +171,16 @@ export function GalaxyPage() {
                 Перейти к квестам
               </Link>
             </div>
+            <div className="inline-flex flex-wrap items-center gap-3 rounded-[28px] border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/72">
+              <span className="font-semibold text-white">{playerAlias}</span>
+              <span className="uppercase tracking-[0.24em] text-white/38">{SEGMENT_LABELS[playerSegment]}</span>
+              <span>Фокус: {PLANET_META[selectedPlanet].title}</span>
+            </div>
+            <p className="max-w-2xl text-sm text-white/72 md:text-lg">
+              Орбита покупок, Кредитный щит и Социальное кольцо имеют свои миссии, постройки, живые события и мини-игры.
+            </p>
           </div>
-          <div className="grid gap-3 self-start sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 self-start lg:grid-cols-3 xl:grid-cols-2">
             <div className="metric-chip">
               <span>Уровень орбиты</span>
               <strong>{deferredProfile?.orbit_level ?? "…"}</strong>
@@ -242,7 +242,7 @@ export function GalaxyPage() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <article className="surface-panel">
+        <article className="order-2 surface-panel xl:order-1">
           <p className="eyebrow">Мастерство планет</p>
           <div className="mt-3 space-y-3">
             {(["ORBIT_COMMERCE", "CREDIT_SHIELD", "SOCIAL_RING"] as PlanetCode[]).map((planetCode) => (
@@ -261,15 +261,15 @@ export function GalaxyPage() {
               </div>
             ))}
           </div>
-          <div className="mission-confirm mission-confirm--left">
+            <div className="mission-confirm mission-confirm--left">
             <p className="eyebrow">Подготовка события</p>
             <h4 className="mt-2 text-xl font-semibold">{selectedAction?.title}</h4>
             <p className="mt-2 text-sm text-white/58">
               {selectedPlanetLocked
                 ? PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]
-                : `Будет отправлено банковское событие: ${
+                : `Будет отправлено синхронизируемое событие: ${
                     selectedAction ? formatEventKind(selectedAction.eventKind) : "не выбрано"
-                  }. Награда появится после синхронизации с ядром.`}
+                  }. Результат появится после синхронизации.`}
             </p>
             <button
               className="primary-button mt-4"
@@ -286,32 +286,34 @@ export function GalaxyPage() {
             </button>
           </div>
         </article>
-        <PlanetInspector
-          planet={selectedPlanetState}
-          selectedPlanet={selectedPlanet}
-          stardust={stardust}
-          builtStructures={builtStructures}
-          isLocked={selectedPlanetLocked}
-          unlockRequirement={PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]}
-          selectedActionId={selectedActionId}
-          onSelectAction={setSelectedActionId}
-          onBuild={(planetCode, structureId) => {
-            if (!isPlanetUnlocked(unlockedPlanets, planetCode)) {
-              showLockedFeedback(planetCode);
-              return;
-            }
-            const structure = PLANET_STRUCTURES[planetCode].find((item) => item.id === structureId);
-            if (!structure) {
-              return;
-            }
-            const success = buildStructure(planetCode, structureId, structure.cost, structure.title);
-            setFeedback(
-              success
-                ? `${structure.title} построен на планете ${PLANET_META[planetCode].title}.`
-                : `Недостаточно звездной пыли или постройка уже есть на планете ${PLANET_META[planetCode].title}.`,
-            );
-          }}
-        />
+        <div className="order-1 xl:order-2">
+          <PlanetInspector
+            planet={selectedPlanetState}
+            selectedPlanet={selectedPlanet}
+            stardust={stardust}
+            builtStructures={builtStructures}
+            isLocked={selectedPlanetLocked}
+            unlockRequirement={PLANET_UNLOCK_REQUIREMENTS[selectedPlanet]}
+            selectedActionId={selectedActionId}
+            onSelectAction={setSelectedActionId}
+            onBuild={(planetCode, structureId) => {
+              if (!isPlanetUnlocked(unlockedPlanets, planetCode)) {
+                showLockedFeedback(planetCode);
+                return;
+              }
+              const structure = PLANET_STRUCTURES[planetCode].find((item) => item.id === structureId);
+              if (!structure) {
+                return;
+              }
+              const success = buildStructure(planetCode, structureId, structure.cost, structure.title);
+              setFeedback(
+                success
+                  ? `${structure.title} построен на планете ${PLANET_META[planetCode].title}.`
+                  : `Недостаточно звездной пыли или постройка уже есть на планете ${PLANET_META[planetCode].title}.`,
+              );
+            }}
+          />
+        </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -350,7 +352,7 @@ export function GalaxyPage() {
           <div className="mb-5 flex min-h-[3.25rem] items-center">
             <div>
               <p className="eyebrow">Живые связи</p>
-              <h3 className="text-2xl font-semibold">Бустеры и журнал наград</h3>
+              <h3 className="text-2xl font-semibold">Бустеры и журнал активности</h3>
             </div>
           </div>
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
@@ -370,7 +372,7 @@ export function GalaxyPage() {
                   <div className="list-row list-row--empty">
                     <div>
                       <p className="text-lg font-medium">Окно бустера</p>
-                      <p className="text-sm text-white/55">Проведите партнерскую операцию, чтобы открыть первое окно.</p>
+                      <p className="text-sm text-white/55">Запустите партнерский сигнал, чтобы открыть первое окно.</p>
                     </div>
                     <strong className="status-pill">ожидает</strong>
                   </div>
@@ -380,7 +382,7 @@ export function GalaxyPage() {
 
             <div>
               <div className="space-y-3">
-                <p className="eyebrow">Последние награды</p>
+                <p className="eyebrow">Последние записи</p>
                 {liveLedger.slice(0, 4).map((entry) => (
                   <div key={entry.ledger_id} className="list-row">
                     <div>
@@ -391,15 +393,15 @@ export function GalaxyPage() {
                       <p className={`text-xs uppercase tracking-[0.18em] ${entry.status === "pending" ? "text-amber-300" : "text-emerald-300"}`}>
                         {formatStatus(entry.status)}
                       </p>
-                      <strong className="text-2xl">{entry.amount.toFixed(2)} BYN</strong>
+                      <strong className="text-2xl">1 запись</strong>
                     </div>
                   </div>
                 ))}
                 {!liveLedger.length ? (
                   <div className="list-row list-row--empty">
                     <div>
-                      <p className="text-lg font-medium">Журнал наград</p>
-                      <p className="text-sm text-white/55">Обновится после первого события с наградой.</p>
+                      <p className="text-lg font-medium">Журнал активности</p>
+                      <p className="text-sm text-white/55">Обновится после первого синхронизированного события.</p>
                     </div>
                     <strong className="status-pill">ожидает</strong>
                   </div>

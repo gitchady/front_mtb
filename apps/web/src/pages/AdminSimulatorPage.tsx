@@ -5,11 +5,11 @@ import { formatStatus } from "@/lib/labels";
 import { useSessionStore } from "@/lib/session-store";
 
 const actions = [
-  { key: "partner", label: "Сымитировать партнерскую покупку" },
-  { key: "nonPartner", label: "Сымитировать обычную покупку" },
-  { key: "credit", label: "Сымитировать платеж в срок" },
+  { key: "partner", label: "Сымитировать партнерский сигнал" },
+  { key: "nonPartner", label: "Сымитировать свободный сигнал" },
+  { key: "credit", label: "Сымитировать ритм щита" },
   { key: "referral", label: "Сымитировать активацию реферала" },
-  { key: "risky", label: "Сымитировать рискованную операцию" },
+  { key: "risky", label: "Сымитировать рискованный сигнал" },
 ] as const;
 
 export function AdminSimulatorPage() {
@@ -35,7 +35,7 @@ export function AdminSimulatorPage() {
     <div className="space-y-6">
       <section className="hero-panel">
         <p className="eyebrow">Симулятор событий</p>
-        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Админка отправляет продуктовые события через то же ядро наград, что использует клиент.</h2>
+        <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">Админка отправляет продуктовые события через тот же контур синхронизации, что использует клиент.</h2>
         {lastEvent ? (
           <p className="mt-4 text-sm text-white/58">
             Последнее событие: {lastEvent.eventId} | статус пайплайна: {formatStatus(lastEvent.status)}
@@ -52,7 +52,7 @@ export function AdminSimulatorPage() {
             <p className="eyebrow">Действие симулятора</p>
             <h3 className="mt-3 text-2xl font-semibold">{action.label}</h3>
             <p className="mt-3 text-sm text-white/62">
-              Отправляет типизированное событие в `/admin/simulate`, затем обновляет профиль, квесты, награды и KPI-витрины.
+              Отправляет типизированное событие в `/admin/simulate`, затем обновляет профиль, квесты, активность и KPI-витрины.
             </p>
           </button>
         ))}

@@ -82,14 +82,14 @@ function FriendConnectionRow({
 }) {
   return (
     <div className={`list-row ${actionDisabled ? "opacity-80" : ""}`}>
-      <div>
+      <div className="min-w-0">
         <p className="text-lg font-medium">{entry.display_name}</p>
-        <p className="text-sm text-white/55">
+        <p className="break-all text-sm text-white/55">
           ID: {entry.user_id} - {formatSourceLabel(entry.source)}
         </p>
       </div>
-      <div className="flex items-center gap-3 text-right">
-        <div>
+      <div className="flex flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:text-right">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.22em] text-white/42">{formatStatusLabel(entry.status)}</p>
           <p className="text-sm text-white/55">{formatDateTime(entry.accepted_at ?? entry.created_at)}</p>
         </div>
@@ -102,11 +102,11 @@ function FriendConnectionRow({
 function ActivityRow({ item }: { item: FriendActivityEntry }) {
   return (
     <div className="list-row">
-      <div>
+      <div className="min-w-0">
         <p className="text-lg font-medium">{item.title}</p>
         <p className="text-sm text-white/55">{item.detail}</p>
       </div>
-      <div className="text-right">
+      <div className="text-left sm:text-right">
         <p className="text-xs uppercase tracking-[0.22em] text-white/42">{formatActivityKind(item.kind)}</p>
         <p className="text-sm text-white/55">{item.actor_display_name}</p>
         <p className="text-xs text-white/42">{formatDateTime(item.created_at)}</p>
@@ -183,41 +183,27 @@ export function FriendsPage() {
   return (
     <div className="space-y-6">
       <section className="hero-panel">
-        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-end">
-          <div className="space-y-4">
+        <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr] xl:items-end">
+          <div className="space-y-3 md:space-y-4">
             <p className="eyebrow">Friends MVP</p>
-            <h2 className="text-5xl font-semibold leading-[0.95] md:text-6xl">
+            <h2 className="text-4xl font-semibold leading-[0.95] md:text-6xl">
               Собирайте круг доверия, принимайте инвайты и держите живую социальную ленту под рукой.
             </h2>
-            <p className="max-w-2xl text-base text-white/68 md:text-lg">
-              {displayName} может добавлять друзей вручную, подтверждать входящие запросы и быстро переходить в QR или AI,
-              чтобы расширять сетку контактов без лишних экранов.
-            </p>
             <div className="flex flex-wrap gap-3">
               <Link className="primary-button inline-flex" to="/app/qr">
                 Открыть QR
               </Link>
-              <Link className="secondary-button inline-flex" to="/app/ai">
-                Открыть AI
-              </Link>
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => {
-                  setFeedback(null);
-                  void friendsQuery.refetch();
-                  void activityQuery.refetch();
-                }}
-              >
-                Обновить
-              </button>
             </div>
+            <p className="max-w-2xl text-sm text-white/68 md:text-lg">
+              {displayName} может добавлять друзей вручную, подтверждать входящие запросы и быстро переходить в QR или AI,
+              чтобы расширять сетку контактов без лишних экранов.
+            </p>
             <div className="min-h-[1.5rem] text-sm text-white/64" aria-live="polite">
               {feedback}
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="metric-chip">
               <span>Активные друзья</span>
               <strong>{friendsQuery.isLoading && !friendsQuery.data ? "…" : acceptedCount}</strong>
@@ -239,7 +225,7 @@ export function FriendsPage() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.88fr_1.12fr]">
-        <article className="surface-panel">
+        <article className="order-2 surface-panel xl:order-1">
           <p className="eyebrow">Ручной инвайт</p>
           <h3 className="mt-2 text-3xl font-semibold">Добавить друга по user_id</h3>
           <p className="mt-3 text-sm text-white/62">
@@ -302,7 +288,7 @@ export function FriendsPage() {
           </div>
         </article>
 
-        <article className="surface-panel">
+        <article className="order-1 surface-panel xl:order-2">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Входящие подтверждения</p>
